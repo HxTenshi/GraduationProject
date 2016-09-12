@@ -26,15 +26,12 @@ ExeCompile/
 ipch/
 *.vcxproj.user
 
-����/
-Assets/
 Scenes/
 DustBox/
 DB/
 Release_/
 Temp/
 
-*.cpp
 TenshiEngine/CustomControls/
 TenshiEngine/CppWPFdll/
 TenshiEngine/DirectXTex/
@@ -44,15 +41,6 @@ TenshiEngine/Resource/
 *.opensdf
 TenshiEngine.sln
 TenshiEngine.vcxproj
-
-
-
-
-
-
-
-
-
 
 
 *.opensdf
