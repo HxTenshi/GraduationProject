@@ -19,7 +19,7 @@
 #include "Game/Component/ScriptComponent.h"
 #include "Game/Component/DirectionalLightComponent.h"
 #include "Game/Component/PointLightComponent.h"
-#include "Game/Component/PostEffectComponent.h"
+//#include "Game/Component/PostEffectComponent.h"
 #include "Game/Component/ParticleComponent.h"
 #include "Game/Component/SoundComponent.h"
 
