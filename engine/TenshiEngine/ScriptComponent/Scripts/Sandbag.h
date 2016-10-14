@@ -21,6 +21,10 @@ private:
 
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE float speed;
+	SERIALIZE float trackingSpeed;
+	SERIALIZE float trackingRange;
+	SERIALIZE float trackingAngle;
+	SERIALIZE float trackingRotateSpeed;
 	SERIALIZE float rotateSpeed;
 	SERIALIZE int hp;
 	XMVECTOR mGravity;
