@@ -73,7 +73,7 @@ void Weapon::ThrowAway()
 void Weapon::ThrowAway(XMVECTOR & throwdir)
 {
 	ThrowAway();
-	gameObject->GetComponent<PhysXComponent>()->AddForce(m_throw_dir, ForceMode::eIMPULSE);
+	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
 }
 /// <summary>
 ///•Ší‚ğE‚¤‚Æ‚«‚É•K‚¸ŒÄ‚Ô
