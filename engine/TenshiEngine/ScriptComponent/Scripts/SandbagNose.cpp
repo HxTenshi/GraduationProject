@@ -26,14 +26,14 @@ void SandbagNose::Finish(){
 //コライダーとのヒット時に呼ばれます
 void SandbagNose::OnCollideBegin(GameObject target){
 	(void)target;
-	if(target->GetLayer() == 4){
-		gameObject->mTransform->GetParent()->mTransform->GetParent()->GetScript<Sandbag>()->SetHitWall(true);
-	}
 }
 
 //コライダーとのヒット中に呼ばれます
 void SandbagNose::OnCollideEnter(GameObject target){
 	(void)target;
+	if (target->GetLayer() == 4) {
+		gameObject->mTransform->GetParent()->mTransform->GetParent()->GetScript<Sandbag>()->SetHitWall(true);
+	}
 }
 
 //コライダーとのロスト時に呼ばれます

@@ -13,11 +13,18 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 	void SetHitWall(bool hitWall);
+	void Damage(int damage);
 
 private:
+	void Walk();
+	void WallHit();
+
 	//ÉÅÉìÉoïœêî
 	SERIALIZE float speed;
+	SERIALIZE float rotateSpeed;
+	SERIALIZE int hp;
 	XMVECTOR mGravity;
-	bool changeVec;
-	float angle;
+	bool changeVec,walkReturnFlag,damageFlag;
+	float angle, maxAngle,subAngle,concussion;
+	XMVECTOR vec;
 };
