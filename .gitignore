@@ -30,6 +30,7 @@ ipch/
 *.db
 *.opendb
 .vs/
+*.pdb
 
 Scenes/
 DustBox/
