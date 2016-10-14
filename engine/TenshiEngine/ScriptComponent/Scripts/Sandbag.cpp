@@ -12,6 +12,7 @@ void Sandbag::Initialize(){
 	subAngle = 0.0f;
 	walkReturnFlag = false;
 	changeVec = false;
+	concussion = 0.0f;
 	damageFlag = false;
 }
 
@@ -21,21 +22,62 @@ void Sandbag::Start(){
 
 //毎フレーム呼ばれます
 void Sandbag::Update(){
-	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-	if (!cc)return;
-
-	//壁に当たって修正したがまだ壁に当たっているか調べる
-	if (walkReturnFlag) {
-		changeVec = false;
-		subAngle = 0.0f;
+	vec = XMVectorZero();
+	if (damageFlag) {
+		concussion += Hx::DeltaTime()->GetDeltaTime();
+		if (concussion > 3.0f) {
+			damageFlag = false;
+		}
+		vec += XMVectorSet(0, 500, 0, 0);
 	}
 
-	vec = XMVectorZero();
-	if (!changeVec) {
-		Walk();
+
+	XMVECTOR playerPos = Hx::FindActor("new Sphere")->mTransform->WorldPosition();
+	auto mat = gameObject->mTransform->Children().front()->GetComponent<MaterialComponent>();
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!mat) return;
+
+	auto forward = XMVector3Normalize(gameObject->mTransform->Forward());
+	auto playerVec = playerPos - gameObject->mTransform->Position();
+	forward.y = 0;
+	playerVec.y = 0;
+	float view = acos(XMVector3Dot(forward, XMVector3Normalize(playerVec)).x);
+	
+	if (XMVector3Length(playerVec).x < trackingRange && view / 3.14f * 180.0f < trackingAngle) {
+		mat->SetAlbedoColor(XMFLOAT4(1, 0, 0, 1));
+		vec += forward * trackingSpeed;
+		auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
+
+		auto qua = gameObject->mTransform->Quaternion();
+		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, view)));
 	}
 	else {
-		WallHit();
+		mat->SetAlbedoColor(XMFLOAT4(0, 1, 0, 1));
+
+		if (!cc)return;
+
+		//壁に当たって修正したがまだ壁に当たっているか調べる
+		if (walkReturnFlag) {
+			changeVec = false;
+			subAngle = 0.0f;
+		}
+
+		if (!changeVec) {
+			Walk();
+		}
+		else {
+			WallHit();
+		}
+		//Angleのクランプ
+		if (angle > 360)angle -= 360.0f;
+		else if (angle < 0)angle += 360.0f;
+
+		//if (Input::Trigger(KeyCoord::Key_D)) {
+		//	Damage(1);
+		//}
+
+		//値のSet
+		gameObject->mTransform->Rotate(XMVectorSet(0, angle * 3.14f / 180.0f, 0, 0));
 	}
 
 	//重力
@@ -43,16 +85,6 @@ void Sandbag::Update(){
 		vec += mGravity;
 	}
 
-	//Angleのクランプ
-	if (angle > 360)angle -= 360.0f;
-	else if (angle < 0)angle += 360.0f;
-
-	if (Input::Trigger(KeyCoord::Key_D)) {
-		Damage(1);
-	}
-
-	//値のSet
-	gameObject->mTransform->Rotate(XMVectorSet(0, angle * 3.14f / 180.0f, 0, 0));
 	cc->Move(vec  * Hx::DeltaTime()->GetDeltaTime());
 
 }
@@ -93,7 +125,7 @@ void Sandbag::SetHitWall(bool hitWall)
 void Sandbag::Damage(int damage)
 {
 	hp -= damage;
-	vec += XMVectorSet(0, 500, 0, 0);
+	damageFlag = true;
 }
 
 void Sandbag::Walk()
