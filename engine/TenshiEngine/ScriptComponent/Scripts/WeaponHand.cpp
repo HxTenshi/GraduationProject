@@ -17,8 +17,6 @@ void WeaponHand::Start(){
 void WeaponHand::Update(){
 	if (!mWeapon)return;
 
-
-
 	if (m_IsGuard) {
 		if(m_GuardPos)
 			mWeapon->mTransform->SetParent(m_GuardPos);
@@ -26,6 +24,8 @@ void WeaponHand::Update(){
 	}
 	else {
 		mWeapon->mTransform->SetParent(gameObject);
+		mWeapon->mTransform->Position(XMVectorZero());
+		mWeapon->mTransform->Rotate(XMVectorZero());
 
 		if (m_AttackTime > 0.0f) {
 			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
@@ -34,7 +34,6 @@ void WeaponHand::Update(){
 			mWeapon->mTransform->Rotate(XMVectorSet(m_AttackTime * 40.0f, 0, 0, 1));
 		}
 	}
-
 	m_IsGuard = false;
 }
 
