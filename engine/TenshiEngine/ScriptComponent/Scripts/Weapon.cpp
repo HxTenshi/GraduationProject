@@ -1,26 +1,23 @@
 #include "Weapon.h"
 #include "Input/Input.h"
 #include "h_component.h"
+#include "h_standard.h"
+#include "Sandbag.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Weapon::Initialize(){
 	m_Endurance = 1;
-	m_frame_pos = gameObject->mTransform->WorldPosition();
+	m_AttackForce = 1;
+	m_Recast = 1;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void Weapon::Start(){
-	m_frame_pos = gameObject->mTransform->WorldPosition();
 }
 
 //毎フレーム呼ばれます
 void Weapon::Update(){
-
-
-	XMVECTOR pos = gameObject->mTransform->WorldPosition();
-	m_throw_dir.x = (m_frame_pos.x - pos.x)*100.0f;
-	m_throw_dir.y = 3.0f;
-	m_throw_dir.z = (m_frame_pos.z - pos.z)*100.0f;
-	m_frame_pos= gameObject->mTransform->WorldPosition();
+	
+	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -36,6 +33,14 @@ void Weapon::OnCollideBegin(GameObject target){
 //コライダーとのヒット中に呼ばれます
 void Weapon::OnCollideEnter(GameObject target){
 	(void)target;
+	if (target->GetLayer() == 3){
+		if (auto scr = target->GetScript<Sandbag>()) {
+			if (m_Recast > 1.0f) {
+				m_Recast = 0.0f;
+				scr->Damage(m_AttackForce);
+			}
+		}
+	}
 }
 
 //コライダーとのロスト時に呼ばれます
@@ -61,6 +66,9 @@ bool Weapon::isBreak()
 /// </summary>
 void Weapon::ThrowAway()
 {
+
+	gameObject->GetComponent<PhysXComponent>()->SetGravity(true);
+
 	XMVECTOR wpos = gameObject->mTransform->WorldPosition();
 	gameObject->mTransform->SetParent(Hx::GetRootActor());
 	gameObject->mTransform->WorldPosition(wpos);
@@ -81,5 +89,6 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 /// </summary>
 void Weapon::GetWeapon()
 {
+	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 }

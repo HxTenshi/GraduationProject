@@ -27,7 +27,8 @@ private:
 	//‘Ï‹v’l
 	SERIALIZE
 	int m_Endurance;
-
-	XMVECTOR m_throw_dir;
-	XMVECTOR m_frame_pos;
+	SERIALIZE
+	int m_AttackForce;
+	SERIALIZE
+	float m_Recast;
 };
