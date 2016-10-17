@@ -22,4 +22,6 @@ private:
 	float mUp;
 	SERIALIZE
 	GameObject mTarget;
+
+	XMFLOAT2 mRotate;
 };

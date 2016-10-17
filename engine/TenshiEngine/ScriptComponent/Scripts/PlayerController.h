@@ -26,6 +26,8 @@ private:
 	//ƒƒ“ƒo•Ï”
 
 	SERIALIZE
+	GameObject m_Camera;
+	SERIALIZE
 	float m_JumpPower;
 	SERIALIZE
 	float m_MoveSpeed;
@@ -34,8 +36,8 @@ private:
 
 	XMVECTOR mJump;
 	XMVECTOR mGravity;
-
-	XMVECTOR mRotate;
+	//Œü‚­‚×‚«•ûŒü
+	XMVECTOR mVelocity;
 
 	bool m_IsDoge;
 	bool m_IsGround;

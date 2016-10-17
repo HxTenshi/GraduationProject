@@ -25,6 +25,18 @@ private:
 	GameObject mWeapon;
 
 	SERIALIZE
+	float m_GetSpeed;
+	SERIALIZE
+	float m_GetRotSpeed;
+	SERIALIZE
+	float m_WaveHeight;
+	float m_Wave;
+	bool m_NowGetAction;
+	float m_GetPosDistance;
+
+	bool m_ActionFree;
+
+	SERIALIZE
 	GameObject m_GuardPos;
 	float m_AttackTime;
 	bool m_IsGuard;
