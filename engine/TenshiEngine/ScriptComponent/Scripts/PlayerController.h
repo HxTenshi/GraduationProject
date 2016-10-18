@@ -21,7 +21,7 @@ private:
 	void doge();
 	void guard();
 	void attack();
-	void throwAway();
+	void throwAway(GameObject target = NULL, bool isMove = false);
 
 	//ÉÅÉìÉoïœêî
 
@@ -33,6 +33,8 @@ private:
 	float m_MoveSpeed;
 	SERIALIZE
 	GameObject m_WeaponHand;
+
+	SERIALIZE GameObject mMoveAvility;
 
 	XMVECTOR mJump;
 	XMVECTOR mGravity;

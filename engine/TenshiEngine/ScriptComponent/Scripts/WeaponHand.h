@@ -20,6 +20,7 @@ public:
 	void Guard();
 
 	void ThrowAway();
+	void ThrowAway(GameObject target,bool isMove);
 private:
 	//ƒƒ“ƒo•Ï”
 	GameObject mWeapon;

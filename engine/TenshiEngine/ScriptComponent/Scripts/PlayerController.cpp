@@ -3,6 +3,7 @@
 #include "../h_standard.h"
 #include "../h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
+# include "MoveAbility.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PlayerController::Initialize(){
@@ -54,6 +55,19 @@ void PlayerController::Update(){
 	}
 	if (Input::Down(KeyCoord::Key_E)) {
 		throwAway();
+	}
+
+	if (Input::Down(KeyCoord::Key_Q)) {
+		//ここで必要なのは対象のオブジェクトを検索出来るクラス
+		//今は適当
+		GameObject target = Hx::FindActor("sandbag");
+		throwAway(target);
+		mMoveAvility->GetScript<MoveAbility>()->SetPoint(target, m_CharacterControllerComponent);
+	}
+
+	if (Input::Down(KeyCoord::Key_C)) {
+		mMoveAvility->GetScript<MoveAbility>()->OnMove();
+
 	}
 }
 
@@ -219,10 +233,13 @@ void PlayerController::attack()
 	}
 }
 
-void PlayerController::throwAway()
+void PlayerController::throwAway(GameObject target,bool isMove)
 {
 	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
-	if (weaponHand) {
+	if (target && weaponHand) {
+		weaponHand->ThrowAway(target,isMove);
+	}
+	else if (weaponHand) {
 		weaponHand->ThrowAway();
 	}
 }
