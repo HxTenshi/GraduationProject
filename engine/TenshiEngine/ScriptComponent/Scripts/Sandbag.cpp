@@ -25,14 +25,14 @@ void Sandbag::Update(){
 	vec = XMVectorZero();
 	if (damageFlag) {
 		concussion += Hx::DeltaTime()->GetDeltaTime();
-		if (concussion > 3.0f) {
+		if (concussion > concussionTime) {
 			damageFlag = false;
 		}
-		vec += XMVectorSet(0, 500, 0, 0);
+		vec += XMVectorSet(0, jumpPower, 0, 0);
 	}
 
-
-	XMVECTOR playerPos = Hx::FindActor("new Sphere")->mTransform->WorldPosition();
+	if (!player)return;
+	XMVECTOR playerPos = player->mTransform->WorldPosition();
 	auto mat = gameObject->mTransform->Children().front()->GetComponent<MaterialComponent>();
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!mat) return;
@@ -126,6 +126,7 @@ void Sandbag::Damage(int damage)
 {
 	hp -= damage;
 	damageFlag = true;
+	concussion = 0.0f;
 }
 
 void Sandbag::Walk()

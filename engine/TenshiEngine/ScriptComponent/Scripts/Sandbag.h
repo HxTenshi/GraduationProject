@@ -27,6 +27,9 @@ private:
 	SERIALIZE float trackingRotateSpeed;
 	SERIALIZE float rotateSpeed;
 	SERIALIZE int hp;
+	SERIALIZE GameObject player;
+	SERIALIZE float concussionTime;
+	SERIALIZE float jumpPower;
 	XMVECTOR mGravity;
 	bool changeVec,walkReturnFlag,damageFlag;
 	float angle, maxAngle,subAngle,concussion;
