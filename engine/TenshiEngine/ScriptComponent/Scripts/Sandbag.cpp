@@ -22,21 +22,6 @@ void Sandbag::Start(){
 
 //毎フレーム呼ばれます
 void Sandbag::Update(){
-	if (!modelObject)return;
-
-	auto anim = modelObject->GetComponent<AnimationComponent>();
-	if (!anim)return;
-	if (Input::Trigger(KeyCoord::Key_0)) {
-		AnimeParam ap;
-		ap = anim->GetAnimetionParam(0);
-		ap.mWeight = 0.0f;
-		anim->SetAnimetionParam(0, ap);
-
-		ap = anim->GetAnimetionParam(1);
-		ap.mWeight = 1.0f;
-		anim->SetAnimetionParam(1, ap);
-	}
-
 	vec = XMVectorZero();
 	if (damageFlag) {
 		concussion += Hx::DeltaTime()->GetDeltaTime();
@@ -45,6 +30,8 @@ void Sandbag::Update(){
 		}
 		vec += XMVectorSet(0, jumpPower, 0, 0);
 	}
+
+	AnimLerp();
 
 	if (!player)return;
 	XMVECTOR playerPos = player->mTransform->WorldPosition();
@@ -74,9 +61,11 @@ void Sandbag::Update(){
 		}
 
 		if (!changeVec) {
+			AnimChange(1, 5.0f);
 			Walk();
 		}
 		else {
+			AnimChange(0, 5.0f);
 			WallHit();
 		}
 		//Angleのクランプ
@@ -160,5 +149,48 @@ void Sandbag::WallHit()
 	}
 	if (abs(subAngle) > abs(maxAngle)) {
 		walkReturnFlag = true;
+	}
+}
+
+void Sandbag::AnimChange(int id,float speed)
+{
+	if (id != animparam.beforeAnimId) {
+		if (!animparam.animLerpFlag) {
+			animparam.afterAnimId = id;
+			animparam.animLerpFlag = true;
+			animparam.lerpSpeed = speed;
+		}
+	}
+}
+
+void Sandbag::AnimLerp()
+{
+	if (animparam.animLerpFlag) {
+		if (!modelObject)return;
+		auto anim = modelObject->GetComponent<AnimationComponent>();
+		if (!anim)return;
+
+		animparam.nowLerpTime += animparam.lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+
+		bool endFlag = false;
+		if (animparam.nowLerpTime >= 1.0f) {
+			animparam.nowLerpTime = 1.0f;
+			endFlag = true;
+		}
+
+		AnimeParam ap;
+		ap = anim->GetAnimetionParam(animparam.beforeAnimId);
+		ap.mWeight = 1.0f - animparam.nowLerpTime;
+		anim->SetAnimetionParam(animparam.beforeAnimId, ap);
+
+		ap = anim->GetAnimetionParam(animparam.afterAnimId);
+		ap.mWeight = animparam.nowLerpTime;
+		anim->SetAnimetionParam(animparam.afterAnimId, ap);
+
+		if (endFlag) {
+			animparam.beforeAnimId = animparam.afterAnimId;
+			animparam.nowLerpTime = 0.0f;
+			animparam.animLerpFlag = false;
+		}
 	}
 }
