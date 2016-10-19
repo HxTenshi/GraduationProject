@@ -1,6 +1,25 @@
 
 #pragma once
 #include "main.h"
+#include <functional>
+
+enum NextAttack {
+	None,
+	Low,
+	High,
+	Special,
+};
+
+struct AttackState {
+	int ID;
+	int NextLowID;
+	int NextHighID;
+	float AttackTime;
+	float KoutyokuTime;
+	float NextTime;
+	float DamageScale;
+	std::function<void(void)> AttackFunc;
+};
 
 class CharacterControllerComponent;
 class PlayerController :public IDllScriptComponent{
@@ -45,4 +64,9 @@ private:
 	bool m_IsGround;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;
+
+	bool m_AttackMode;
+	int m_NextAttack;
+	AttackState m_CullentAttack;
+	std::vector<AttackState> m_AttackStateList;
 };

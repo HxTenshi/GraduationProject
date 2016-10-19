@@ -3,7 +3,22 @@
 #include "../h_standard.h"
 #include "../h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
+#include "WeaponHand.h"
 # include "MoveAbility.h"
+
+struct AttackID {
+	enum Enum {
+		Low1,
+		Low2,
+		Low3,
+		High1,
+		High2,
+		FloatLow1,
+		Special,
+		Count,
+	};
+};
+
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PlayerController::Initialize(){
@@ -12,6 +27,106 @@ void PlayerController::Initialize(){
 	mVelocity = XMVectorZero();
 	m_IsDoge = false;
 	m_IsGround = false;
+	m_NextAttack = -1;
+	m_AttackMode = false;
+
+	m_AttackStateList.resize(AttackID::Count);
+
+
+	AttackState attack;
+
+	attack.ID = AttackID::Low1;
+	attack.NextLowID = AttackID::Low2;
+	attack.NextHighID = AttackID::High2;
+
+	attack.KoutyokuTime = 0.5f;
+	attack.NextTime = 0.5f;
+	attack.DamageScale = 1.0f;
+	attack.AttackTime = 1.0f;
+	attack.AttackFunc = [&](){
+		auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+		if (weaponHand) {
+			weaponHand->LowAttack_1();
+		}
+	};
+	m_AttackStateList[attack.ID] = attack;
+
+	attack.ID = AttackID::Low2;
+	attack.NextLowID = AttackID::Low3;
+	attack.NextHighID = AttackID::High2;
+	attack.AttackFunc = [&]() {
+		auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+		if (weaponHand) {
+			weaponHand->LowAttack_2();
+		}
+	};
+	m_AttackStateList[attack.ID] = attack;
+
+	attack.ID = AttackID::Low3;
+	attack.NextLowID = -1;
+	attack.NextHighID = AttackID::High2;
+	attack.AttackFunc = [&]() {
+		auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+		if (weaponHand) {
+			weaponHand->LowAttack_3();
+		}
+	};
+	m_AttackStateList[attack.ID] = attack;
+
+	attack.ID = AttackID::High1;
+	attack.NextLowID = -1;
+	attack.NextHighID = AttackID::High2;
+	attack.AttackFunc = [&]() {
+		auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+		if (weaponHand) {
+			weaponHand->HighAttack_1();
+		}
+	};
+	m_AttackStateList[attack.ID] = attack;
+
+	attack.ID = AttackID::High2;
+	attack.NextLowID = -1;
+	attack.NextHighID = -1;
+	attack.AttackFunc = [&]() {
+		auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+		if (weaponHand) {
+			weaponHand->HighAttack_2();
+		}
+	};
+	m_AttackStateList[attack.ID] = attack;
+
+	attack.ID = AttackID::FloatLow1;
+	attack.NextLowID = -1;
+	attack.NextHighID = -1;
+	attack.AttackFunc = [&](){
+		auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+		if (weaponHand) {
+			weaponHand->FloatLowAttack_1();
+		}
+	};
+	m_AttackStateList[attack.ID] = attack;
+
+	attack.ID = AttackID::Special;
+	attack.NextLowID = -1;
+	attack.NextHighID = -1;
+	attack.AttackFunc = [&]() {
+		auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+		if (weaponHand) {
+			weaponHand->SpecialAttack();
+		}
+	};
+	m_AttackStateList[attack.ID] = attack;
+	
+
+	m_CullentAttack.ID = -1;
+	m_CullentAttack.NextLowID = -1;
+	m_CullentAttack.NextHighID = -1;
+	m_CullentAttack.KoutyokuTime = 0.0f;
+	m_CullentAttack.NextTime = 0.0f;
+	m_CullentAttack.DamageScale = 0.0f;
+	m_CullentAttack.AttackTime = 0.0f;
+	m_CullentAttack.AttackFunc = [](){};
+
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -24,6 +139,9 @@ void PlayerController::Start(){
 //毎フレーム呼ばれます
 void PlayerController::Update(){
 
+	if (!mMoveAvility) {
+		return;
+	}
 
 	if (!m_CharacterControllerComponent) {
 		m_CharacterControllerComponent = gameObject->GetComponent<CharacterControllerComponent>();
@@ -50,7 +168,7 @@ void PlayerController::Update(){
 	if (Input::Down(MouseCoord::Right)) {
 		guard();
 	}
-	if (Input::Down(MouseCoord::Left)) {
+	if (true) {
 		attack();
 	}
 	if (Input::Down(KeyCoord::Key_E)) {
@@ -62,11 +180,15 @@ void PlayerController::Update(){
 		//今は適当
 		GameObject target = Hx::FindActor("sandbag");
 		throwAway(target);
-		mMoveAvility->GetScript<MoveAbility>()->SetPoint(target, m_CharacterControllerComponent);
+		if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+			script->SetPoint(target, m_CharacterControllerComponent);
+		}
 	}
 
 	if (Input::Down(KeyCoord::Key_C)) {
-		mMoveAvility->GetScript<MoveAbility>()->OnMove();
+		if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+			script->OnMove();
+		}
 
 	}
 }
@@ -227,10 +349,61 @@ void PlayerController::guard()
 
 void PlayerController::attack()
 {
-	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
-	if (weaponHand) {
-		weaponHand->Attack();
+
+
+	if (m_NextAttack == -1) {
+		if (m_CullentAttack.NextTime > 0.0f) {
+			if (Input::Trigger(KeyCoord::Key_C)) {
+				m_NextAttack = m_CullentAttack.NextLowID;
+			}
+			if (Input::Trigger(KeyCoord::Key_V)) {
+				m_NextAttack = m_CullentAttack.NextHighID;
+			}
+		}
+		else {
+			if (m_IsGround) {
+				if (Input::Trigger(KeyCoord::Key_C)) {
+					m_NextAttack = AttackID::Low1;
+				}
+				if (Input::Trigger(KeyCoord::Key_V)) {
+					m_NextAttack = AttackID::High1;
+				}
+			}
+			else {
+				if (Input::Trigger(KeyCoord::Key_C)) {
+					m_NextAttack = AttackID::FloatLow1;
+				}
+			}
+		}
+
 	}
+
+
+
+	float time = Hx::DeltaTime()->GetDeltaTime();
+	m_CullentAttack.AttackTime -= time;
+	if (m_CullentAttack.AttackTime > 0.0f)return;
+
+
+	if (m_NextAttack>=0) {
+		m_CullentAttack = m_AttackStateList[m_NextAttack];
+
+		m_CullentAttack.AttackFunc();
+
+		m_AttackMode = true;
+		m_NextAttack = -1;
+
+		return;
+	}
+
+	m_CullentAttack.NextTime -= time;
+	m_CullentAttack.KoutyokuTime -= time;
+	if (m_CullentAttack.KoutyokuTime > 0.0f)return;
+	m_AttackMode = false;
+
+	if (m_CullentAttack.NextTime > 0.0f)return;
+
+	m_NextAttack = -1;
 }
 
 void PlayerController::throwAway(GameObject target,bool isMove)

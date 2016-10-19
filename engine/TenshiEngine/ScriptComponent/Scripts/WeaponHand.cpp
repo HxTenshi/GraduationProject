@@ -8,6 +8,8 @@ void WeaponHand::Initialize(){
 	m_IsGuard = false;
 	m_ActionFree = false;
 	m_Wave = 0.0f;
+
+	m_AttackFunction = [](){};
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -61,26 +63,19 @@ void WeaponHand::Update(){
 	}
 
 	if (!m_ActionFree) {
-		m_AttackTime = 0.0f;
 		return;
 	}
 
 	if (m_IsGuard) {
 		if(m_GuardPos)
 			mWeapon->mTransform->SetParent(m_GuardPos);
-		m_AttackTime = 0.0f;
 	}
 	else {
 		mWeapon->mTransform->SetParent(gameObject);
 		mWeapon->mTransform->Position(XMVectorZero());
 		mWeapon->mTransform->Rotate(XMVectorZero());
 
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-
-			mWeapon->mTransform->Rotate(XMVectorSet(m_AttackTime * 40.0f, 0, 0, 1));
-		}
+		m_AttackFunction();
 	}
 	m_IsGuard = false;
 }
@@ -130,10 +125,87 @@ void WeaponHand::SetWeapon(GameObject weapon)
 
 }
 
-void WeaponHand::Attack()
+void WeaponHand::LowAttack_1()
 {
 	m_AttackTime = 1.0f;
+	m_AttackFunction = [&]() {
+		if (m_AttackTime > 0.0f) {
+			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
+			m_AttackTime = max(m_AttackTime, 0.0f);
+			mWeapon->mTransform->Rotate(XMVectorSet(m_AttackTime * 10.0f, 0, 0, 1));
+		}
+	};
 }
+void WeaponHand::LowAttack_2()
+{
+	m_AttackTime = 1.0f;
+	m_AttackFunction = [&]() {
+		if (m_AttackTime > 0.0f) {
+			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
+			m_AttackTime = max(m_AttackTime, 0.0f);
+			mWeapon->mTransform->Rotate(XMVectorSet(0, 0, m_AttackTime * 10.0f, 1));
+		}
+	};
+}
+void WeaponHand::LowAttack_3()
+{
+	m_AttackTime = 1.0f;
+	m_AttackFunction = [&]() {
+		if (m_AttackTime > 0.0f) {
+			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
+			m_AttackTime = max(m_AttackTime, 0.0f);
+			mWeapon->mTransform->Rotate(XMVectorSet(m_AttackTime * 40.0f, 0, 0, 1));
+		}
+	};
+}
+
+void WeaponHand::HighAttack_1()
+{
+	m_AttackTime = 1.0f;
+	m_AttackFunction = [&]() {
+		if (m_AttackTime > 0.0f) {
+			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
+			m_AttackTime = max(m_AttackTime, 0.0f);
+
+			auto pos = sin(m_AttackTime * XM_PI) * 1.0f;
+			mWeapon->mTransform->Position(XMVectorSet(0,0,pos,1));
+			mWeapon->mTransform->Rotate(XMVectorSet(m_AttackTime * 40.0f, 0, 0, 1));
+		}
+	};
+}
+
+void WeaponHand::HighAttack_2()
+{
+	m_AttackTime = 1.0f;
+	m_AttackFunction = [&]() {
+		if (m_AttackTime > 0.0f) {
+			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
+			m_AttackTime = max(m_AttackTime, 0.0f);
+
+			auto pos1 = sin(m_AttackTime * XM_PI) * 1.0f;
+			auto pos2 = (sin(m_AttackTime * XM_PI * 2)) * 2.0f;
+			mWeapon->mTransform->Position(XMVectorSet(pos2, 0, pos1,1));
+			mWeapon->mTransform->Rotate(XMVectorSet(0, 0, m_AttackTime * 40.0f, 1));
+		}
+	};
+}
+
+void WeaponHand::FloatLowAttack_1()
+{
+	m_AttackTime = 1.0f;
+	m_AttackFunction = [&]() {
+		if (m_AttackTime > 0.0f) {
+			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
+			m_AttackTime = max(m_AttackTime, 0.0f);
+			mWeapon->mTransform->Rotate(XMVectorSet(0, 0, m_AttackTime * 40.0f, 1));
+		}
+	};
+}
+
+void WeaponHand::SpecialAttack()
+{
+}
+
 
 void WeaponHand::Guard()
 {
