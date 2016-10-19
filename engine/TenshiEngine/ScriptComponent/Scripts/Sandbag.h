@@ -18,6 +18,7 @@ public:
 private:
 	void Walk();
 	void WallHit();
+	void AnimationLerp(int id, AnimationComponent anim, float changeSpeed);
 
 	//ÉÅÉìÉoïœêî
 	SERIALIZE float speed;
@@ -30,6 +31,8 @@ private:
 	SERIALIZE GameObject player;
 	SERIALIZE float concussionTime;
 	SERIALIZE float jumpPower;
+	SERIALIZE GameObject modelObject;
+
 	XMVECTOR mGravity;
 	bool changeVec,walkReturnFlag,damageFlag;
 	float angle, maxAngle,subAngle,concussion;

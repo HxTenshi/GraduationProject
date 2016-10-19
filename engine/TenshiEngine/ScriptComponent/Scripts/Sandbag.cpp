@@ -22,6 +22,8 @@ void Sandbag::Start(){
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void Sandbag::Update(){
+	if (!modelObject)return;
+
 	vec = XMVectorZero();
 	if (damageFlag) {
 		concussion += Hx::DeltaTime()->GetDeltaTime();
@@ -33,9 +35,7 @@ void Sandbag::Update(){
 
 	if (!player)return;
 	XMVECTOR playerPos = player->mTransform->WorldPosition();
-	auto mat = gameObject->mTransform->Children().front()->GetComponent<MaterialComponent>();
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-	if (!mat) return;
 
 	auto forward = XMVector3Normalize(gameObject->mTransform->Forward());
 	auto playerVec = playerPos - gameObject->mTransform->Position();
@@ -44,7 +44,6 @@ void Sandbag::Update(){
 	float view = acos(XMVector3Dot(forward, XMVector3Normalize(playerVec)).x);
 	
 	if (XMVector3Length(playerVec).x < trackingRange && view / 3.14f * 180.0f < trackingAngle) {
-		mat->SetAlbedoColor(XMFLOAT4(1, 0, 0, 1));
 		vec += forward * trackingSpeed;
 		auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
 
@@ -52,7 +51,6 @@ void Sandbag::Update(){
 		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, view)));
 	}
 	else {
-		mat->SetAlbedoColor(XMFLOAT4(0, 1, 0, 1));
 
 		if (!cc)return;
 
@@ -150,4 +148,18 @@ void Sandbag::WallHit()
 	if (abs(subAngle) > abs(maxAngle)) {
 		walkReturnFlag = true;
 	}
+}
+
+void Sandbag::AnimationLerp(int id,float changeSpeed)
+{
+	auto anim = modelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+	AnimeParam ap;
+	ap = anim->GetAnimetionParam(0);
+	ap.mWeight = 0.0f;
+	anim->SetAnimetionParam(0, ap);
+
+	ap = anim->GetAnimetionParam(1);
+	ap.mWeight = 1.0f;
+	anim->SetAnimetionParam(1, ap);
 }
