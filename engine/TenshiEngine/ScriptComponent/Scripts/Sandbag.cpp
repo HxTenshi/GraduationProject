@@ -24,6 +24,19 @@ void Sandbag::Start(){
 void Sandbag::Update(){
 	if (!modelObject)return;
 
+	auto anim = modelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+	if (Input::Trigger(KeyCoord::Key_0)) {
+		AnimeParam ap;
+		ap = anim->GetAnimetionParam(0);
+		ap.mWeight = 0.0f;
+		anim->SetAnimetionParam(0, ap);
+
+		ap = anim->GetAnimetionParam(1);
+		ap.mWeight = 1.0f;
+		anim->SetAnimetionParam(1, ap);
+	}
+
 	vec = XMVectorZero();
 	if (damageFlag) {
 		concussion += Hx::DeltaTime()->GetDeltaTime();
@@ -148,18 +161,4 @@ void Sandbag::WallHit()
 	if (abs(subAngle) > abs(maxAngle)) {
 		walkReturnFlag = true;
 	}
-}
-
-void Sandbag::AnimationLerp(int id,float changeSpeed)
-{
-	auto anim = modelObject->GetComponent<AnimationComponent>();
-	if (!anim)return;
-	AnimeParam ap;
-	ap = anim->GetAnimetionParam(0);
-	ap.mWeight = 0.0f;
-	anim->SetAnimetionParam(0, ap);
-
-	ap = anim->GetAnimetionParam(1);
-	ap.mWeight = 1.0f;
-	anim->SetAnimetionParam(1, ap);
 }

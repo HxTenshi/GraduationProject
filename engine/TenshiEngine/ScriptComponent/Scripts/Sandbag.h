@@ -18,7 +18,6 @@ public:
 private:
 	void Walk();
 	void WallHit();
-	void AnimationLerp(int id, AnimationComponent anim, float changeSpeed);
 
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE float speed;
