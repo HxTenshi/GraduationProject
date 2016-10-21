@@ -5,11 +5,7 @@
 namespace AssetLoad{
 
 	template <class T>
-<<<<<<< HEAD
-	static void Instance(const MD5::MD5HashCoord hash, Asset<T>& asset) {
-=======
 	static void Instance(const MD5::MD5HashCode hash, Asset<T>& asset) {
->>>>>>> develop
 		asset.Free();
 		shared_ptr < AssetDataTemplate<T> > temp;
 		AssetDataBase::Instance(hash, temp);
@@ -21,11 +17,7 @@ namespace AssetLoad{
 		}
 	}
 	template <class T>
-<<<<<<< HEAD
-	static void Instance(const MD5::MD5HashCoord hash, Asset<T> *asset) {
-=======
 	static void Instance(const MD5::MD5HashCode hash, Asset<T> *asset) {
->>>>>>> develop
 		asset->Free();
 		shared_ptr < AssetDataTemplate<T> > temp;
 		AssetDataBase::Instance(hash, temp);

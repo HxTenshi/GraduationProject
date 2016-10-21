@@ -102,11 +102,7 @@ public:
 	}
 
 
-<<<<<<< HEAD
-	static bool FilePath2Hash(const char* filename, MD5::MD5HashCoord& hash){
-=======
 	static bool FilePath2Hash(const char* filename, MD5::MD5HashCode& hash){
->>>>>>> develop
 
 		std::string x(filename);
 		std::transform(x.begin(), x.end(), x.begin(), [](int x) { return (char)std::tolower(x); });
