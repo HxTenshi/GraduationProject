@@ -154,10 +154,10 @@ void PlayerController::Start(){
 //毎フレーム呼ばれます
 void PlayerController::Update(){
 
-	if (!mMoveAvility) {
+	if (Input::Down(KeyCoord::Key_G)) {
+		Hx::Shutdown();
 		return;
 	}
-
 	if (!m_CharacterControllerComponent) {
 		m_CharacterControllerComponent = gameObject->GetComponent<CharacterControllerComponent>();
 		if (!m_CharacterControllerComponent)return;
@@ -172,7 +172,6 @@ void PlayerController::Update(){
 		move();
 
 	moveUpdate();
-
 
 	if (m_IsGround) {
 		doge();
@@ -193,19 +192,21 @@ void PlayerController::Update(){
 		throwAway();
 	}
 
-	if (Input::Down(KeyCoord::Key_Q)) {
-		//ここで必要なのは対象のオブジェクトを検索出来るクラス
-		//今は適当
-		GameObject target = Hx::FindActor("sandbag");
-		throwAway(target);
-		if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-			script->SetPoint(target, m_CharacterControllerComponent);
+	if (mMoveAvility) {
+		if (Input::Down(KeyCoord::Key_Q)) {
+			//ここで必要なのは対象のオブジェクトを検索出来るクラス
+			//今は適当
+			GameObject target = Hx::FindActor("sandbag");
+			throwAway(target);
+			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+				script->SetPoint(target, m_CharacterControllerComponent);
+			}
 		}
-	}
 
-	if (Input::Down(KeyCoord::Key_C)) {
-		if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-			script->OnMove();
+		if (Input::Down(KeyCoord::Key_C)) {
+			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+				script->OnMove();
+			}
 		}
 	}
 
@@ -535,12 +536,13 @@ void PlayerController::lockOn()
 
 }
 
+#include <algorithm>
 void PlayerController::changeAnime(int id)
 {
+
 	if (!m_AnimeModel)return;
 	if (id == m_CurrentAnimeID)return;
 	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
-
 	if (!anime)return;
 	if (m_CurrentAnimeID >= 0) {
 		auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
