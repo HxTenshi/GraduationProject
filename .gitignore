@@ -1,4 +1,4 @@
-﻿# �V���[�v�Ŏn�߂�ƃR�����g�s�ɂȂ�
+# �V���[�v�Ŏn�߂�ƃR�����g�s�ɂȂ�
  
 # tmp �t�H���_�܂邲�Ɩ���������
 #tmp/
@@ -51,3 +51,7 @@ TenshiEngine.vcxproj
 
 *.opensdf
 TenshiEngine/lib/DirectShow/
+engine/TenshiEngine/ScriptComponent/ScriptComponent.vcxproj
+engine/TenshiEngine/ScriptComponent/System/factory.h
+engine/TenshiEngine/ScriptComponent/System/include.h
+engine/TenshiEngine/ScriptComponent/System/reflection.h
