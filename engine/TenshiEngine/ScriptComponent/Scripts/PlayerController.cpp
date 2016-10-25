@@ -5,6 +5,7 @@
 #include "Game/Component/CharacterControllerComponent.h"
 #include "WeaponHand.h"
 # include "MoveAbility.h"
+#include "TPSCamera.h"
 
 struct AttackID {
 	enum Enum {
@@ -19,9 +20,19 @@ struct AttackID {
 	};
 };
 
+struct AnimeID {
+	enum Enum {
+		Idle,
+		Move,
+		AttackLow1,
+		Count,
+	};
+};
+
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PlayerController::Initialize(){
+	m_FloatJumpTimer = 0.0f;
 	mJump = XMVectorZero();
 	mGravity = XMVectorSet(0, -9.81f, 0,1);
 	mVelocity = XMVectorZero();
@@ -29,6 +40,9 @@ void PlayerController::Initialize(){
 	m_IsGround = false;
 	m_NextAttack = -1;
 	m_AttackMode = false;
+	m_LockOnEnabled = false;
+
+	m_CurrentAnimeID = -1;
 
 	m_AttackStateList.resize(AttackID::Count);
 
@@ -38,6 +52,7 @@ void PlayerController::Initialize(){
 	attack.ID = AttackID::Low1;
 	attack.NextLowID = AttackID::Low2;
 	attack.NextHighID = AttackID::High2;
+	attack.MoutionID = AnimeID::AttackLow1;
 
 	attack.KoutyokuTime = 0.5f;
 	attack.NextTime = 0.5f;
@@ -118,14 +133,15 @@ void PlayerController::Initialize(){
 	m_AttackStateList[attack.ID] = attack;
 	
 
-	m_CullentAttack.ID = -1;
-	m_CullentAttack.NextLowID = -1;
-	m_CullentAttack.NextHighID = -1;
-	m_CullentAttack.KoutyokuTime = 0.0f;
-	m_CullentAttack.NextTime = 0.0f;
-	m_CullentAttack.DamageScale = 0.0f;
-	m_CullentAttack.AttackTime = 0.0f;
-	m_CullentAttack.AttackFunc = [](){};
+	m_CurrentAttack.ID = -1;
+	m_CurrentAttack.NextLowID = -1;
+	m_CurrentAttack.NextHighID = -1;
+	m_CurrentAttack.MoutionID = 0;
+	m_CurrentAttack.KoutyokuTime = 0.0f;
+	m_CurrentAttack.NextTime = 0.0f;
+	m_CurrentAttack.DamageScale = 0.0f;
+	m_CurrentAttack.AttackTime = 0.0f;
+	m_CurrentAttack.AttackFunc = [](){};
 
 }
 
@@ -133,7 +149,6 @@ void PlayerController::Initialize(){
 void PlayerController::Start(){
 
 	m_CharacterControllerComponent = gameObject->GetComponent<CharacterControllerComponent>();
-
 }
 
 //毎フレーム呼ばれます
@@ -158,9 +173,12 @@ void PlayerController::Update(){
 
 	moveUpdate();
 
+
 	if (m_IsGround) {
 		doge();
 	}
+
+	lockOn();
 
 	rotate();
 
@@ -189,7 +207,16 @@ void PlayerController::Update(){
 		if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 			script->OnMove();
 		}
+	}
 
+	if (!m_AttackMode) {
+		changeAnime(AnimeID::Idle);
+		//if (mVelocity.x == 0.0f && mVelocity.y == 0.0f) {
+		//	changeAnime(AnimeID::Idle);
+		//}
+		//else {
+		//	//changeAnime(AnimeID::Move);
+		//}
 	}
 }
 
@@ -279,31 +306,27 @@ void PlayerController::move()
 			mJump.y += m_JumpPower;
 		}
 		v *= speed;
-	}
-	else {
 
-		mJump.x -= mJump.x * 6.0f * time;
-		mJump.z -= mJump.z * 6.0f * time;
-		auto v2 = mJump + v * speed * 0.1f;
+		mJump.x = v.x;
+		mJump.z = v.z;
+	}
+	else if(!m_IsDoge){
+
+		//mJump.x -= mJump.x * 6.0f * time;
+		//mJump.z -= mJump.z * 6.0f * time;
+		auto v2 = mJump + v * speed * 1.5f * time;
 		v2.y = 0.0f;
 		auto s = min(max(XMVector3Length(v2).x, -speed), speed);
-		v = XMVector3Normalize(v2)*s;
+		v2 = XMVector3Normalize(v2)*s;
+		mJump.x = v2.x;
+		mJump.z = v2.z;
 
 	}
-
-	mJump.x = v.x;
-	mJump.z = v.z;
 
 }
 
 void PlayerController::moveUpdate()
 {
-	float time = Hx::DeltaTime()->GetDeltaTime();
-	mJump += mGravity * time;
-	auto p = XMVectorZero();
-	p += mJump * time;
-
-	m_CharacterControllerComponent->Move(p);
 
 	if (m_IsGround && !m_CharacterControllerComponent->IsGround() && mJump.y <= 0.0f) {
 		XMVECTOR donw = XMVectorSet(0, -m_CharacterControllerComponent->GetStepOffset(), 0, 1);
@@ -312,6 +335,31 @@ void PlayerController::moveUpdate()
 			m_CharacterControllerComponent->Move(-donw);
 		}
 	}
+
+
+	float time = Hx::DeltaTime()->GetDeltaTime();
+	if (m_CharacterControllerComponent->IsGround()) {
+		m_FloatJumpTimer = 0.0f;
+	}
+
+	if (m_FloatJumpTimer == 0.0f) {
+		bool up = mJump.y > 0.0f;
+		mJump += mGravity * time;
+		up = up && mJump.y <= 0.0f;
+		if (up) {
+			m_FloatJumpTimer = 1.0f;
+			mJump.y = 0.0f;
+		}
+	}
+	else {
+		m_FloatJumpTimer -= time;
+		m_FloatJumpTimer = max(m_FloatJumpTimer, 0.0f);
+	}
+
+	auto p = XMVectorZero();
+	p += mJump * time;
+
+	m_CharacterControllerComponent->Move(p);
 }
 
 void PlayerController::rotate()
@@ -325,12 +373,12 @@ void PlayerController::rotate()
 void PlayerController::doge()
 {
 	if (Input::Trigger(KeyCoord::Key_LSHIFT)) {
-
-		if (abs(mVelocity.x) == 0 && abs(mVelocity.z) == 0) {
-			return;
+		auto v = mVelocity;
+		if (abs(v.x) == 0 && abs(v.z) == 0) {
+			v = gameObject->mTransform->Forward();
 		}
 
-		mJump += mVelocity * m_MoveSpeed * 2;
+		mJump += v * m_MoveSpeed * 2;
 		mJump.y += m_JumpPower/2.0f;
 		auto p = mJump * Hx::DeltaTime()->GetDeltaTime();
 		m_CharacterControllerComponent->Move(p);
@@ -352,12 +400,12 @@ void PlayerController::attack()
 
 
 	if (m_NextAttack == -1) {
-		if (m_CullentAttack.NextTime > 0.0f) {
+		if (m_CurrentAttack.NextTime > 0.0f) {
 			if (Input::Trigger(KeyCoord::Key_C)) {
-				m_NextAttack = m_CullentAttack.NextLowID;
+				m_NextAttack = m_CurrentAttack.NextLowID;
 			}
 			if (Input::Trigger(KeyCoord::Key_V)) {
-				m_NextAttack = m_CullentAttack.NextHighID;
+				m_NextAttack = m_CurrentAttack.NextHighID;
 			}
 		}
 		else {
@@ -381,14 +429,16 @@ void PlayerController::attack()
 
 
 	float time = Hx::DeltaTime()->GetDeltaTime();
-	m_CullentAttack.AttackTime -= time;
-	if (m_CullentAttack.AttackTime > 0.0f)return;
+	m_CurrentAttack.AttackTime -= time;
+	if (m_CurrentAttack.AttackTime > 0.0f)return;
 
 
 	if (m_NextAttack>=0) {
-		m_CullentAttack = m_AttackStateList[m_NextAttack];
+		m_CurrentAttack = m_AttackStateList[m_NextAttack];
 
-		m_CullentAttack.AttackFunc();
+		m_CurrentAttack.AttackFunc();
+
+		changeAnime(m_CurrentAttack.MoutionID);
 
 		m_AttackMode = true;
 		m_NextAttack = -1;
@@ -396,12 +446,12 @@ void PlayerController::attack()
 		return;
 	}
 
-	m_CullentAttack.NextTime -= time;
-	m_CullentAttack.KoutyokuTime -= time;
-	if (m_CullentAttack.KoutyokuTime > 0.0f)return;
+	m_CurrentAttack.NextTime -= time;
+	m_CurrentAttack.KoutyokuTime -= time;
+	if (m_CurrentAttack.KoutyokuTime > 0.0f)return;
 	m_AttackMode = false;
 
-	if (m_CullentAttack.NextTime > 0.0f)return;
+	if (m_CurrentAttack.NextTime > 0.0f)return;
 
 	m_NextAttack = -1;
 }
@@ -415,4 +465,91 @@ void PlayerController::throwAway(GameObject target,bool isMove)
 	else if (weaponHand) {
 		weaponHand->ThrowAway();
 	}
+}
+
+#include "GetEnemy.h"
+void PlayerController::lockOn()
+{
+	if (!m_Camera)return;
+	auto camera = m_Camera->GetScript<TPSCamera>();
+
+	if (camera) {
+		camera->SetLeft(0.0f);
+
+
+		if (m_LockOnEnabled) {
+			if (auto target = camera->GetLookTarget()) {
+				auto pos = gameObject->mTransform->WorldPosition();
+				auto tarpos = target->mTransform->WorldPosition();
+				if (XMVector3Length(pos - tarpos).x > 10.0f) {
+					m_LockOnEnabled = false;
+					camera->SetLookTarget(NULL);
+				}
+			}
+			else {
+				m_LockOnEnabled = false;
+			}
+		}
+	}
+
+	if (Input::Trigger(KeyCoord::Key_T)) {
+
+		if (!m_LockOnEnabled) {
+			if (!m_GetEnemy)return;
+			auto getenemy = m_GetEnemy->GetScript<GetEnemy>();
+
+			if (!getenemy)return;
+			auto enemy = getenemy->GetMinEnemy();
+			if (!enemy)return;
+
+			if (camera) {
+				camera->SetLookTarget(enemy);
+			}
+		}
+		else {
+			camera->SetLookTarget(NULL);
+		}
+	
+		m_LockOnEnabled = !m_LockOnEnabled;
+	}
+
+	if (!m_LockOnEnabled)return;
+	
+	auto f = m_Camera->mTransform->Forward();
+	f.y = 0.0f;
+	f = XMVector3Normalize(f);
+	mVelocity = f;
+
+	auto left = m_Camera->mTransform->Left();
+	auto v = mJump;
+	v.y = 0.0f;
+	v = XMVector3Normalize(v);
+	float dot = XMVector3Dot(v,left).x;
+
+	if (abs(dot) > 0.5f) {
+		float l = dot / abs(dot);
+		if (camera) {
+			camera->SetLeft(l * 2.0f);
+		}
+	}
+
+}
+
+void PlayerController::changeAnime(int id)
+{
+	if (!m_AnimeModel)return;
+	if (id == m_CurrentAnimeID)return;
+	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
+
+	if (!anime)return;
+	if (m_CurrentAnimeID >= 0) {
+		auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
+		p.mWeight = 0.0f;
+		anime->SetAnimetionParam(m_CurrentAnimeID, p);
+	}
+	auto p = anime->GetAnimetionParam(id);
+	p.mTime = 0.0f;
+	p.mWeight = 1.0f;
+	anime->SetAnimetionParam(id, p);
+	m_CurrentAnimeID = id;
 }
