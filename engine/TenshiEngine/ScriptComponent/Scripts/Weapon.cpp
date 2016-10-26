@@ -8,6 +8,7 @@ void Weapon::Initialize(){
 	is_hand = false;
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
+	mIsEnemyThrow = false;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -31,6 +32,14 @@ void Weapon::Finish(){
 //コライダーとのヒット時に呼ばれます
 void Weapon::OnCollideBegin(GameObject target){
 	(void)target;
+	//投げたときだけの制御
+	if (!mIsEnemyThrow)return;
+	if (!mWeaponControl)return;
+	if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+		Hx::Debug()->Log("敵に投げて当たった");
+		weapon->HitActor(target, gameObject);
+	}
+	mIsEnemyThrow = false;
 }
 
 //コライダーとのヒット中に呼ばれます
@@ -86,7 +95,9 @@ void Weapon::ThrowAway()
 /// </summary>
 void Weapon::ThrowAway(XMVECTOR & throwdir)
 {
+	mIsEnemyThrow = true;
 	ThrowAway();
+	is_ground_hit = true;
 	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir*30.0f, ForceMode::eIMPULSE);
 }
 void Weapon::WeaponUsePhysX()

@@ -1,7 +1,7 @@
 
 #pragma once
 #include "main.h"
-
+# include "WeaponControl.h"
 
 class Weapon :public IDllScriptComponent{
 public:
@@ -35,6 +35,10 @@ private:
 	float m_Recast;
 	SERIALIZE
 	GameObject m_ThrowHit;
+
+	//—é–Ø’Ç‰Á
+	SERIALIZE GameObject mWeaponControl;
+	bool mIsEnemyThrow;
 
 private:
 	float m_weapon_rot;
