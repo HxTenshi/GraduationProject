@@ -18,9 +18,11 @@ public:
 	void ThrowAway();
 	void ThrowAway(XMVECTOR& throwdir);
 
+	void WeaponUsePhysX();
 	void GetWeapon();
-
-
+private:
+	void ThrowAwayAction();
+	void PierceSupport(GameObject obj);
 
 private:
 	//ÉÅÉìÉoïœêî
@@ -31,4 +33,11 @@ private:
 	int m_AttackForce;
 	SERIALIZE
 	float m_Recast;
+	SERIALIZE
+	GameObject m_ThrowHit;
+
+private:
+	float m_weapon_rot;
+	bool is_hand;
+	bool is_ground_hit;
 };
