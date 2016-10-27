@@ -15,10 +15,10 @@ void TimeManager::Start(){
 //毎フレーム呼ばれます
 void TimeManager::Update(){
 	
-	if (Input::Down(KeyCoord::Key_Z)) {
+	if (Input::Down(KeyCode::Key_Z)) {
 		isSlow_ = true;
 	}
-	if (Input::Down(KeyCoord::Key_X)) {
+	if (Input::Down(KeyCode::Key_X)) {
 		isSlow_ = false;
 	}
 	//デルタタイムを取得

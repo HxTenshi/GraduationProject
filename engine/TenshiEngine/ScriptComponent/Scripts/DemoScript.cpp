@@ -32,19 +32,19 @@ void DemoScript::Update()
 
 	float speed = 1;
 	XMVECTOR position = gameObject->mTransform->WorldPosition();
-	if (Input::Down(KeyCoord::Key_A)) {
+	if (Input::Down(KeyCode::Key_A)) {
 		position += XMVectorSet(-speed, 0, 0, 0) * Hx::DeltaTime()->GetDeltaTime();
 	}
-	if (Input::Down(KeyCoord::Key_D)) {
+	if (Input::Down(KeyCode::Key_D)) {
 		position += XMVectorSet(speed, 0, 0, 0) * Hx::DeltaTime()->GetDeltaTime();
 	}
 
 	//•Ší‚Ì“Š±(³–Ê‚É)
-	if (Input::Down(KeyCoord::Key_E)) {
+	if (Input::Down(KeyCode::Key_E)) {
 		Throw();
 	}
 
-	if (Input::Down(KeyCoord::Key_Q)) {
+	if (Input::Down(KeyCode::Key_Q)) {
 		TargetMove();
 	}
 

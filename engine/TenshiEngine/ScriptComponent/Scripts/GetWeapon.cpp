@@ -16,7 +16,7 @@ void GetWeapon::Start(){
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void GetWeapon::Update(){
-	if (Input::Trigger(KeyCoord::Key_F)) {
+	if (Input::Trigger(KeyCode::Key_F)) {
 		if (mMinWeapon) {
 			if (mWeaponHand) {
 				auto particle1 = Hx::Instance(mGetParticle1);

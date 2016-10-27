@@ -154,7 +154,7 @@ void PlayerController::Start(){
 //毎フレーム呼ばれます
 void PlayerController::Update(){
 
-	if (Input::Down(KeyCoord::Key_G)) {
+	if (Input::Down(KeyCode::Key_G)) {
 		Hx::Shutdown();
 		return;
 	}
@@ -182,18 +182,18 @@ void PlayerController::Update(){
 	rotate();
 
 	if (!m_WeaponHand)return;
-	if (Input::Down(MouseCoord::Right)) {
+	if (Input::Down(MouseCode::Right)) {
 		guard();
 	}
 	if (true) {
 		attack();
 	}
-	if (Input::Down(KeyCoord::Key_E)) {
+	if (Input::Down(KeyCode::Key_E)) {
 		throwAway();
 	}
 
 	if (mMoveAvility) {
-		if (Input::Down(KeyCoord::Key_Q)) {
+		if (Input::Down(KeyCode::Key_Q)) {
 			//ここで必要なのは対象のオブジェクトを検索出来るクラス
 			//今は適当
 			GameObject target = Hx::FindActor("sandbag");
@@ -203,7 +203,7 @@ void PlayerController::Update(){
 			}
 		}
 
-		if (Input::Down(KeyCoord::Key_C)) {
+		if (Input::Down(KeyCode::Key_C)) {
 			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 				script->OnMove();
 			}
@@ -247,16 +247,16 @@ void PlayerController::move()
 	float time = Hx::DeltaTime()->GetDeltaTime();
 	float speed = m_MoveSpeed;
 	float x = 0, y = 0;
-	if (Input::Down(KeyCoord::Key_W)) {
+	if (Input::Down(KeyCode::Key_W)) {
 		y = 1.0f;
 	}
-	if (Input::Down(KeyCoord::Key_S)) {
+	if (Input::Down(KeyCode::Key_S)) {
 		y = -1.0f;
 	}
-	if (Input::Down(KeyCoord::Key_D)) {
+	if (Input::Down(KeyCode::Key_D)) {
 		x = 1.0f;
 	}
-	if (Input::Down(KeyCoord::Key_A)) {
+	if (Input::Down(KeyCode::Key_A)) {
 		x = -1.0f;
 	}
 
@@ -303,7 +303,7 @@ void PlayerController::move()
 
 	if (m_IsGround) {
 		mJump = XMVectorZero();
-		if (Input::Trigger(KeyCoord::Key_SPACE)) {
+		if (Input::Trigger(KeyCode::Key_SPACE)) {
 			mJump.y += m_JumpPower;
 		}
 		v *= speed;
@@ -373,7 +373,7 @@ void PlayerController::rotate()
 
 void PlayerController::doge()
 {
-	if (Input::Trigger(KeyCoord::Key_LSHIFT)) {
+	if (Input::Trigger(KeyCode::Key_LSHIFT)) {
 		auto v = mVelocity;
 		if (abs(v.x) == 0 && abs(v.z) == 0) {
 			v = gameObject->mTransform->Forward();
@@ -402,24 +402,24 @@ void PlayerController::attack()
 
 	if (m_NextAttack == -1) {
 		if (m_CurrentAttack.NextTime > 0.0f) {
-			if (Input::Trigger(KeyCoord::Key_C)) {
+			if (Input::Trigger(KeyCode::Key_C)) {
 				m_NextAttack = m_CurrentAttack.NextLowID;
 			}
-			if (Input::Trigger(KeyCoord::Key_V)) {
+			if (Input::Trigger(KeyCode::Key_V)) {
 				m_NextAttack = m_CurrentAttack.NextHighID;
 			}
 		}
 		else {
 			if (m_IsGround) {
-				if (Input::Trigger(KeyCoord::Key_C)) {
+				if (Input::Trigger(KeyCode::Key_C)) {
 					m_NextAttack = AttackID::Low1;
 				}
-				if (Input::Trigger(KeyCoord::Key_V)) {
+				if (Input::Trigger(KeyCode::Key_V)) {
 					m_NextAttack = AttackID::High1;
 				}
 			}
 			else {
-				if (Input::Trigger(KeyCoord::Key_C)) {
+				if (Input::Trigger(KeyCode::Key_C)) {
 					m_NextAttack = AttackID::FloatLow1;
 				}
 			}
@@ -493,7 +493,7 @@ void PlayerController::lockOn()
 		}
 	}
 
-	if (Input::Trigger(KeyCoord::Key_T)) {
+	if (Input::Trigger(KeyCode::Key_T)) {
 
 		if (!m_LockOnEnabled) {
 			if (!m_GetEnemy)return;
