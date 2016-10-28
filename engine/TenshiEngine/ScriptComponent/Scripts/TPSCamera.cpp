@@ -26,10 +26,10 @@ void TPSCamera::Start(){
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void TPSCamera::Update(){
 
-	if (Input::Down(KeyCoord::Key_ESCAPE)) {
+	if (Input::Down(KeyCode::Key_ESCAPE)) {
 		Hx::System()->LockCursorPositionToWindowCenter(false);
 	}
-	if (Input::Down(MouseCoord::Left)) {
+	if (Input::Down(MouseCode::Left)) {
 		Hx::System()->LockCursorPositionToWindowCenter(true);
 	}
 

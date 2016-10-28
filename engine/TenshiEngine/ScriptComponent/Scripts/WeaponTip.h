@@ -3,7 +3,7 @@
 #include "main.h"
 
 
-class testhit :public IDllScriptComponent{
+class WeaponTip :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -15,4 +15,6 @@ public:
 
 private:
 	//ƒƒ“ƒo•Ï”
+	SERIALIZE
+	GameObject m_weapon;
 };
