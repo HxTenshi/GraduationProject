@@ -71,7 +71,10 @@ private:
 	SERIALIZE float concussionTime;
 	SERIALIZE float jumpPower;
 	SERIALIZE GameObject modelObject;
-	
+	SERIALIZE GameObject movePoints;
+
+	int moveCount;
+	bool moveCountUp;
 	ActionMode am;
 	BattleParameter bp;
 	AnimParameter animparam;

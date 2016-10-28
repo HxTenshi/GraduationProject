@@ -14,6 +14,8 @@ void Sandbag::Initialize(){
 	changeVec = false;
 	concussion = 0.0f;
 	damageFlag = false;
+	moveCount = 0;
+	moveCountUp = true;
 
 	am = ActionMode::TRACKINGMODE;
 }
@@ -121,40 +123,88 @@ void Sandbag::TrackingMode(){
 		BattleMode();
 	}
 	else{
+		auto navi = gameObject->GetComponent<NaviMeshComponent>();
+		if (!navi)return;
+		if (navi->IsMoveEnd()) {
+			Hx::Debug()->Log("Think");
+			auto movePointList = movePoints->mTransform->Children();
+			int maxMoveCount = movePointList.size();
+			if (maxMoveCount == 0)return;
+			maxMoveCount--;
+			int i = 0;
+			GameObject movePoint = *movePointList.begin();
+			for (auto itr = movePointList.begin(); i <= moveCount;++itr, i++) {
+				movePoint = *itr;
+			}
 
-		//壁に当たって修正したがまだ壁に当たっているか調べる
-		if (walkReturnFlag) {
-			changeVec = false;
-			subAngle = 0.0f;
-		}
-
-		if (!changeVec) {
-			AnimChange(1, 5.0f);
-			auto forward = gameObject->mTransform->Forward();
-			forward = XMVector3Normalize(forward);
-			auto pos = gameObject->mTransform->Position();
-			vec += forward * speed;
-		}
-		else {
-			AnimChange(0, 5.0f);
-			float rotateVec = rotateSpeed * Hx::DeltaTime()->GetDeltaTime();
-			subAngle += rotateVec;
-			if (maxAngle < 0.0f) {
-				angle -= rotateVec;
+			if (moveCountUp) {
+				moveCount++;
+				if (moveCount == maxMoveCount) {
+					moveCountUp = false;
+				}
 			}
 			else {
-				angle += rotateVec;
+				moveCount--;
+				if (moveCount == 0) {
+					moveCountUp = true;
+				}
 			}
-			if (abs(subAngle) > abs(maxAngle)) {
-				walkReturnFlag = true;
-			}
+			navi->RootCreate(gameObject,movePoint);
 		}
-		//Angleのクランプ
-		if (angle > 360)angle -= 360.0f;
-		else if (angle < 0)angle += 360.0f;
 
-		//値のSet
-		gameObject->mTransform->Rotate(XMVectorSet(0, angle * 3.14f / 180.0f, 0, 0));
+		AnimChange(1, 5.0f);
+
+		//navi->GetPosition();
+	//	if(XMVector3Length(navi->GetPosition() - gameObject->mTransform->WorldPosition()).x > speed / 30.0f)
+		navi->Move(speed * Hx::DeltaTime()->GetDeltaTime());
+
+		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+		if (!cc)return;
+
+		auto forward = XMVector3Normalize(gameObject->mTransform->Forward());
+		auto naviVec = XMVector3Normalize(navi->GetPosition() - gameObject->mTransform->WorldPosition());
+		forward.y = 0;
+		naviVec.y = 0;
+		auto cross = XMVector3Normalize(XMVector3Cross(forward, naviVec));
+		auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+		view = acos(XMVector3Dot(forward, naviVec).x);
+		if (view < trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+		auto qua = gameObject->mTransform->Quaternion();
+		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+		cc->Move(forward * speed * Hx::DeltaTime()->GetDeltaTime());
+		////壁に当たって修正したがまだ壁に当たっているか調べる
+		//if (walkReturnFlag) {
+		//	changeVec = false;
+		//	subAngle = 0.0f;
+		//}
+		//
+		//if (!changeVec) {
+		//	AnimChange(1, 5.0f);
+		//	auto forward = gameObject->mTransform->Forward();
+		//	forward = XMVector3Normalize(forward);
+		//	auto pos = gameObject->mTransform->Position();
+		//	vec += forward * speed;
+		//}
+		//else {
+		//	AnimChange(0, 5.0f);
+		//	float rotateVec = rotateSpeed * Hx::DeltaTime()->GetDeltaTime();
+		//	subAngle += rotateVec;
+		//	if (maxAngle < 0.0f) {
+		//		angle -= rotateVec;
+		//	}
+		//	else {
+		//		angle += rotateVec;
+		//	}
+		//	if (abs(subAngle) > abs(maxAngle)) {
+		//		walkReturnFlag = true;
+		//	}
+		//}
+		//Angleのクランプ
+		//if (angle > 360)angle -= 360.0f;
+		//else if (angle < 0)angle += 360.0f;
+		//
+		////値のSet
+		//gameObject->mTransform->Rotate(XMVectorSet(0, angle * 3.14f / 180.0f, 0, 0));
 	}
 }
 
@@ -176,6 +226,28 @@ void Sandbag::BattleMode(){
 		bp.actionDecideTime = 0.0f;
 		bp.beforeActionDecideTime = 0;
 		bp.guardTimeCount = 0;
+
+		auto navi = gameObject->GetComponent<NaviMeshComponent>();
+		if (!navi)return;
+		auto movePointList = movePoints->mTransform->Children();
+		int maxMoveCount = movePointList.size();
+		if (maxMoveCount == 0)return;
+		int i = 0;
+		float movePointLenMin;
+		for (auto itr = movePointList.begin(); itr == movePointList.end();++i, ++itr) {
+			auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - itr->Get()->mTransform->WorldPosition()).x;
+			if (i == 0 || movePointLenMin > movePointLen) {
+				movePointLenMin = movePointLen;
+				moveCount = i;
+			}
+		}
+		GameObject movePoint = *movePointList.begin();
+		i = 0;
+		for (auto itr = movePointList.begin(); i <= moveCount; ++itr, ++i) {
+			movePoint = *itr;
+		}
+		navi->RootCreate(gameObject, movePoint);
+		moveCountUp = true;
 
 		angle = gameObject->mTransform->Rotate().y / 3.14f * 180.0f;
 		TrackingMode();
@@ -222,7 +294,7 @@ void Sandbag::BattleMode(){
 
 
 		if (bp.battleAction == BATTLEACTION::TRACKING){
-			Hx::Debug()->Log("TRACKING");
+			//Hx::Debug()->Log("TRACKING");
 			AnimChange(1, 5.0f);
 		}
 		else if (bp.battleAction == BATTLEACTION::ATTACK){
@@ -231,7 +303,7 @@ void Sandbag::BattleMode(){
 				bp.battleAction = BATTLEACTION::TRACKING;
 				bp.actionDecideTime = 0.0f;
 			};
-			Hx::Debug()->Log("ATTACK");
+			//Hx::Debug()->Log("ATTACK");
 
 		}
 		else if (bp.battleAction == BATTLEACTION::GUARD){
@@ -242,7 +314,7 @@ void Sandbag::BattleMode(){
 				bp.actionDecideTime = 0.0f;
 				bp.battleAction = BATTLEACTION::TRACKING;
 			}
-			Hx::Debug()->Log("GUARD");
+	//		Hx::Debug()->Log("GUARD");
 
 		}
 		else if (bp.battleAction == BATTLEACTION::ESCAPE){
@@ -254,13 +326,12 @@ void Sandbag::BattleMode(){
 				bp.battleAction = BATTLEACTION::TRACKING;
 				bp.actionDecideTime = 0.0f;
 			}
-			Hx::Debug()->Log("ESCAPE");
+	//		Hx::Debug()->Log("ESCAPE");
 
 		}
 		else if (bp.battleAction == BATTLEACTION::NONE){
 			AnimChange(1, 5.0f);
-			Hx::Debug()->Log("NONE");
-
+	//		Hx::Debug()->Log("NONE");
 		}
 	}
 }
