@@ -13,10 +13,18 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
+	struct MinVect{
+		enum Enum {
+			left,
+			right,
+		};
+	};
+
 	GameObject GetMinEnemy();
+	GameObject GetPointMinEnemy(GameObject currentTarget, MinVect::Enum minVect);
 
 private:
-	//ƒƒ“ƒo•Ï”
-	GameObject m_MinEnemy;
-	GameObject m_MinEnemy_Back;
+	//ƒƒ“ƒo•Ï
+
+	std::list<GameObject> m_EnemyList;
 };

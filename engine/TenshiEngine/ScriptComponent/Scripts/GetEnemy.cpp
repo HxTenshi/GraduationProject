@@ -4,8 +4,6 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void GetEnemy::Initialize(){
-	m_MinEnemy = NULL;
-	m_MinEnemy_Back = NULL;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -15,8 +13,7 @@ void GetEnemy::Start(){
 
 //毎フレーム呼ばれます
 void GetEnemy::Update(){
-	m_MinEnemy_Back = m_MinEnemy;
-	m_MinEnemy = NULL;
+	
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -26,35 +23,81 @@ void GetEnemy::Finish(){
 
 //コライダーとのヒット時に呼ばれます
 void GetEnemy::OnCollideBegin(GameObject target){
-	(void)target;
+	if (!target)return;
+	if (!target->GetScript<Sandbag>())return;
+	m_EnemyList.push_back(target);
 }
 
 //コライダーとのヒット中に呼ばれます
 void GetEnemy::OnCollideEnter(GameObject target){
-	if (!target)return;
-	if (!target->GetScript<Sandbag>())return;
 
-	auto p1 = gameObject->mTransform->WorldPosition();
-	if (m_MinEnemy) {
-		auto p2 = m_MinEnemy->mTransform->WorldPosition();
-		auto p3 = target->mTransform->WorldPosition();
-		auto l1 = XMVector3Length(p1 - p2).x;
-		auto l2 = XMVector3Length(p1 - p3).x;
-		if (l1 > l2) {
-			m_MinEnemy = target;
-		}
-	}
-	else {
-		m_MinEnemy = target;
-	}
 }
 
 //コライダーとのロスト時に呼ばれます
 void GetEnemy::OnCollideExit(GameObject target){
-	(void)target;
+	if (!target)return;
+	if (!target->GetScript<Sandbag>())return;
+	m_EnemyList.remove_if([&](auto o) {
+		return o == target || !o; });
 }
 
 GameObject GetEnemy::GetMinEnemy()
 {
-	return m_MinEnemy ? m_MinEnemy : m_MinEnemy_Back ? m_MinEnemy_Back : NULL;
+	auto pos = gameObject->mTransform->WorldPosition();
+	float lowL = 9999999.0f;
+	GameObject lowObj = NULL;
+	for (auto enemy : m_EnemyList) {
+		if (!enemy) continue;
+		auto l = XMVector3Length(pos - enemy->mTransform->WorldPosition()).x;
+		if (l < lowL) {
+			lowObj = enemy;
+			lowL = l;
+		}
+	}
+	return lowObj;
+}
+
+GameObject GetEnemy::GetPointMinEnemy(GameObject currentTarget, MinVect::Enum minVect)
+{
+	if (!currentTarget)return NULL;
+	XMVECTOR vect = XMVector3Normalize(currentTarget->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
+	float lowL = 9999999.0f;
+	GameObject lowObj = NULL;
+
+
+	auto mat = XMMatrixLookToLH(XMVectorZero(), vect, XMVectorSet(0, 1, 0, 1));
+	mat = XMMatrixTranspose(mat);
+	XMVECTOR Null;
+	mat = XMMatrixInverse(&Null, mat);
+
+	auto temp = XMMatrixMultiply(XMMatrixTranslationFromVector(currentTarget->mTransform->WorldPosition()), mat);
+	auto CurrentTargetPos = temp.r[3];
+
+	for (auto enemy : m_EnemyList) {
+		if (!enemy) continue;
+		auto posmat = XMMatrixMultiply(XMMatrixTranslationFromVector(enemy->mTransform->WorldPosition()), mat);
+		float l = abs(posmat.r[3].x - CurrentTargetPos.x);
+
+		XMVECTOR vect2 = XMVector3Normalize(enemy->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
+		if (XMVector3Dot(vect, vect2).x < 0)continue;
+
+		if (minVect == MinVect::left) {
+
+			if (posmat.r[3].x < CurrentTargetPos.x) {
+				if (l < lowL) {
+					lowObj = enemy;
+					lowL = l;
+				}
+			}
+		}
+		else if (minVect == MinVect::right) {
+			if (posmat.r[3].x > CurrentTargetPos.x) {
+				if (l < lowL) {
+					lowObj = enemy;
+					lowL = l;
+				}
+			}
+		}
+	}
+	return lowObj;
 }
