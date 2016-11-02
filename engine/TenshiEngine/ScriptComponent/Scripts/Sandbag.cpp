@@ -20,7 +20,7 @@ void Sandbag::Initialize(){
 	am = ActionMode::TRACKINGMODE;
 }
 
-//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
+//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
 void Sandbag::Start(){
 }
 
@@ -126,7 +126,6 @@ void Sandbag::TrackingMode(){
 		auto navi = gameObject->GetComponent<NaviMeshComponent>();
 		if (!navi)return;
 		if (navi->IsMoveEnd()) {
-			Hx::Debug()->Log("Think");
 			auto movePointList = movePoints->mTransform->Children();
 			int maxMoveCount = movePointList.size();
 			if (maxMoveCount == 0)return;
@@ -152,7 +151,7 @@ void Sandbag::TrackingMode(){
 			navi->RootCreate(gameObject,movePoint);
 		}
 
-		AnimChange(1, 5.0f);
+		AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 
 		//navi->GetPosition();
 	//	if(XMVector3Length(navi->GetPosition() - gameObject->mTransform->WorldPosition()).x > speed / 30.0f)
@@ -179,14 +178,14 @@ void Sandbag::TrackingMode(){
 		//}
 		//
 		//if (!changeVec) {
-		//	AnimChange(1, 5.0f);
+		//	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 		//	auto forward = gameObject->mTransform->Forward();
 		//	forward = XMVector3Normalize(forward);
 		//	auto pos = gameObject->mTransform->Position();
 		//	vec += forward * speed;
 		//}
 		//else {
-		//	AnimChange(0, 5.0f);
+		//	AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
 		//	float rotateVec = rotateSpeed * Hx::DeltaTime()->GetDeltaTime();
 		//	subAngle += rotateVec;
 		//	if (maxAngle < 0.0f) {
@@ -234,12 +233,13 @@ void Sandbag::BattleMode(){
 		if (maxMoveCount == 0)return;
 		int i = 0;
 		float movePointLenMin;
-		for (auto itr = movePointList.begin(); itr == movePointList.end();++i, ++itr) {
-			auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - itr->Get()->mTransform->WorldPosition()).x;
+		for (auto itr:movePointList) {
+			auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - itr->mTransform->WorldPosition()).x;
 			if (i == 0 || movePointLenMin > movePointLen) {
 				movePointLenMin = movePointLen;
 				moveCount = i;
 			}
+			i++;
 		}
 		GameObject movePoint = *movePointList.begin();
 		i = 0;
@@ -295,10 +295,10 @@ void Sandbag::BattleMode(){
 
 		if (bp.battleAction == BATTLEACTION::TRACKING){
 			//Hx::Debug()->Log("TRACKING");
-			AnimChange(1, 5.0f);
+			AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 		}
 		else if (bp.battleAction == BATTLEACTION::ATTACK){
-			AnimChange(3, 5.0f);
+			AnimChange(ANIM_ID::ANIM_ATTACK_LONGITUDINAL, 5.0f);
 			if (GetNowAnimTime() > attackAnimTotalTime){
 				bp.battleAction = BATTLEACTION::TRACKING;
 				bp.actionDecideTime = 0.0f;
@@ -307,7 +307,7 @@ void Sandbag::BattleMode(){
 
 		}
 		else if (bp.battleAction == BATTLEACTION::GUARD){
-			AnimChange(4, 5.0f);
+			AnimChange(ANIM_ID::ANIM_GUARD, 5.0f);
 			bp.guardTimeCount += Hx::DeltaTime()->GetDeltaTime();
 			if (bp.guardTimeCount > 3.0f){
 				bp.guardTimeCount = 0.0f;
@@ -318,7 +318,7 @@ void Sandbag::BattleMode(){
 
 		}
 		else if (bp.battleAction == BATTLEACTION::ESCAPE){
-			AnimChange(2, 5.0f);
+			AnimChange(ANIM_ID::ANIM_BACKSTEP, 5.0f);
 			if (GetNowAnimTime() < 25){
 				vec -= forward * 10.0f;
 			}
@@ -330,7 +330,7 @@ void Sandbag::BattleMode(){
 
 		}
 		else if (bp.battleAction == BATTLEACTION::NONE){
-			AnimChange(1, 5.0f);
+			AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 	//		Hx::Debug()->Log("NONE");
 		}
 	}
