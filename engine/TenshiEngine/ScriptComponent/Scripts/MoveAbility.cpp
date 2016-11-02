@@ -18,6 +18,8 @@ void MoveAbility::Update(){
 	if (onMove == true && mMovePoint)
 	{
 		XMVECTOR targetPosition = mMovePoint->mTransform->WorldPosition();
+		//ここの1はキャラのYのサイズにしないと・・・。
+		targetPosition += XMVectorSet(0,1.0f,0,0);
 		mTime += Hx::DeltaTime()->GetDeltaTime() * mSpeed;
 		if (mTime < 0.0f) {
 			mTime = 0.0f;
@@ -25,11 +27,21 @@ void MoveAbility::Update(){
 		else if (mTime > 1.0f) {
 			mTime = 1.0f;
 			onMove = false;
+			Hx::Debug()->Log("移動完了しているはず");
 		}
-		XMVECTOR resultPosition = mMoveActor->mTransform->WorldPosition() * (1.0f - mTime) + targetPosition * mTime;
-		mMoveActor->mTransform->WorldPosition(resultPosition);
-		//mCC->Move(resultPosition);
+
+		Hx::Debug()->Log("移動中");
+		
+		XMVECTOR resultPosition = mMoveStartPosition * (1.0f - mTime) + targetPosition * mTime;
+		resultPosition = XMVectorLerp(mMoveStartPosition, targetPosition, mTime);
+
+		
+		
+		mCC->Teleport(resultPosition);
 	}
+
+	//Qボタンを長く押して下記のように
+	//カメラと自分の位置を引いてカメラの方向を出して飛ばす。
 
 }
 
@@ -62,6 +74,9 @@ void MoveAbility::SetPoint(GameObject target, weak_ptr<CharacterControllerCompon
 void MoveAbility::OnMove()
 {
 	mMoveActor = Hx::FindActor("キャラクター");
+	//ここの1はキャラのYのサイズにしないと・・・。
+	mMoveStartPosition = mMoveActor->mTransform->WorldPosition();
+	mMoveStartPosition += XMVectorSet(0, 1.0f, 0, 0);
 	mTime;
 	onMove = true;
 }

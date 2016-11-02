@@ -151,7 +151,10 @@ private:
 	SERIALIZE
 	GameObject m_TimeManager;
 
-	SERIALIZE GameObject mMoveAvility;
+	SERIALIZE 
+	GameObject mMoveAvility;
+	SERIALIZE 
+	GameObject mAimController;
 
 	float m_FloatJumpTimer;
 

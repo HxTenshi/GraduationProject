@@ -6,6 +6,8 @@
 #include "WeaponHand.h"
 # include "MoveAbility.h"
 #include "TPSCamera.h"
+#include "GetEnemy.h"
+# include "AimController.h"
 
 struct AttackID {
 	enum Enum {
@@ -191,22 +193,56 @@ void PlayerController::Update(){
 		throwAway();
 	}
 
+	//10 / 29 更新
 	if (mMoveAvility) {
 		if (Input::Down(KeyCode::Key_Q)) {
-			//ここで必要なのは対象のオブジェクトを検索出来るクラス
-			//今は適当
-			GameObject target = Hx::FindActor("sandbag");
-			throwAway(target);
-			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-				script->SetPoint(target, m_CharacterControllerComponent);
+			//敵のターゲット取得処理
+			if (!m_Camera)return;
+			auto camera = m_Camera->GetScript<TPSCamera>();
+			if (camera) {
+				GameObject target = camera->GetLookTarget();
+				//ロックオンしている敵が居たら投げれる
+				if (target) {
+					throwAway(target);
+					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+						script->SetPoint(target, m_CharacterControllerComponent);
+					}
+				}
 			}
 		}
 
-		if (Input::Down(KeyCode::Key_C)) {
+		if (Input::Down(KeyCode::Key_O)) {
 			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 				script->OnMove();
 			}
 		}
+
+		auto camera = m_Camera->GetScript<TPSCamera>();
+
+		if (camera) {
+			if (auto aim = mAimController->GetScript<AimController>()) {
+				if (Input::Down(KeyCode::Key_I)) {
+					aim->ChangeAimMode(camera, gameObject, true);
+
+				}
+				if (Input::Up(KeyCode::Key_I)) {
+					aim->ChangeAimMode(camera, gameObject, false);
+					Hx::Debug()->Log("UP : "+std::to_string(camera->gameObject->mTransform->Forward().x));
+					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
+					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
+					auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+					if (weaponHand) {
+						weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+					}
+					//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
+				}
+			}
+		}
+
+
+
+
+
 	}
 }
 
@@ -781,7 +817,7 @@ void PlayerController::throwAway(GameObject target,bool isMove)
 	}
 }
 
-#include "GetEnemy.h"
+
 void PlayerController::lockOn()
 {
 	if (!m_Camera)return;

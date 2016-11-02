@@ -44,10 +44,13 @@ void Weapon::OnCollideBegin(GameObject target){
 
 	if (!mIsEnemyThrow)return;
 	if (!mWeaponControl)return;
-	if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
-		Hx::Debug()->Log("敵に投げて当たった");
-		weapon->HitActor(target, gameObject);
-	}
+	if (target->GetLayer() == 3)
+		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+			Hx::Debug()->Log("敵に投げて当たった");
+			Hx::Debug()->Log(target->Name());
+			Hx::Debug()->Log(gameObject->Name());
+			weapon->HitActor(target, gameObject);
+		}
 	if (target->GetLayer() == 3 & is_hand) {
 		//サンドバッグへのダメージの処理
 		if (auto scr = target->GetScript<Sandbag>()) {
