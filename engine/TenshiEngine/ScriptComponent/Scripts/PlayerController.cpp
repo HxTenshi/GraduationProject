@@ -6,6 +6,8 @@
 #include "WeaponHand.h"
 # include "MoveAbility.h"
 #include "TPSCamera.h"
+#include "GetEnemy.h"
+# include "AimController.h"
 
 struct AttackID {
 	enum Enum {
@@ -36,11 +38,34 @@ void PlayerController::Initialize(){
 	mJump = XMVectorZero();
 	mGravity = XMVectorSet(0, -9.81f, 0,1);
 	mVelocity = XMVectorZero();
-	m_IsDoge = false;
 	m_IsGround = false;
 	m_NextAttack = -1;
 	m_AttackMode = false;
 	m_LockOnEnabled = false;
+	m_InvisibleTime = 0.0f;
+	m_IsInvisible = false;
+	m_IsDead = false;
+
+	m_DodgeTimer = 0.0f;
+	m_MoveVelo = XMVectorZero();
+
+	m_StateFunc.resize(PlayerState::Count);
+
+#define AddFunc(x) \
+	m_StateFunc[PlayerState::x].Enter	= std::bind(&PlayerController::x##Enter, this);\
+	m_StateFunc[PlayerState::x].Excute	= std::bind(&PlayerController::x##Excute, this);\
+	m_StateFunc[PlayerState::x].Exit	= std::bind(&PlayerController::x##Exit, this);
+
+	AddFunc(Lock);
+	AddFunc(Free);
+	AddFunc(Dodge);
+	AddFunc(Attack);
+	AddFunc(KnockBack);
+	AddFunc(Down);
+	AddFunc(Movie);
+
+	m_PlayerState = (PlayerState::Enum)-1;
+	SetPlayerState(PlayerState::Lock);
 
 	m_CurrentAnimeID = -1;
 
@@ -154,70 +179,70 @@ void PlayerController::Start(){
 //毎フレーム呼ばれます
 void PlayerController::Update(){
 
-	if (Input::Down(KeyCode::Key_G)) {
-		Hx::Shutdown();
-		return;
-	}
+
 	if (!m_CharacterControllerComponent) {
 		m_CharacterControllerComponent = gameObject->GetComponent<CharacterControllerComponent>();
 		if (!m_CharacterControllerComponent)return;
 	}
 
-	if (m_CharacterControllerComponent->IsGround()) {
-		m_IsGround = true;
-		m_IsDoge = false;
-	}
-
-	if(!m_IsDoge)
-		move();
-
-	moveUpdate();
-
-	if (m_IsGround) {
-		doge();
-	}
-
-	lockOn();
-
-	rotate();
+	m_StateFunc[m_PlayerState].Excute();
 
 	if (!m_WeaponHand)return;
-	if (Input::Down(MouseCode::Right)) {
-		guard();
-	}
-	if (true) {
-		attack();
-	}
+
 	if (Input::Down(KeyCode::Key_E)) {
 		throwAway();
 	}
 
+	//10 / 29 更新
 	if (mMoveAvility) {
 		if (Input::Down(KeyCode::Key_Q)) {
-			//ここで必要なのは対象のオブジェクトを検索出来るクラス
-			//今は適当
-			GameObject target = Hx::FindActor("sandbag");
-			throwAway(target);
-			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-				script->SetPoint(target, m_CharacterControllerComponent);
+			//敵のターゲット取得処理
+			if (!m_Camera)return;
+			auto camera = m_Camera->GetScript<TPSCamera>();
+			if (camera) {
+				GameObject target = camera->GetLookTarget();
+				//ロックオンしている敵が居たら投げれる
+				if (target) {
+					throwAway(target);
+					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+						script->SetPoint(target, m_CharacterControllerComponent);
+					}
+				}
 			}
 		}
 
-		if (Input::Down(KeyCode::Key_C)) {
+		if (Input::Down(KeyCode::Key_O)) {
 			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 				script->OnMove();
 			}
 		}
-	}
 
-	if (!m_AttackMode) {
-		changeAnime(AnimeID::Idle);
-		//if (mVelocity.x == 0.0f && mVelocity.y == 0.0f) {
-		//	changeAnime(AnimeID::Idle);
-		//}
-		//else {
-		//	//changeAnime(AnimeID::Move);
-		//}
+		auto camera = m_Camera->GetScript<TPSCamera>();
+
+		if (camera) {
+			if (auto aim = mAimController->GetScript<AimController>()) {
+				if (Input::Down(KeyCode::Key_I)) {
+					aim->ChangeAimMode(camera, gameObject, true);
+
+				}
+				if (Input::Up(KeyCode::Key_I)) {
+					aim->ChangeAimMode(camera, gameObject, false);
+					Hx::Debug()->Log("UP : "+std::to_string(camera->gameObject->mTransform->Forward().x));
+					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
+					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
+					auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+					if (weaponHand) {
+						weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+					}
+					//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
+				}
+			}
+		}
+
+
+
+
+
 	}
 }
 
@@ -239,6 +264,374 @@ void PlayerController::OnCollideEnter(GameObject target){
 //コライダーとのロスト時に呼ばれます
 void PlayerController::OnCollideExit(GameObject target){
 	(void)target;
+}
+
+void PlayerController::SetPlayerState(PlayerState::Enum state)
+{
+	if (state < 0)return;
+	if (state >= PlayerState::Count)return;
+	if (m_PlayerState >= 0) {
+		m_StateFunc[m_PlayerState].Exit();
+	}
+	m_PlayerState = state;
+	m_StateFunc[m_PlayerState].Enter();
+}
+
+PlayerController::PlayerState::Enum PlayerController::GetPlayerState()
+{
+	return m_PlayerState;
+}
+
+void PlayerController::PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel)
+{
+	switch (knockBackLevel)
+	{
+	case PlayerController::KnockBack::None:
+		break;
+	case PlayerController::KnockBack::None_NoInvisible:
+		break;
+	case PlayerController::KnockBack::Low:
+		m_InvisibleTime = 0.5f;
+		mVelocity = attackVect;
+		SetPlayerState(PlayerState::KnockBack);
+		break;
+	case PlayerController::KnockBack::Down:
+		m_InvisibleTime = 2.0f;
+		mVelocity = attackVect;
+		SetPlayerState(PlayerState::Down);
+		break;
+	default:
+		break;
+	}
+}
+
+void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel)
+{
+	AddHP(-damage);
+	PlayKnockBack(attackVect,knockBackLevel);
+}
+
+bool PlayerController::IsInvisible()
+{
+	return m_IsInvisible;
+}
+
+bool PlayerController::IsDead()
+{
+	return m_IsDead;
+}
+
+void PlayerController::SetSpecial(float power)
+{
+	m_SpecialPower = power;
+	m_SpecialPower = min(max(m_SpecialPower, 0.0f), 100.0f);
+}
+
+void PlayerController::AddSpecial(float power)
+{
+	m_SpecialPower += power;
+	m_SpecialPower = min(max(m_SpecialPower,0.0f),100.0f);
+}
+
+float PlayerController::GetSpecial()
+{
+	return m_SpecialPower;
+}
+
+void PlayerController::SetHP(float power)
+{
+	m_HP = power;
+	m_HP = min(max(m_HP, 0.0f), m_MaxHP);
+	if (m_HP == 0.0f) {
+		Dead();
+	}
+}
+
+void PlayerController::AddHP(float power)
+{
+	m_HP += power;
+	m_HP = min(max(m_HP, 0.0f), m_MaxHP);
+	if (m_HP == 0.0f) {
+		Dead();
+	}
+}
+
+float PlayerController::GetHP()
+{
+	return m_HP;
+}
+
+void PlayerController::SetMaxHP(float power)
+{
+	m_MaxHP = power;
+	SetHP(m_HP);
+}
+
+void PlayerController::AddMaxHP(float power)
+{
+	m_MaxHP += power;
+	SetHP(m_HP);
+}
+
+float PlayerController::GetMaxHP()
+{
+	return m_MaxHP;
+}
+
+void PlayerController::Dead()
+{
+	m_HP = 0.0f;
+	m_IsDead = true;
+	m_IsInvisible = true;
+}
+
+void PlayerController::LockEnter()
+{
+}
+
+void PlayerController::LockExcute()
+{
+	SetPlayerState(PlayerState::Free);
+	changeAnime(AnimeID::Idle);
+}
+
+void PlayerController::LockExit()
+{
+}
+
+void PlayerController::FreeEnter()
+{
+}
+
+void PlayerController::FreeExcute()
+{
+	move();
+
+	moveUpdate();
+
+	lockOn();
+
+	rotate();
+
+	if (dodge()) {
+		SetPlayerState(PlayerState::Dodge);
+		return;
+	}
+
+	if (!m_WeaponHand)return;
+	if (Input::Down(MouseCode::Right)) {
+		guard();
+	}
+	if (attack()) {
+		SetPlayerState(PlayerState::Attack);
+	}
+	changeAnime(AnimeID::Idle);
+
+
+	if (Input::Down(KeyCode::Key_K)) {
+		auto v = mVelocity;
+		v *= -1;
+		v.y *= -1;
+		PlayKnockBack(v, KnockBack::Low);
+	}
+	if (Input::Down(KeyCode::Key_L)) {
+		auto v = mVelocity;
+		v *= -1;
+		v.y = 5	;
+		PlayKnockBack(v, KnockBack::Down);
+	}
+}
+
+void PlayerController::FreeExit()
+{
+}
+
+void PlayerController::AttackEnter()
+{
+	m_CurrentAttack = m_AttackStateList[m_NextAttack];
+
+	m_CurrentAttack.AttackFunc();
+
+	changeAnime(m_CurrentAttack.MoutionID);
+
+	m_AttackMode = true;
+	m_NextAttack = -1;
+
+	mJump = XMVectorZero();
+}
+
+void PlayerController::AttackExcute()
+{
+	moveUpdate();
+
+	lockOn();
+
+	
+	if (m_NextAttack==-1) {
+		if (Input::Trigger(KeyCode::Key_C)) {
+			m_NextAttack = m_CurrentAttack.NextLowID;
+		}
+		if (Input::Trigger(KeyCode::Key_V)) {
+			m_NextAttack = m_CurrentAttack.NextHighID;
+		}
+	}
+
+	float time = Hx::DeltaTime()->GetDeltaTime();
+	m_CurrentAttack.AttackTime -= time;
+	if (m_CurrentAttack.AttackTime > 0.0f)return;
+
+
+	if (m_NextAttack >= 0) {
+		m_CurrentAttack = m_AttackStateList[m_NextAttack];
+
+		m_CurrentAttack.AttackFunc();
+
+		changeAnime(m_CurrentAttack.MoutionID);
+
+		m_AttackMode = true;
+		m_NextAttack = -1;
+
+		return;
+	}
+
+	m_CurrentAttack.NextTime -= time;
+	m_CurrentAttack.KoutyokuTime -= time;
+	if (m_CurrentAttack.KoutyokuTime > 0.0f)return;
+	m_AttackMode = false;
+
+	if (m_CurrentAttack.NextTime > 0.0f)return;
+
+	SetPlayerState(PlayerState::Free);
+}
+
+void PlayerController::AttackExit()
+{
+
+	m_CurrentAttack.ID = -1;
+	m_CurrentAttack.NextLowID = -1;
+	m_CurrentAttack.NextHighID = -1;
+	m_CurrentAttack.MoutionID = 0;
+	m_CurrentAttack.KoutyokuTime = 0.0f;
+	m_CurrentAttack.NextTime = 0.0f;
+	m_CurrentAttack.DamageScale = 0.0f;
+	m_CurrentAttack.AttackTime = 0.0f;
+	m_CurrentAttack.AttackFunc = []() {};
+
+	m_NextAttack = -1;
+}
+
+void PlayerController::DodgeEnter()
+{
+	auto v = mVelocity;
+	if (abs(v.x) == 0 && abs(v.z) == 0) {
+		v = gameObject->mTransform->Forward();
+	}
+	m_MoveVelo = XMVectorZero();
+	mJump = XMVectorZero();
+
+	m_DodgeTimer = 1.0f;
+
+	m_MoveVelo += v * m_MoveSpeed * 2;
+	mJump.y += m_JumpPower / 2.0f;
+}
+
+void PlayerController::DodgeExcute()
+{
+	moveUpdate();
+	lockOn();
+
+	m_DodgeTimer -= Hx::DeltaTime()->GetDeltaTime();
+
+	if (m_DodgeTimer <= 0.0f) {
+		SetPlayerState(PlayerState::Free);
+	}
+
+	changeAnime(AnimeID::Idle);
+}
+
+void PlayerController::DodgeExit()
+{
+	m_DodgeTimer = 0.0f;
+	m_MoveVelo = XMVectorZero();
+}
+
+void PlayerController::KnockBackEnter()
+{
+	m_IsInvisible = true;
+	mJump.y += mVelocity.y;
+	m_MoveVelo.y = 0.0f;
+	m_MoveVelo.x = mVelocity.x;
+	m_MoveVelo.z = mVelocity.z;
+	mVelocity *= -1;
+	mVelocity.y = 0.0f;
+	rotate();
+
+}
+
+void PlayerController::KnockBackExcute()
+{
+	moveUpdate();
+
+	lockOn();
+
+	float time = Hx::DeltaTime()->GetDeltaTime();
+	m_InvisibleTime -= time;
+	if (m_InvisibleTime <= 0.0f) {
+		SetPlayerState(PlayerState::Free);
+	}
+	changeAnime(AnimeID::Idle);
+}
+
+void PlayerController::KnockBackExit()
+{
+	m_MoveVelo = XMVectorZero();
+	m_InvisibleTime = 0.0f;
+	m_IsInvisible = false;
+}
+
+void PlayerController::DownEnter()
+{
+	m_IsInvisible = true;
+	mJump.y += mVelocity.y;
+	m_MoveVelo.y = 0.0f;
+	m_MoveVelo.x = mVelocity.x;
+	m_MoveVelo.z = mVelocity.z;
+	mVelocity *= -1;
+	mVelocity.y = 0.0f;
+	rotate();
+}
+
+void PlayerController::DownExcute()
+{
+	moveUpdate();
+
+	lockOn();
+
+	float time = Hx::DeltaTime()->GetDeltaTime();
+	m_InvisibleTime -= time;
+	if (m_InvisibleTime <= 0.0f) {
+		SetPlayerState(PlayerState::Free);
+	}
+	changeAnime(AnimeID::Idle);
+}
+
+void PlayerController::DownExit()
+{
+	m_MoveVelo = XMVectorZero();
+	m_InvisibleTime = 0.0f;
+	m_IsInvisible = false;
+}
+
+void PlayerController::MovieEnter()
+{
+}
+
+void PlayerController::MovieExcute()
+{
+}
+
+void PlayerController::MovieExit()
+{
 }
 
 void PlayerController::move()
@@ -311,7 +704,7 @@ void PlayerController::move()
 		mJump.x = v.x;
 		mJump.z = v.z;
 	}
-	else if(!m_IsDoge){
+	else{
 
 		//mJump.x -= mJump.x * 6.0f * time;
 		//mJump.z -= mJump.z * 6.0f * time;
@@ -359,8 +752,12 @@ void PlayerController::moveUpdate()
 
 	auto p = XMVectorZero();
 	p += mJump * time;
+	p += m_MoveVelo * time;
 
 	m_CharacterControllerComponent->Move(p);
+
+	m_IsGround = m_CharacterControllerComponent->IsGround();
+
 }
 
 void PlayerController::rotate()
@@ -371,20 +768,15 @@ void PlayerController::rotate()
 	gameObject->mTransform->WorldQuaternion(q);
 }
 
-void PlayerController::doge()
+bool PlayerController::dodge()
 {
-	if (Input::Trigger(KeyCode::Key_LSHIFT)) {
-		auto v = mVelocity;
-		if (abs(v.x) == 0 && abs(v.z) == 0) {
-			v = gameObject->mTransform->Forward();
+	if (m_IsGround) {
+		if (Input::Trigger(KeyCode::Key_LSHIFT)) {
+			return true;
 		}
-
-		mJump += v * m_MoveSpeed * 2;
-		mJump.y += m_JumpPower/2.0f;
-		auto p = mJump * Hx::DeltaTime()->GetDeltaTime();
-		m_CharacterControllerComponent->Move(p);
-		m_IsDoge = true;
 	}
+
+	return false;
 }
 
 #include "WeaponHand.h"
@@ -396,65 +788,22 @@ void PlayerController::guard()
 	}
 }
 
-void PlayerController::attack()
+bool PlayerController::attack()
 {
-
-
-	if (m_NextAttack == -1) {
-		if (m_CurrentAttack.NextTime > 0.0f) {
-			if (Input::Trigger(KeyCode::Key_C)) {
-				m_NextAttack = m_CurrentAttack.NextLowID;
-			}
-			if (Input::Trigger(KeyCode::Key_V)) {
-				m_NextAttack = m_CurrentAttack.NextHighID;
-			}
+	if (m_IsGround) {
+		if (Input::Trigger(KeyCode::Key_C)) {
+			m_NextAttack = AttackID::Low1;
 		}
-		else {
-			if (m_IsGround) {
-				if (Input::Trigger(KeyCode::Key_C)) {
-					m_NextAttack = AttackID::Low1;
-				}
-				if (Input::Trigger(KeyCode::Key_V)) {
-					m_NextAttack = AttackID::High1;
-				}
-			}
-			else {
-				if (Input::Trigger(KeyCode::Key_C)) {
-					m_NextAttack = AttackID::FloatLow1;
-				}
-			}
+		if (Input::Trigger(KeyCode::Key_V)) {
+			m_NextAttack = AttackID::High1;
 		}
-
 	}
-
-
-
-	float time = Hx::DeltaTime()->GetDeltaTime();
-	m_CurrentAttack.AttackTime -= time;
-	if (m_CurrentAttack.AttackTime > 0.0f)return;
-
-
-	if (m_NextAttack>=0) {
-		m_CurrentAttack = m_AttackStateList[m_NextAttack];
-
-		m_CurrentAttack.AttackFunc();
-
-		changeAnime(m_CurrentAttack.MoutionID);
-
-		m_AttackMode = true;
-		m_NextAttack = -1;
-
-		return;
+	else {
+		if (Input::Trigger(KeyCode::Key_C)) {
+			m_NextAttack = AttackID::FloatLow1;
+		}
 	}
-
-	m_CurrentAttack.NextTime -= time;
-	m_CurrentAttack.KoutyokuTime -= time;
-	if (m_CurrentAttack.KoutyokuTime > 0.0f)return;
-	m_AttackMode = false;
-
-	if (m_CurrentAttack.NextTime > 0.0f)return;
-
-	m_NextAttack = -1;
+	return (m_NextAttack != -1);
 }
 
 void PlayerController::throwAway(GameObject target,bool isMove)
@@ -468,7 +817,7 @@ void PlayerController::throwAway(GameObject target,bool isMove)
 	}
 }
 
-#include "GetEnemy.h"
+
 void PlayerController::lockOn()
 {
 	if (!m_Camera)return;
@@ -482,7 +831,7 @@ void PlayerController::lockOn()
 			if (auto target = camera->GetLookTarget()) {
 				auto pos = gameObject->mTransform->WorldPosition();
 				auto tarpos = target->mTransform->WorldPosition();
-				if (XMVector3Length(pos - tarpos).x > 10.0f) {
+				if (XMVector3Length(pos - tarpos).x > 50.0f) {
 					m_LockOnEnabled = false;
 					camera->SetLookTarget(NULL);
 				}
@@ -516,6 +865,35 @@ void PlayerController::lockOn()
 
 	if (!m_LockOnEnabled)return;
 	
+	if (Input::Trigger(KeyCode::Key_Y)) {
+
+		if (!m_GetEnemy)return;
+		auto getenemy = m_GetEnemy->GetScript<GetEnemy>();
+
+		if (!getenemy)return;
+		if (camera) {
+
+			auto enemy = getenemy->GetPointMinEnemy(camera->GetLookTarget(), GetEnemy::MinVect::left);
+			if (!enemy)return;
+			camera->SetLookTarget(enemy);
+		}
+
+	}
+	if (Input::Trigger(KeyCode::Key_U)) {
+
+		if (!m_GetEnemy)return;
+		auto getenemy = m_GetEnemy->GetScript<GetEnemy>();
+
+		if (!getenemy)return;
+		if (camera) {
+
+			auto enemy = getenemy->GetPointMinEnemy(camera->GetLookTarget(), GetEnemy::MinVect::right);
+			if (!enemy)return;
+			camera->SetLookTarget(enemy);
+		}
+
+	}
+
 	auto f = m_Camera->mTransform->Forward();
 	f.y = 0.0f;
 	f = XMVector3Normalize(f);

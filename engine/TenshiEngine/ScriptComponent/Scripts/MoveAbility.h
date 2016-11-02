@@ -24,4 +24,5 @@ private:
 	bool onMove;
 	float mTime;
 	SERIALIZE float mSpeed;
+	XMVECTOR mMoveStartPosition;
 };

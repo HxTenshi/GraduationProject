@@ -2,6 +2,7 @@
 #pragma once
 #include "main.h"
 #include <functional>
+#include <vector>
 
 enum NextAttack {
 	None,
@@ -33,20 +34,107 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
+	struct PlayerState {
+		enum Enum {
+			Lock,
+			Free,
+			Dodge,
+			Attack,
+			KnockBack,
+			Down,
+			Movie,
+			Count,
+		};
+	};
+	struct KnockBack {
+		enum Enum {
+			None,
+			None_NoInvisible,
+			Low,
+			Down,
+		};
+	};
+	void SetPlayerState(PlayerState::Enum state);
+	PlayerState::Enum GetPlayerState();
+	void PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel);
+	void Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel = KnockBack::None);
+	bool IsInvisible();
+	bool IsDead();
+
+	void SetSpecial(float power);
+	void AddSpecial(float power);
+	float GetSpecial();
+
+	void SetHP(float power);
+	void AddHP(float power);
+	float GetHP();
+
+	void SetMaxHP(float power);
+	void AddMaxHP(float power);
+	float GetMaxHP();
+
+	void Dead();
 private:
+
+	void LockEnter();
+	void LockExcute();
+	void LockExit();
+
+	void FreeEnter();
+	void FreeExcute();
+	void FreeExit();
+
+	void AttackEnter();
+	void AttackExcute();
+	void AttackExit();
+
+	void DodgeEnter();
+	void DodgeExcute();
+	void DodgeExit();
+
+	void KnockBackEnter();
+	void KnockBackExcute();
+	void KnockBackExit();
+
+	void DownEnter();
+	void DownExcute();
+	void DownExit();
+
+	void MovieEnter();
+	void MovieExcute();
+	void MovieExit();
 
 	void move();
 	void moveUpdate();
 	void rotate();
-	void doge();
+	bool dodge();
 	void guard();
-	void attack();
+	bool attack();
 	void throwAway(GameObject target = NULL, bool isMove = false);
 	void lockOn();
 
 	void changeAnime(int id);
 
 	//ÉÅÉìÉoïœêî
+
+	PlayerState::Enum m_PlayerState;
+	struct StateFunc{
+		std::function<void(void)> Enter = []() {};
+		std::function<void(void)> Excute = []() {};
+		std::function<void(void)> Exit = []() {};
+	};
+
+	std::vector<StateFunc> m_StateFunc;
+
+	float m_InvisibleTime;
+	bool m_IsInvisible;
+	bool m_IsDead;
+	SERIALIZE
+	float m_MaxHP;
+	SERIALIZE
+	float m_HP;
+	SERIALIZE
+	float m_SpecialPower;
 
 	SERIALIZE
 	GameObject m_AnimeModel;
@@ -60,16 +148,23 @@ private:
 	GameObject m_WeaponHand;
 	SERIALIZE
 	GameObject m_GetEnemy;
+	SERIALIZE
+	GameObject m_TimeManager;
 
-	SERIALIZE GameObject mMoveAvility;
+	SERIALIZE 
+	GameObject mMoveAvility;
+	SERIALIZE 
+	GameObject mAimController;
 
 	float m_FloatJumpTimer;
+
+	float m_DodgeTimer;
+	XMVECTOR m_MoveVelo;
 	XMVECTOR mJump;
 	XMVECTOR mGravity;
 	//å¸Ç≠Ç◊Ç´ï˚å¸
 	XMVECTOR mVelocity;
 
-	bool m_IsDoge;
 	bool m_IsGround;
 
 	bool m_LockOnEnabled;

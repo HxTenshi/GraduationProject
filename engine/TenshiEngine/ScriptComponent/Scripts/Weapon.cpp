@@ -9,6 +9,14 @@ void Weapon::Initialize(){
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+	//auto child = gameObject->mTransform->Children();
+	//for (auto it = child.begin(); it != child.end(); ++it) {
+	//	if (it->Get()->Name == "hit") {
+	//		m_ThrowHit = it->Get()->mTransform->gameObject;
+	//	}
+	//}
+
+	//m_ThrowHit = 
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -33,11 +41,24 @@ void Weapon::Finish(){
 void Weapon::OnCollideBegin(GameObject target){
 	(void)target;
 	//投げたときだけの制御
+
 	if (!mIsEnemyThrow)return;
 	if (!mWeaponControl)return;
-	if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
-		Hx::Debug()->Log("敵に投げて当たった");
-		weapon->HitActor(target, gameObject);
+	if (target->GetLayer() == 3)
+		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+			Hx::Debug()->Log("敵に投げて当たった");
+			Hx::Debug()->Log(target->Name());
+			Hx::Debug()->Log(gameObject->Name());
+			weapon->HitActor(target, gameObject);
+		}
+	if (target->GetLayer() == 3 & is_hand) {
+		//サンドバッグへのダメージの処理
+		if (auto scr = target->GetScript<Sandbag>()) {
+			if (!is_ground_hit) {
+				m_Recast = 0.0f;
+				scr->Damage(m_AttackForce);
+			}
+		}
 	}
 	mIsEnemyThrow = false;
 }
@@ -45,15 +66,6 @@ void Weapon::OnCollideBegin(GameObject target){
 //コライダーとのヒット中に呼ばれます
 void Weapon::OnCollideEnter(GameObject target) {
 	(void)target;
-	if (target->GetLayer() == 3&is_hand){
-		//サンドバッグへのダメージの処理
-		if (auto scr = target->GetScript<Sandbag>()) {
-			if (m_Recast > 1.0f&&!is_ground_hit) {
-				m_Recast = 0.0f;
-				scr->Damage(m_AttackForce);
-			}
-		}
-	}
 
 }
 
@@ -89,6 +101,12 @@ void Weapon::ThrowAway()
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
+}
+void Weapon::ThrowAttack()
+{
+	ThrowAway();
+	is_hand = false;
+	is_ground_hit = true;
 }
 /// <summary>
 ///武器を捨てる処理
@@ -139,4 +157,8 @@ void Weapon::PierceSupport(GameObject obj)
 	if (rot.x<120&&rot.x>-120) {
 		//obj->mTransform->DegreeRotate(XMVectorSet(180,0,0,1));
 	}
+}
+
+void Weapon::Effect()
+{
 }

@@ -237,24 +237,24 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 	Hx::Debug()->Log("Y : "+std::to_string(angle));
 	GameObject character = Hx::FindActor("キャラクター");
 	character->mTransform->DegreeRotate(XMVectorSet(0, angle, 0, 0));
-	//それっぽかったけど違うかも
-	//XMVECTOR v = XMVector3AngleBetweenNormals(target->mTransform->WorldPosition(),gameObject->mTransform->WorldPosition());
-	//Hx::Debug()->Log("X : " + std::to_string(v.x));
-	//Hx::Debug()->Log("Y : " + std::to_string(v.y));
-	//Hx::Debug()->Log("Z : " + std::to_string(v.z));
-	//Hx::Debug()->Log("W : " + std::to_string(v.w));
 
-	//適当に回転
-	//mWeapon->mTransform->DegreeRotate(XMVectorSet(log.x * 90, 0, log.z * 90, 0));
 	mWeapon->GetComponent<PhysXComponent>()->SetGravity(false);
 
-	
-
-	XMVECTOR targetVector = XMVector3Normalize(log);//XMVector3Cross(character->mTransform->Left(), character->mTransform->Up());
-	float power = 50;
+	XMVECTOR targetVector = XMVector3Normalize(log);
+	float power = 1;
 	character->mTransform->AddForce(targetVector * 30,ForceMode::eIMPULSE);
 	if (auto scr = mWeapon->GetScript<Weapon>()) {
 		mWeapon = NULL;
 		scr->ThrowAway(targetVector * power);
+	}
+}
+
+void WeaponHand::ThrowAway(XMVECTOR vector)
+{
+	if (!mWeapon || !m_ActionFree)return;
+	float power = 1;
+	if (auto scr = mWeapon->GetScript<Weapon>()) {
+		mWeapon = NULL;
+		scr->ThrowAway(vector * power);
 	}
 }
