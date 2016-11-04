@@ -112,6 +112,7 @@ private:
 	bool attack();
 	void throwAway(GameObject target = NULL, bool isMove = false);
 	void lockOn();
+	void GettingWeapon();
 
 	void changeAnime(int id);
 
@@ -149,7 +150,14 @@ private:
 	SERIALIZE
 	GameObject m_GetEnemy;
 	SERIALIZE
+	GameObject m_GetWeapon;
+	SERIALIZE
+	GameObject m_marker;
+	SERIALIZE
 	GameObject m_TimeManager;
+	GameObject m_tempWeapon;
+
+	float m_InputF_Time;	//FÉLÅ[âΩïbâüÇ≥ÇÍÇΩÇ©
 
 	SERIALIZE GameObject mMoveAvility;
 

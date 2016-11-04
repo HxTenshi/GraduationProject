@@ -122,7 +122,6 @@ void WeaponHand::SetWeapon(GameObject weapon)
 	if (auto scr = mWeapon->GetScript<Weapon>()) {
 		scr->GetWeapon();
 	}
-
 }
 
 void WeaponHand::LowAttack_1()

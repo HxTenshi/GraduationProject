@@ -6,7 +6,6 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void GetWeapon::Initialize(){
-	mMinWeapon = NULL;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -16,27 +15,6 @@ void GetWeapon::Start(){
 
 //毎フレーム呼ばれます
 void GetWeapon::Update(){
-	if (Input::Trigger(KeyCode::Key_F)) {
-		if (mMinWeapon) {
-			if (mWeaponHand) {
-				auto particle1 = Hx::Instance(mGetParticle1);
-				auto particle2 = Hx::Instance(mGetParticle2);
-				if (particle1) {
-					particle1->mTransform->WorldPosition(mMinWeapon->mTransform->WorldPosition());
-					particle1->mTransform->WorldQuaternion(mMinWeapon->mTransform->WorldQuaternion());
-				}
-				if (particle2) {
-					particle2->mTransform->SetParent(mWeaponHand);
-					particle2->mTransform->Position(XMVectorZero());
-					particle2->mTransform->Quaternion(XMQuaternionIdentity());
-				}
-				auto weaponHand = mWeaponHand->GetScript<WeaponHand>();
-				weaponHand->SetWeapon(mMinWeapon);
-			}
-		}
-	}
-
-	mMinWeapon = NULL;
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -46,30 +24,79 @@ void GetWeapon::Finish(){
 
 //コライダーとのヒット時に呼ばれます
 void GetWeapon::OnCollideBegin(GameObject target){
-	(void)target;
+	if (!target)return;
+	if (!target->GetScript<Weapon>()) return;
+	m_WeaponList.push_back(target);
 }
 
 //コライダーとのヒット中に呼ばれます
 void GetWeapon::OnCollideEnter(GameObject target){
-
-	if (!target)return;
-	if (!target->GetScript<Weapon>())return;
-
-	auto p1 = gameObject->mTransform->WorldPosition();
-	if (mMinWeapon) {
-		auto p2 = mMinWeapon->mTransform->WorldPosition();
-		auto p3 = target->mTransform->WorldPosition();
-		auto l1 = XMVector3Length(p1 - p2).x;
-		auto l2 = XMVector3Length(p1 - p3).x;
-		if (l1 > l2) {
-			mMinWeapon = target;
-		}
-	}else{
-		mMinWeapon = target;
-	}
+	(void)target;
 }
 
 //コライダーとのロスト時に呼ばれます
 void GetWeapon::OnCollideExit(GameObject target){
-	(void)target;
+	if (!target) return;
+	if (!target->GetScript<Weapon>()) return;
+	m_WeaponList.remove_if([&](auto o) {
+		return o == target || !o;});
+}
+
+GameObject GetWeapon::GetMinWeapon(){
+	auto pos = gameObject->mTransform->WorldPosition();
+	float lowL = 9999999.0f;
+	GameObject lowObj = NULL;
+	for (auto enemy : m_WeaponList) {
+		if (!enemy) continue;
+		auto l = XMVector3Length(pos - enemy->mTransform->WorldPosition()).x;
+		if (l < lowL) {
+			lowObj = enemy;
+			lowL = l;
+		}
+	}
+	return lowObj;
+}
+
+GameObject GetWeapon::GetPointMinWeapon(GameObject currentTarget, MinVect::ENum minVect){
+	if (!currentTarget)return NULL;
+	XMVECTOR vect = XMVector3Normalize(currentTarget->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
+	float lowL = 9999999.0f;
+	GameObject lowObj = NULL;
+
+
+	auto mat = XMMatrixLookToLH(XMVectorZero(), vect, XMVectorSet(0, 1, 0, 1));
+	mat = XMMatrixTranspose(mat);
+	XMVECTOR Null;
+	mat = XMMatrixInverse(&Null, mat);
+
+	auto temp = XMMatrixMultiply(XMMatrixTranslationFromVector(currentTarget->mTransform->WorldPosition()), mat);
+	auto CurrentTargetPos = temp.r[3];
+
+	for (auto enemy : m_WeaponList) {
+		if (!enemy) continue;
+		auto posmat = XMMatrixMultiply(XMMatrixTranslationFromVector(enemy->mTransform->WorldPosition()), mat);
+		float l = abs(posmat.r[3].x - CurrentTargetPos.x);
+
+		XMVECTOR vect2 = XMVector3Normalize(enemy->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
+		if (XMVector3Dot(vect, vect2).x < 0)continue;
+
+		if (minVect == MinVect::left) {
+
+			if (posmat.r[3].x < CurrentTargetPos.x) {
+				if (l < lowL) {
+					lowObj = enemy;
+					lowL = l;
+				}
+			}
+		}
+		else if (minVect == MinVect::right) {
+			if (posmat.r[3].x > CurrentTargetPos.x) {
+				if (l < lowL) {
+					lowObj = enemy;
+					lowL = l;
+				}
+			}
+		}
+	}
+	return lowObj;
 }

@@ -13,14 +13,17 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
+	struct MinVect {
+		enum ENum {
+			left,
+			right
+		};
+	};
+
+	GameObject GetMinWeapon();
+	GameObject GetPointMinWeapon(GameObject currentTarget, MinVect::ENum minVect);
+
 private:
 	//ƒƒ“ƒo•Ï”
-
-	GameObject mMinWeapon;
-	SERIALIZE
-	GameObject mWeaponHand;
-	SERIALIZE
-	PrefabAsset mGetParticle1;
-	SERIALIZE
-	PrefabAsset mGetParticle2;
+	std::list<GameObject> m_WeaponList;
 };
