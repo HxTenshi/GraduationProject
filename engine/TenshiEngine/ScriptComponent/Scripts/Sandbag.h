@@ -117,13 +117,12 @@ private:
 	void BackStepModeFinalize();
 
 	//メンバ変数
-	SERIALIZE float speed;
 	SERIALIZE float trackingSpeed;
 	SERIALIZE float trackingRange;
 	SERIALIZE float battleRange;
+	SERIALIZE float noBattleRange;
 	SERIALIZE float trackingAngle;
 	SERIALIZE float trackingRotateSpeed;
-	SERIALIZE float rotateSpeed;
 	SERIALIZE int hp;
 	SERIALIZE float concussionTime;
 	SERIALIZE float jumpPower;
@@ -131,7 +130,7 @@ private:
 	SERIALIZE GameObject modelObject;
 	SERIALIZE GameObject movePoints;
 	SERIALIZE float aproachRotateSpeed;
-
+	SERIALIZE float correctionRotateSpeed;
 	//前方向
 	XMVECTOR forward;
 	//playerへのベクトル

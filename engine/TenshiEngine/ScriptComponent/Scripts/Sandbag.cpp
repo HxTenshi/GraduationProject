@@ -211,7 +211,7 @@ void Sandbag::ChangeActionMode(ACTIONMODE nextActionMode){
 }
 
 void Sandbag::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability){
-	if (XMVector3Length(playerVec).x > battleRange && battleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION){
+	if (XMVector3Length(playerVec).x > noBattleRange && battleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION){
 		battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 		Hx::Debug()->Log("CONFRONT");
 		battleActionInitilize[battleModeParam.battleActionID]();
@@ -328,7 +328,7 @@ void Sandbag::TrackingModeUpdate()
 		navi->RootCreate(gameObject, movePoint);
 	}
 
-	navi->Move(speed * Hx::DeltaTime()->GetDeltaTime());
+	navi->Move(trackingSpeed * Hx::DeltaTime()->GetDeltaTime());
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;
@@ -343,7 +343,7 @@ void Sandbag::TrackingModeUpdate()
 	auto qua = gameObject->mTransform->Quaternion();
 	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 	
-	vec += forward * speed;
+	vec += forward * trackingSpeed;
 }
 
 void Sandbag::TrackingModeFinalize()
@@ -424,7 +424,7 @@ void Sandbag::ApproachModeUpdate()
 	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime());
 	auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot),XMMatrixTranslationFromVector(playerPos));
 	
-	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * speed;
+	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * trackingSpeed;
 	
 	auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
 	auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
@@ -452,10 +452,10 @@ void Sandbag::AttackModeUpdate()
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (GetNowAnimTime() < anim->GetTotalTime(animparam.nowAnimId) / 2.0f){
+	if (GetNowAnimTime() < 1.0f){
 		auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
-		auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-		if (view < trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+		auto trackingNowAngle = correctionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+		if (view < correctionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
 		auto qua = gameObject->mTransform->Quaternion();
 		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 	}
@@ -491,7 +491,8 @@ void Sandbag::JumpAttackModeUpdate()
 
 void Sandbag::JumpAttackModeFinalize()
 {
-	ChangeBattleAction(40, 20, 10, 30,0);
+	ChangeBattleAction(40, 20, 10, 30, 0);
+	//ChangeBattleAction(0, 0, 100, 0, 0);
 }
 
 void Sandbag::GuardModeInitilize()
@@ -507,7 +508,7 @@ void Sandbag::GuardModeUpdate()
 	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime());
 	auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot), XMMatrixTranslationFromVector(playerPos));
 
-	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * speed;
+	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * trackingSpeed;
 
 	auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
 	auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
@@ -536,6 +537,14 @@ void Sandbag::BackStepModeUpdate()
 {
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
+
+	if (GetNowAnimTime() < 1.0f){
+		auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
+		auto trackingNowAngle = correctionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+		if (view < correctionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+		auto qua = gameObject->mTransform->Quaternion();
+		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+	}
 
 	AnimChange(ANIM_ID::ANIM_BACKSTEP, 5.0f, false);
 	if (GetNowAnimTime() < 12.5f) {
