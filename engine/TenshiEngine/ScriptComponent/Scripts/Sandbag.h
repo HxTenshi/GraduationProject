@@ -14,11 +14,12 @@ struct AnimParameter {
 };
 
 enum BATTLEACTION{
-	ATTACK,
-	GUARD,
-	ESCAPE,
-	TRACKING,
-	NONE
+	CONFRONTACTION,
+	APPROACHACTION,
+	ATTACKACTION,
+	JUMPATTACKACTION,
+	GUARDACTION,
+	BACKSTEPACTION
 };
 
 enum ANIM_ID{
@@ -39,19 +40,16 @@ enum ANIM_ID{
 };
 
 struct BattleParameter{
-	BATTLEACTION battleAction = BATTLEACTION::TRACKING;
+	BATTLEACTION battleAction = BATTLEACTION::CONFRONTACTION;
 	float actionDecideTime = 0.0f;
 	int beforeActionDecideTime = 0;
 	float guardTimeCount = 0;
 };
 
-enum ActionMode{
+enum ACTIONMODE{
 	TRACKINGMODE,
 	BATTLEMODE
 };
-
-const float attackAnimTotalTime = 26.9f;
-const float backStepAnimTotalTime = 39.9f;
 
 
 class Sandbag :public IDllScriptComponent{
@@ -71,9 +69,44 @@ private:
 	void AnimLerp();
 	float GetNowAnimTime();
 
-	//ActionMode
-	void TrackingMode();
-	void BattleMode();
+	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
+	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
+	std::map<ACTIONMODE,std::function<void()>> actionModeFinalize;
+	void TrackingModeInitilize();
+	void TrackingModeUpdate();
+	void TrackingModeFinalize();
+
+	void BattleModeInitilize();
+	void BattleModeUpdate();
+	void BattleModeFinalize();
+
+	std::map<BATTLEACTION, std::function<void()>> battleActionInitilize;
+	std::map<BATTLEACTION, std::function<void()>> battleActionUpdate;
+	std::map<BATTLEACTION, std::function<void()>> battleActionFinalize;
+
+	void ConfrontModeInitilize();
+	void ConfrontModeUpdate();
+	void ConfrontModeFinalize();
+
+	void ApproachModeInitilize();
+	void ApproachModeUpdate();
+	void ApproachModeFinalize();
+
+	void AttackModeInitilize();
+	void AttackModeUpdate();
+	void AttackModeFinalize();
+
+	void JumpAttackModeInitilize();
+	void JumpAttackModeUpdate();
+	void JumpAttackModeFinalize();
+	
+	void GuardModeInitilize();
+	void GuardModeUpdate();
+	void GuardModeFinalize();
+
+	void BackStepModeInitilize();
+	void BackStepModeUpdate();
+	void BackStepModeFinalize();
 
 	//ÉÅÉìÉoïœêî
 	SERIALIZE float speed;
@@ -90,9 +123,13 @@ private:
 	SERIALIZE GameObject modelObject;
 	SERIALIZE GameObject movePoints;
 
+	XMVECTOR forward;
+	XMVECTOR playerVec;
+	float view;
 	int moveCount;
 	bool moveCountUp;
-	ActionMode am;
+	ACTIONMODE actionModeID;
+	BATTLEACTION battleActionID;
 	BattleParameter bp;
 	AnimParameter animparam;
 	XMVECTOR mGravity;
