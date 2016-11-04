@@ -7,18 +7,13 @@
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Sandbag::Initialize(){
 	mGravity = XMVectorSet(0, -9.81f, 0, 1);
-	angle = 0.0f;
-	maxAngle = 0.0f;
-	subAngle = 0.0f;
-	walkReturnFlag = false;
-	changeVec = false;
 	concussion = 0.0f;
 	damageFlag = false;
 	moveCount = 0;
 	moveCountUp = true;
 
 	actionModeID = ACTIONMODE::TRACKINGMODE;
-	battleActionID = BATTLEACTION::CONFRONTACTION;
+	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&Sandbag::TrackingModeInitilize, this/*,std::placeholders::_1*/);
 	actionModeUpdate[ACTIONMODE::TRACKINGMODE] = std::bind(&Sandbag::TrackingModeUpdate, this);
@@ -107,35 +102,35 @@ void Sandbag::OnCollideExit(GameObject target){
 	(void)target;
 }
 
-/***********************************************鼻が壁に当たった時の処理***************************************************/
-void Sandbag::SetHitWall(bool hitWall)
-{
-	if (actionModeID == ACTIONMODE::TRACKINGMODE){
-		walkReturnFlag = false;
-		if (!changeVec) {
-			changeVec = true;
-			int random = rand();
-			maxAngle = rand() % 90;
-			if (random % 2 == 0) {
-				maxAngle *= -1;
-			}
-		}
-	}
-}
+///***********************************************鼻が壁に当たった時の処理***************************************************/
+//void Sandbag::SetHitWall(bool hitWall)
+//{
+//	if (actionModeID == ACTIONMODE::TRACKINGMODE){
+//		walkReturnFlag = false;
+//		if (!changeVec) {
+//			changeVec = true;
+//			int random = rand();
+//			maxAngle = rand() % 90;
+//			if (random % 2 == 0) {
+//				maxAngle *= -1;
+//			}
+//		}
+//	}
+//}
 
 
 /****************************************************ダメージの処理********************************************************/
 void Sandbag::Damage(int damage)
 {
 	if (!damageFlag){
-		if (bp.battleAction != BATTLEACTION::GUARDACTION){
+		if (battleModeParam.battleActionID != BATTLEACTION::GUARDACTION){
 			hp -= damage;
 			damageFlag = true;
 		}
 		else{
-			bp.battleAction = BATTLEACTION::BACKSTEPACTION;
-			bp.guardTimeCount = 0.0f; 
-			bp.actionDecideTime = 0.0f;
+			//bp.battleAction = BATTLEACTION::BACKSTEPACTION;
+			//bp.guardTimeCount = 0.0f; 
+			//bp.actionDecideTime = 0.0f;
 		}
 	}
 }
@@ -208,11 +203,61 @@ float Sandbag::GetNowAnimTime(){
 	return ap.mTime;
 }
 
+/********************************************アクションの変更、戦闘時の変更************************************************/
+void Sandbag::ChangeActionMode(ACTIONMODE nextActionMode){
+	actionModeID = nextActionMode;
+	actionModeInitilize[actionModeID]();
+	actionModeUpdate[actionModeID]();
+}
+
+void Sandbag::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability){
+	if (XMVector3Length(playerVec).x > battleRange && battleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION){
+		battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+		Hx::Debug()->Log("CONFRONT");
+		battleActionInitilize[battleModeParam.battleActionID]();
+		battleActionUpdate[battleModeParam.battleActionID]();
+		return;
+	}
+
+	int randam = rand() % 100;
+
+	int guardProbability_,approachProbability_,backstepProbability_ ,attackProbability_,jumpAttackProbability_;
+
+	guardProbability_ = 100 - guardProbability;
+	approachProbability_ = guardProbability_ - approachProbability;
+	backstepProbability_ = approachProbability_ - backstepProbability;
+	attackProbability_ = backstepProbability_ - attackProbability;
+	jumpAttackProbability_ = attackProbability_ - jumpAttackProbability;
+
+	if (randam > guardProbability_) {
+		battleModeParam.battleActionID = BATTLEACTION::GUARDACTION;
+		Hx::Debug()->Log("GUARD");
+	}
+	else if (randam > approachProbability_) {
+		battleModeParam.battleActionID = BATTLEACTION::APPROACHACTION;
+		Hx::Debug()->Log("APPROACH");
+	}
+	else if (randam > backstepProbability_) {
+		battleModeParam.battleActionID = BATTLEACTION::BACKSTEPACTION;
+		Hx::Debug()->Log("BACKSTEP");
+	}
+	else if (randam > attackProbability_){
+		battleModeParam.battleActionID = BATTLEACTION::ATTACKACTION;
+		Hx::Debug()->Log("ATTACK");
+	}
+	else if (randam > jumpAttackProbability_){
+		battleModeParam.battleActionID = BATTLEACTION::JUMPATTACKACTION;
+		Hx::Debug()->Log("JUMPATTACK");
+	}
+
+	battleActionInitilize[battleModeParam.battleActionID]();
+	battleActionUpdate[battleModeParam.battleActionID]();
+	
+}
+
 /****************************************************捜索時の処理**********************************************************/
 void Sandbag::TrackingModeInitilize()
 {
-	Hx::Debug()->Log("TrackingInitilize");
-
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
 	if (!navi)return;
 	auto movePointList = movePoints->mTransform->Children();
@@ -235,8 +280,6 @@ void Sandbag::TrackingModeInitilize()
 	}
 	navi->RootCreate(gameObject, movePoint);
 	moveCountUp = true;
-
-	angle = gameObject->mTransform->Rotate().y / 3.14f * 180.0f;
 }
 
 void Sandbag::TrackingModeUpdate()
@@ -305,19 +348,15 @@ void Sandbag::TrackingModeUpdate()
 
 void Sandbag::TrackingModeFinalize()
 {
-	Hx::Debug()->Log("TrackingFinalize");
-	actionModeID = ACTIONMODE::BATTLEMODE;
-	bp.battleAction = BATTLEACTION::CONFRONTACTION;
-	actionModeInitilize[actionModeID]();
-	actionModeUpdate[actionModeID]();
+	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	ChangeActionMode(ACTIONMODE::BATTLEMODE);
 }
 
 /****************************************************戦闘時の処理**********************************************************/
 void Sandbag::BattleModeInitilize()
 {
-	Hx::Debug()->Log("BattleInitilize");
-	battleActionID = BATTLEACTION::CONFRONTACTION;
-	battleActionInitilize[battleActionID]();
+	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	battleActionInitilize[battleModeParam.battleActionID]();
 }
 
 void Sandbag::BattleModeUpdate()
@@ -336,43 +375,17 @@ void Sandbag::BattleModeUpdate()
 		actionModeFinalize[actionModeID]();
 		return;
 	}
-	
-	//bp.actionDecideTime += Hx::DeltaTime()->GetDeltaTime();
-	//
-	//if (bp.beforeActionDecideTime != (int)bp.actionDecideTime) {
-	//	if (bp.battleAction == BATTLEACTION::CONFRONTACTION) {
-	//		if (rand() % 10 >= 5) {
-	//			bp.battleAction = BATTLEACTION::ATTACKACTION;
-	//		}
-	//		else {
-	//			bp.battleAction = BATTLEACTION::GUARDACTION;
-	//		}
-	//	}
-	//
-	//	bp.beforeActionDecideTime = (int)bp.actionDecideTime;
-	//}
-
-	
-
-	battleActionUpdate[battleActionID]();
+	battleActionUpdate[battleModeParam.battleActionID]();
 }
 
 void Sandbag::BattleModeFinalize()
 {
-	Hx::Debug()->Log("BattleFinalize");
-	actionModeID = ACTIONMODE::TRACKINGMODE;
-	bp.battleAction = BATTLEACTION::CONFRONTACTION;
-	bp.actionDecideTime = 0.0f;
-	bp.beforeActionDecideTime = 0;
-	bp.guardTimeCount = 0;
-
-	actionModeInitilize[actionModeID]();
-	actionModeUpdate[actionModeID]();
+	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	ChangeActionMode(ACTIONMODE::TRACKINGMODE);
 }
 
 void Sandbag::ConfrontModeInitilize()
 {
-	Hx::Debug()->Log("CONFRONT");
 }
 
 void Sandbag::ConfrontModeUpdate()
@@ -380,7 +393,6 @@ void Sandbag::ConfrontModeUpdate()
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 	if(XMVector3Length(playerVec).x <= battleRange){
 		battleActionFinalize[BATTLEACTION::CONFRONTACTION]();
-		vec -= forward * trackingSpeed;
 	}
 	else {
 		vec += forward * trackingSpeed;
@@ -395,27 +407,12 @@ void Sandbag::ConfrontModeUpdate()
 
 void Sandbag::ConfrontModeFinalize()
 {
-	int randam = rand() % 100;
-	if (randam >= 0) {
-		battleActionID = BATTLEACTION::APPROACHACTION;
-	}
-	else if (randam > 70) {
-		battleActionID = BATTLEACTION::BACKSTEPACTION;
-	}
-	else if (randam > 30) {
-		battleActionID = BATTLEACTION::GUARDACTION;
-	}
-	else if (randam > 0) {
-		battleActionID = BATTLEACTION::ATTACKACTION;
-	}
-
-	battleActionInitilize[battleActionID]();
-	battleActionUpdate[battleActionID]();
+	ChangeBattleAction(30, 30, 20, 20, 0);
 }
 
 void Sandbag::ApproachModeInitilize()
 {
-	Hx::Debug()->Log("APPROACH");
+	battleModeParam.count = 0.0f;
 }
 
 void Sandbag::ApproachModeUpdate()
@@ -424,33 +421,30 @@ void Sandbag::ApproachModeUpdate()
 	if (!player)return;
 	XMVECTOR playerPos = player->mTransform->WorldPosition();
 	auto trans = XMMatrixTranslationFromVector(XMVector3Normalize(gameObject->mTransform->WorldPosition() - playerPos) * battleRange);
-	auto rot = XMMatrixRotationY(speed * Hx::DeltaTime()->GetDeltaTime());
+	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime());
 	auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot),XMMatrixTranslationFromVector(playerPos));
 	
 	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * speed;
 	
-	//if (XMVector3Length(playerVec).x <= battleRange) {
-	//	battleActionFinalize[BATTLEACTION::APPROACHACTION]();
-	//	vec -= forward * trackingSpeed;
-	//}
-	//else {
-	//	vec += forward * trackingSpeed;
-	//}
-
 	auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
 	auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
 	if (view < trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
 	auto qua = gameObject->mTransform->Quaternion();
 	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+
+	battleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
+	if (battleModeParam.count > APPROACHTIME){
+		battleActionFinalize[battleModeParam.battleActionID]();
+	}
 }
 
 void Sandbag::ApproachModeFinalize()
 {
+	ChangeBattleAction(30, 0, 40, 30, 0);
 }
 
 void Sandbag::AttackModeInitilize()
 {
-	Hx::Debug()->Log("ATTACK");
 }
 
 void Sandbag::AttackModeUpdate()
@@ -458,15 +452,23 @@ void Sandbag::AttackModeUpdate()
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
+	if (GetNowAnimTime() < anim->GetTotalTime(animparam.nowAnimId) / 2.0f){
+		auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
+		auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+		if (view < trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+		auto qua = gameObject->mTransform->Quaternion();
+		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+	}
+
 	AnimChange(ANIM_ID::ANIM_ATTACK_LONGITUDINAL, 5.0f, false);
-	if (anim->IsAnimationEnd(animparam.beforeAnimId)) {
-		bp.battleAction = BATTLEACTION::CONFRONTACTION;
-		bp.actionDecideTime = 0.0f;
+	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
+		battleActionFinalize[battleModeParam.battleActionID]();
 	};
 }
 
 void Sandbag::AttackModeFinalize()
 {
+	ChangeBattleAction(40, 40, 20, 0, 0);
 }
 
 void Sandbag::JumpAttackModeInitilize()
@@ -475,25 +477,37 @@ void Sandbag::JumpAttackModeInitilize()
 
 void Sandbag::JumpAttackModeUpdate()
 {
+	auto anim = modelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+
+	AnimChange(ANIM_ID::ANIM_JUMPSRASH, 5.0f, false);
+	if (GetNowAnimTime() < 12.5f) {
+		vec += forward * 20.0f;
+	}
+	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
+		battleActionFinalize[battleModeParam.battleActionID]();
+	};
 }
 
 void Sandbag::JumpAttackModeFinalize()
 {
+	ChangeBattleAction(40, 20, 10, 30,0);
 }
 
 void Sandbag::GuardModeInitilize()
 {
-	Hx::Debug()->Log("GUARD");
+	battleModeParam.count = 0.0f;
 }
 
 void Sandbag::GuardModeUpdate()
 {
-	if (XMVector3Length(playerVec).x > battleRange) {
-		vec += forward * trackingSpeed;
-	}
-	else {
-		vec -= forward * trackingSpeed;
-	}
+	if (!player)return;
+	XMVECTOR playerPos = player->mTransform->WorldPosition();
+	auto trans = XMMatrixTranslationFromVector(XMVector3Normalize(gameObject->mTransform->WorldPosition() - playerPos) * battleRange);
+	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime());
+	auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot), XMMatrixTranslationFromVector(playerPos));
+
+	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * speed;
 
 	auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
 	auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
@@ -502,21 +516,20 @@ void Sandbag::GuardModeUpdate()
 	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 
 	AnimChange(ANIM_ID::ANIM_GUARD, 5.0f);
-	bp.guardTimeCount += Hx::DeltaTime()->GetDeltaTime();
-	if (bp.guardTimeCount > 3.0f) {
-		bp.guardTimeCount = 0.0f;
-		bp.actionDecideTime = 0.0f;
-		bp.battleAction = BATTLEACTION::CONFRONTACTION;
+
+	battleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
+	if (battleModeParam.count > APPROACHTIME){
+		battleActionFinalize[battleModeParam.battleActionID]();
 	}
 }
 
 void Sandbag::GuardModeFinalize()
 {
+	ChangeBattleAction(20, 30, 20, 30, 0);
 }
 
 void Sandbag::BackStepModeInitilize()
 {
-	Hx::Debug()->Log("BACKSTEP");
 }
 
 void Sandbag::BackStepModeUpdate()
@@ -525,15 +538,15 @@ void Sandbag::BackStepModeUpdate()
 	if (!anim)return;
 
 	AnimChange(ANIM_ID::ANIM_BACKSTEP, 5.0f, false);
-	if (GetNowAnimTime() < 25) {
-		vec -= forward * 10.0f;
+	if (GetNowAnimTime() < 12.5f) {
+		vec -= forward * 20.0f;
 	}
-	else if (anim->IsAnimationEnd(animparam.beforeAnimId)) {
-		bp.battleAction = BATTLEACTION::CONFRONTACTION;
-		bp.actionDecideTime = 0.0f;
+	else if (GetNowAnimTime() < 20.0f) {
+		battleActionFinalize[battleModeParam.battleActionID]();
 	}
 }
 
 void Sandbag::BackStepModeFinalize()
 {
+	ChangeBattleAction(30, 0, 0, 0, 70);
 }

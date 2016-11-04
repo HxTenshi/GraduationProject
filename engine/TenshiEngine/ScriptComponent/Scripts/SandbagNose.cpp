@@ -32,7 +32,7 @@ void SandbagNose::OnCollideBegin(GameObject target){
 void SandbagNose::OnCollideEnter(GameObject target){
 	(void)target;
 	if (target->GetLayer() == 4) {
-		gameObject->mTransform->GetParent()->GetScript<Sandbag>()->SetHitWall(true);
+		//gameObject->mTransform->GetParent()->GetScript<Sandbag>()->SetHitWall(true);
 	}
 }
 

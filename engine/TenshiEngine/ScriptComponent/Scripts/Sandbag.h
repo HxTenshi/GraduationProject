@@ -22,14 +22,23 @@ enum BATTLEACTION{
 	BACKSTEPACTION
 };
 
+struct BattleModeParameter{	
+	//バトル中のアクションのID
+	BATTLEACTION battleActionID;
+	
+	//バトルモード中の思考時間を図るもの
+	float count = 0.0f;
+};
+
+
 enum ANIM_ID{
 	ANIM_IDLE,
 	ANIM_WALK_FORWARD,
 	ANIM_BACKSTEP,
 	ANIM_ATTACK_LONGITUDINAL,
 	ANIM_GUARD,
-	ANIM_ATTACK_SIDE,
 	ANIM_JUMPSRASH,
+	ANIM_ATTACK_SIDE,
 	ANIM_MONCKEYATTACK,
 	ANIM_PROVOCATION,
 	ANIM_RUSH,
@@ -39,17 +48,13 @@ enum ANIM_ID{
 	ANIM_THRUSTRUN,
 };
 
-struct BattleParameter{
-	BATTLEACTION battleAction = BATTLEACTION::CONFRONTACTION;
-	float actionDecideTime = 0.0f;
-	int beforeActionDecideTime = 0;
-	float guardTimeCount = 0;
-};
-
 enum ACTIONMODE{
 	TRACKINGMODE,
 	BATTLEMODE
 };
+
+const float APPROACHTIME = 1.0f;
+const float GUARDTIME = 1.0f;
 
 
 class Sandbag :public IDllScriptComponent{
@@ -61,13 +66,16 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	void SetHitWall(bool hitWall);
+	//void SetHitWall(bool hitWall);
 	void Damage(int damage);
 
 private:
 	void AnimChange(int id, float lerpSpeed, bool roop = true);
 	void AnimLerp();
 	float GetNowAnimTime();
+
+	void ChangeActionMode(ACTIONMODE nextActionMode);
+	void ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability);
 
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
@@ -117,23 +125,41 @@ private:
 	SERIALIZE float trackingRotateSpeed;
 	SERIALIZE float rotateSpeed;
 	SERIALIZE int hp;
-	SERIALIZE GameObject player;
 	SERIALIZE float concussionTime;
 	SERIALIZE float jumpPower;
+	SERIALIZE GameObject player;
 	SERIALIZE GameObject modelObject;
 	SERIALIZE GameObject movePoints;
+	SERIALIZE float aproachRotateSpeed;
 
+	//前方向
 	XMVECTOR forward;
+	//playerへのベクトル
 	XMVECTOR playerVec;
+	//自分の正面のベクトル自分からplayerへのベクトルの角度
 	float view;
-	int moveCount;
-	bool moveCountUp;
-	ACTIONMODE actionModeID;
-	BATTLEACTION battleActionID;
-	BattleParameter bp;
-	AnimParameter animparam;
-	XMVECTOR mGravity;
-	bool changeVec,walkReturnFlag,damageFlag;
-	float angle, maxAngle,subAngle,concussion;
+	//移動量
 	XMVECTOR vec;
+
+	//捜索時の移動ポイントの数値
+	int moveCount;
+	//捜索時の移動ポイントの方向
+	bool moveCountUp;
+
+	//アクションモードのID
+	ACTIONMODE actionModeID;
+	//バトル中のパラメーター
+	BattleModeParameter battleModeParam;
+
+	//アニメーションに必要なパラメーター
+	AnimParameter animparam;
+
+	//重力
+	XMVECTOR mGravity;
+
+	//ダメージを受けているかどうか
+	bool damageFlag;
+	//ダメージを受けている間の時間
+	float concussion;
+
 };
