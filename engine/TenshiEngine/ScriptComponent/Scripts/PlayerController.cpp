@@ -33,6 +33,10 @@ struct AnimeID {
 	};
 };
 
+PlayerController::PlayerController()
+	:m_SpecialPowerMax(100.0f)
+{
+}
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PlayerController::Initialize(){
@@ -81,6 +85,7 @@ void PlayerController::Initialize(){
 	attack.NextLowID = AttackID::Low2;
 	attack.NextHighID = AttackID::High2;
 	attack.MoutionID = AnimeID::AttackLow1;
+	attack.AddSpecial = 2.0f;
 
 	attack.KoutyokuTime = 0.5f;
 	attack.NextTime = 0.5f;
@@ -169,6 +174,7 @@ void PlayerController::Initialize(){
 	m_CurrentAttack.NextTime = 0.0f;
 	m_CurrentAttack.DamageScale = 0.0f;
 	m_CurrentAttack.AttackTime = 0.0f;
+	m_CurrentAttack.AddSpecial = 0.0f;
 	m_CurrentAttack.AttackFunc = [](){};
 
 }
@@ -327,13 +333,13 @@ bool PlayerController::IsDead()
 void PlayerController::SetSpecial(float power)
 {
 	m_SpecialPower = power;
-	m_SpecialPower = min(max(m_SpecialPower, 0.0f), 100.0f);
+	m_SpecialPower = min(max(m_SpecialPower, 0.0f), m_SpecialPowerMax);
 }
 
 void PlayerController::AddSpecial(float power)
 {
 	m_SpecialPower += power;
-	m_SpecialPower = min(max(m_SpecialPower,0.0f),100.0f);
+	m_SpecialPower = min(max(m_SpecialPower,0.0f), m_SpecialPowerMax);
 }
 
 float PlayerController::GetSpecial()
@@ -521,6 +527,7 @@ void PlayerController::AttackExit()
 	m_CurrentAttack.NextTime = 0.0f;
 	m_CurrentAttack.DamageScale = 0.0f;
 	m_CurrentAttack.AttackTime = 0.0f;
+	m_CurrentAttack.AddSpecial = 0.0f;
 	m_CurrentAttack.AttackFunc = []() {};
 
 	m_NextAttack = -1;
@@ -803,6 +810,12 @@ bool PlayerController::attack()
 		if (Input::Trigger(KeyCode::Key_V)) {
 			m_NextAttack = AttackID::High1;
 		}
+		if (Input::Trigger(KeyCode::Key_B)) {
+			if (GetSpecial() >= m_SpecialPowerMax) {
+				m_NextAttack = AttackID::Special;
+				SetSpecial(0.0f);
+			}
+		}
 	}
 	else {
 		if (Input::Trigger(KeyCode::Key_C)) {
@@ -977,8 +990,13 @@ void PlayerController::GettingWeapon(){
 	else if (Input::Up(KeyCode::Key_F)) {
 		if (m_tempWeapon) { 
 		//選択した武器をセット
-		weaponHand->SetWeapon(m_tempWeapon);
-		};
+			weaponHand->SetWeapon(m_tempWeapon, [&](auto o, auto t) {
+					if (t == Weapon::HitState::Damage) {
+						AddSpecial(m_CurrentAttack.AddSpecial);
+					}
+				}
+			);
+		}
 		//カウントをリセット
 		m_InputF_Time = 0.0f;
 		//スローモード解除

@@ -20,12 +20,14 @@ struct AttackState {
 	float KoutyokuTime;
 	float NextTime;
 	float DamageScale;
+	float AddSpecial;
 	std::function<void(void)> AttackFunc;
 };
 
 class CharacterControllerComponent;
 class PlayerController :public IDllScriptComponent{
 public:
+	PlayerController();
 	void Initialize()override;
 	void Start()override;
 	void Update()override;
@@ -136,6 +138,7 @@ private:
 	float m_HP;
 	SERIALIZE
 	float m_SpecialPower;
+	const float m_SpecialPowerMax;
 
 	SERIALIZE
 	GameObject m_AnimeModel;

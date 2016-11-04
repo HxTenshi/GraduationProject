@@ -9,6 +9,8 @@ void Weapon::Initialize(){
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+
+	SetHitCollback([](auto o, auto t) {});
 	//auto child = gameObject->mTransform->Children();
 	//for (auto it = child.begin(); it != child.end(); ++it) {
 	//	if (it->Get()->Name == "hit") {
@@ -39,24 +41,26 @@ void Weapon::Finish(){
 
 //コライダーとのヒット時に呼ばれます
 void Weapon::OnCollideBegin(GameObject target){
-	(void)target;
 	//投げたときだけの制御
 
-	if (!mIsEnemyThrow)return;
-	if (!mWeaponControl)return;
-	if (target->GetLayer() == 3)
-		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
-			Hx::Debug()->Log("敵に投げて当たった");
-			Hx::Debug()->Log(target->Name());
-			Hx::Debug()->Log(gameObject->Name());
-			weapon->HitActor(target, gameObject);
+	if (mIsEnemyThrow) {
+		if (mWeaponControl) {
+			if (target->GetLayer() == 3)
+				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+					Hx::Debug()->Log("敵に投げて当たった");
+					Hx::Debug()->Log(target->Name());
+					Hx::Debug()->Log(gameObject->Name());
+					weapon->HitActor(target, gameObject);
+				}
 		}
+	}
 	if (target->GetLayer() == 3 & is_hand) {
 		//サンドバッグへのダメージの処理
 		if (auto scr = target->GetScript<Sandbag>()) {
 			if (!is_ground_hit) {
 				m_Recast = 0.0f;
 				scr->Damage(m_AttackForce);
+				m_HitCollback(target,HitState::Damage);
 			}
 		}
 	}
@@ -92,6 +96,8 @@ bool Weapon::isBreak()
 /// </summary>
 void Weapon::ThrowAway()
 {
+	SetHitCollback([](auto o,auto t) {});
+
 	is_hand = false;
 	is_ground_hit = false;
 	m_weapon_rot = 0.0f;
@@ -129,11 +135,19 @@ void Weapon::WeaponUsePhysX()
 	}
 }
 /// <summary>
+///攻撃時のコールバック関数追加
+/// </summary>
+void Weapon::SetHitCollback(const HitCollbackType & collback)
+{
+	m_HitCollback = collback;
+}
+/// <summary>
 ///武器を拾うときに必ず呼ぶ
 ///とりあえずトリガーをonにする。
 /// </summary>
 void Weapon::GetWeapon()
 {
+	is_ground_hit = false;
 	is_hand = true;
 	//gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
