@@ -159,7 +159,10 @@ private:
 
 	float m_InputF_Time;	//FÉLÅ[âΩïbâüÇ≥ÇÍÇΩÇ©
 
-	SERIALIZE GameObject mMoveAvility;
+	SERIALIZE 
+	GameObject mMoveAvility;
+	SERIALIZE 
+	GameObject mAimController;
 
 	float m_FloatJumpTimer;
 

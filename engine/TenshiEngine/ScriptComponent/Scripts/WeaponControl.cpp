@@ -47,9 +47,6 @@ void WeaponControl::HitActor(GameObject target,GameObject weapon)
 //
 void WeaponControl::IsEnemy(GameObject target,GameObject weapon)
 {
-	//敵に当たったら
-	if (target->GetLayer() == 3)
-	{
 		//ここで対象の敵の紐付け
 		auto mirrer = weapon->GetComponent<BoneMirrorComponent>();
 		Hx::Debug()->Log("当たったSandBagの子から特例のLayer(10)を検出してそのオブジェクトのBoneを見ている");
@@ -81,5 +78,4 @@ void WeaponControl::IsEnemy(GameObject target,GameObject weapon)
 		//weapon->mTransform->DegreeRotate(XMVectorSet(90,0,0,0));
 		//weapon->GetComponent<PhysXComponent>()->SetKinematic(false);
 		//weapon->
-	}
 }

@@ -8,6 +8,7 @@ void WeaponTip::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void WeaponTip::Start(){
+	m_weapon = gameObject->mTransform->GetParent();
 
 }
 

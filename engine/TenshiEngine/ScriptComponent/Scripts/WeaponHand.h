@@ -29,6 +29,7 @@ public:
 	void Guard();
 
 	void ThrowAway();
+	void ThrowAway(XMVECTOR vector);
 	void ThrowAway(GameObject target,bool isMove);
 private:
 	//ƒƒ“ƒo•Ï”
