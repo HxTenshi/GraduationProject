@@ -62,6 +62,8 @@ public:
 	void Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel = KnockBack::None);
 	bool IsInvisible();
 	bool IsDead();
+	bool IsDogde();
+	bool IsGuard();
 
 	void SetSpecial(float power);
 	void AddSpecial(float power);
@@ -117,6 +119,7 @@ private:
 	void GettingWeapon();
 
 	void changeAnime(int id);
+	void animeFlip();
 
 	//ÉÅÉìÉoïœêî
 
@@ -178,9 +181,11 @@ private:
 	XMVECTOR mVelocity;
 
 	bool m_IsGround;
+	bool m_IsGuard;
 
 	bool m_LockOnEnabled;
 
+	int m_CurrentAnimeID_Stack;
 	int m_CurrentAnimeID;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;

@@ -17,6 +17,7 @@ public:
 		return m_ActionFree;
 	}
 
+	GameObject GetHandWeapon();
 	void SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback);
 
 	void LowAttack_1();

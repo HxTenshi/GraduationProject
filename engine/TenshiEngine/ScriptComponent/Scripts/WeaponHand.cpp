@@ -7,6 +7,7 @@ void WeaponHand::Initialize(){
 	m_IsGuard = false;
 	m_ActionFree = false;
 	m_Wave = 0.0f;
+	mWeapon = NULL;
 
 	m_AttackFunction = [](){};
 }
@@ -97,6 +98,11 @@ void WeaponHand::OnCollideEnter(GameObject target){
 //コライダーとのロスト時に呼ばれます
 void WeaponHand::OnCollideExit(GameObject target){
 	(void)target;
+}
+
+GameObject WeaponHand::GetHandWeapon()
+{
+	return mWeapon;
 }
 
 void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback)

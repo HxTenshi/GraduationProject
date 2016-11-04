@@ -29,12 +29,16 @@ struct AnimeID {
 		Idle,
 		Move,
 		AttackLow1,
+		Guard,
+		Dogde,
+		KnockBack,
 		Count,
 	};
 };
 
 PlayerController::PlayerController()
 	:m_SpecialPowerMax(100.0f)
+	, m_SpecialPower(0.0f)
 {
 }
 
@@ -52,6 +56,7 @@ void PlayerController::Initialize(){
 	m_InvisibleTime = 0.0f;
 	m_IsInvisible = false;
 	m_IsDead = false;
+	m_IsGuard = false;
 
 	m_DodgeTimer = 0.0f;
 	m_MoveVelo = XMVectorZero();
@@ -196,6 +201,15 @@ void PlayerController::Update(){
 
 	m_StateFunc[m_PlayerState].Excute();
 
+	animeFlip();
+
+	if (Input::Down(KeyCode::Key_O)) {
+		Damage(5.0f,XMVectorSet(0,0,-1,1),KnockBack::Low);
+	}
+	if (Input::Down(KeyCode::Key_P)) {
+		Damage(10.0f, XMVectorSet(0, 0, -1, 1), KnockBack::Down);
+	}
+
 	if (!m_WeaponHand)return;
 
 	if (Input::Down(KeyCode::Key_E)) {
@@ -316,6 +330,12 @@ void PlayerController::PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum
 
 void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel)
 {
+	if (IsDogde()) {
+		return;
+	}
+	if (IsGuard() && XMVector3Dot(mVelocity, attackVect).x > 0) {
+		return;
+	}
 	AddHP(-damage);
 	PlayKnockBack(attackVect,knockBackLevel);
 }
@@ -328,6 +348,16 @@ bool PlayerController::IsInvisible()
 bool PlayerController::IsDead()
 {
 	return m_IsDead;
+}
+
+bool PlayerController::IsDogde()
+{
+	return m_PlayerState == PlayerState::Dodge;
+}
+
+bool PlayerController::IsGuard()
+{
+	return m_IsGuard;
 }
 
 void PlayerController::SetSpecial(float power)
@@ -430,14 +460,25 @@ void PlayerController::FreeExcute()
 		return;
 	}
 
+
 	if (!m_WeaponHand)return;
 	if (Input::Down(MouseCode::Right)) {
 		guard();
+		changeAnime(AnimeID::Guard);
+	}
+	else {
+		m_IsGuard = false;
+		if (mVelocity.x == 0.0f&&mVelocity.y == 0.0f) {
+			changeAnime(AnimeID::Idle);
+		}
+		else {
+			changeAnime(AnimeID::Move);
+		}
 	}
 	if (attack()) {
 		SetPlayerState(PlayerState::Attack);
 	}
-	changeAnime(AnimeID::Idle);
+
 
 
 	if (Input::Down(KeyCode::Key_K)) {
@@ -456,6 +497,7 @@ void PlayerController::FreeExcute()
 
 void PlayerController::FreeExit()
 {
+	m_IsGuard = false;
 }
 
 void PlayerController::AttackEnter()
@@ -535,16 +577,15 @@ void PlayerController::AttackExit()
 
 void PlayerController::DodgeEnter()
 {
-	auto v = mVelocity;
+	auto v = mJump;
 	if (abs(v.x) == 0 && abs(v.z) == 0) {
 		v = gameObject->mTransform->Forward();
 	}
-	m_MoveVelo = XMVectorZero();
 	mJump = XMVectorZero();
 
 	m_DodgeTimer = 1.0f;
 
-	m_MoveVelo += v * m_MoveSpeed * 2;
+	m_MoveVelo = XMVector3Normalize(v) * m_MoveSpeed * 2;
 	mJump.y += m_JumpPower / 2.0f;
 }
 
@@ -559,7 +600,7 @@ void PlayerController::DodgeExcute()
 		SetPlayerState(PlayerState::Free);
 	}
 
-	changeAnime(AnimeID::Idle);
+	changeAnime(AnimeID::Dogde);
 }
 
 void PlayerController::DodgeExit()
@@ -592,7 +633,7 @@ void PlayerController::KnockBackExcute()
 	if (m_InvisibleTime <= 0.0f) {
 		SetPlayerState(PlayerState::Free);
 	}
-	changeAnime(AnimeID::Idle);
+	changeAnime(AnimeID::KnockBack);
 }
 
 void PlayerController::KnockBackExit()
@@ -798,6 +839,7 @@ void PlayerController::guard()
 	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
 	if (weaponHand) {
 		weaponHand->Guard();
+		m_IsGuard = true;
 	}
 }
 
@@ -934,6 +976,7 @@ void PlayerController::lockOn()
 }
 
 void PlayerController::GettingWeapon(){
+
 	//‘ŠúƒŠƒ^[ƒ“
 	if (!m_WeaponHand) return;
 	if (!m_GetWeapon) return;
@@ -952,6 +995,11 @@ void PlayerController::GettingWeapon(){
 	if (!timeMgr) return;
 
 	if (!m_marker) return;
+
+	if (weaponHand->GetHandWeapon()) {
+		m_marker->Disable();
+		return;
+	}
 
 	if (m_tempWeapon) {
 		m_marker->Enable();
@@ -1011,9 +1059,13 @@ void PlayerController::GettingWeapon(){
 #include <algorithm>
 void PlayerController::changeAnime(int id)
 {
+	m_CurrentAnimeID_Stack = id;
+}
 
+void PlayerController::animeFlip()
+{
 	if (!m_AnimeModel)return;
-	if (id == m_CurrentAnimeID)return;
+	if (m_CurrentAnimeID_Stack == m_CurrentAnimeID)return;
 	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
 	if (!anime)return;
 	if (m_CurrentAnimeID >= 0) {
@@ -1021,9 +1073,9 @@ void PlayerController::changeAnime(int id)
 		p.mWeight = 0.0f;
 		anime->SetAnimetionParam(m_CurrentAnimeID, p);
 	}
-	auto p = anime->GetAnimetionParam(id);
+	auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Stack);
 	p.mTime = 0.0f;
 	p.mWeight = 1.0f;
-	anime->SetAnimetionParam(id, p);
-	m_CurrentAnimeID = id;
+	anime->SetAnimetionParam(m_CurrentAnimeID_Stack, p);
+	m_CurrentAnimeID = m_CurrentAnimeID_Stack;
 }

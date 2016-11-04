@@ -26,4 +26,6 @@ public:
 private:
 	//ƒƒ“ƒo•Ï”
 	std::list<GameObject> m_WeaponList;
+	SERIALIZE
+	GameObject m_Camera;
 };

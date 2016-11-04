@@ -59,6 +59,11 @@ GameObject GetWeapon::GetMinWeapon(){
 
 GameObject GetWeapon::GetPointMinWeapon(GameObject currentTarget, MinVect::ENum minVect){
 	if (!currentTarget)return NULL;
+	XMVECTOR camvec;
+	if (m_Camera) {
+		camvec = m_Camera->mTransform->Forward();
+	}
+
 	XMVECTOR vect = XMVector3Normalize(currentTarget->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
 	float lowL = 9999999.0f;
 	GameObject lowObj = NULL;
@@ -78,7 +83,9 @@ GameObject GetWeapon::GetPointMinWeapon(GameObject currentTarget, MinVect::ENum 
 		float l = abs(posmat.r[3].x - CurrentTargetPos.x);
 
 		XMVECTOR vect2 = XMVector3Normalize(enemy->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
-		if (XMVector3Dot(vect, vect2).x < 0)continue;
+		if (m_Camera) {
+			if (XMVector3Dot(camvec, vect2).x < 0)continue;
+		}
 
 		if (minVect == MinVect::left) {
 
