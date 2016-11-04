@@ -6,6 +6,8 @@
 #include "WeaponHand.h"
 # include "MoveAbility.h"
 #include "TPSCamera.h"
+#include "GetWeapon.h"
+#include "TimeManager.h"
 #include "GetEnemy.h"
 # include "AimController.h"
 
@@ -34,6 +36,7 @@ struct AnimeID {
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PlayerController::Initialize(){
+	m_InputF_Time = 0.0f;
 	m_FloatJumpTimer = 0.0f;
 	mJump = XMVectorZero();
 	mGravity = XMVectorSet(0, -9.81f, 0,1);
@@ -412,6 +415,9 @@ void PlayerController::FreeExcute()
 	lockOn();
 
 	rotate();
+
+	//周りの武器の取得,選択関連
+	GettingWeapon();
 
 	if (dodge()) {
 		SetPlayerState(PlayerState::Dodge);
@@ -912,6 +918,76 @@ void PlayerController::lockOn()
 		}
 	}
 
+}
+
+void PlayerController::GettingWeapon(){
+	//早期リターン
+	if (!m_WeaponHand) return;
+	if (!m_GetWeapon) return;
+	if (!m_TimeManager) return;
+
+	//GetWeaponのスクリプトの取得
+	auto getWeapon = m_GetWeapon->GetScript<GetWeapon>();
+	if (!getWeapon) return;
+	
+	//WeaponHandのスクリプトの取得
+	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+	if (!weaponHand) return;
+
+	//TimeManagerのスクリプトの取得
+	auto timeMgr = m_TimeManager->GetScript<TimeManager>();
+	if (!timeMgr) return;
+
+	if (!m_marker) return;
+
+	if (m_tempWeapon) {
+		m_marker->Enable();
+		XMVECTOR markerPos = m_tempWeapon->mTransform->WorldPosition() + XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		m_marker->mTransform->WorldPosition(markerPos);
+	}
+	else {
+		m_marker->Disable();
+	}
+
+	//一定時間長押ししたら
+	if (m_InputF_Time > 0.5f) {
+		//スローモードにする
+		timeMgr->OnSlow();
+
+		if (Input::Trigger(KeyCode::Key_G)) {
+			//選択対象から左に一番近いものを取得
+			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::left);
+			if(t)
+			m_tempWeapon = t;
+
+		}
+		else if (Input::Trigger(KeyCode::Key_H)) {
+			//選択対象から右に一番近いものを取得
+			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::right);
+			if (t)
+				m_tempWeapon = t;
+		}
+	}
+
+	//Fキーを押している時間をカウント
+	if (Input::Down(KeyCode::Key_F)) {
+		m_InputF_Time += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+	}
+	//Fキーを話したら
+	else if (Input::Up(KeyCode::Key_F)) {
+		if (m_tempWeapon) { 
+		//選択した武器をセット
+		weaponHand->SetWeapon(m_tempWeapon);
+		};
+		//カウントをリセット
+		m_InputF_Time = 0.0f;
+		//スローモード解除
+		timeMgr->OffSlow();
+	}
+	else {
+		//常に一番近い武器を取得
+		m_tempWeapon = getWeapon->GetMinWeapon();
+	}
 }
 
 #include <algorithm>

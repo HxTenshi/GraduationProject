@@ -145,6 +145,8 @@ private:
 	float m_JumpPower;
 	SERIALIZE
 	float m_MoveSpeed;
+
+	//11 / 04追加更新
 	SERIALIZE
 	GameObject m_WeaponHand;
 	SERIALIZE
@@ -156,7 +158,6 @@ private:
 	SERIALIZE
 	GameObject m_TimeManager;
 	GameObject m_tempWeapon;
-
 	float m_InputF_Time;	//Fキー何秒押されたか
 
 	SERIALIZE 
