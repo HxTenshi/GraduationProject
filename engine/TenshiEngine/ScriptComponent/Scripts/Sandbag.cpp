@@ -123,23 +123,6 @@ void Sandbag::OnCollideExit(GameObject target){
 	(void)target;
 }
 
-///***********************************************•@‚ª•Ç‚É“–‚½‚Á‚½Žž‚Ìˆ—***************************************************/
-//void Sandbag::SetHitWall(bool hitWall)
-//{
-//	if (actionModeID == ACTIONMODE::TRACKINGMODE){
-//		walkReturnFlag = false;
-//		if (!changeVec) {
-//			changeVec = true;
-//			int random = rand();
-//			maxAngle = rand() % 90;
-//			if (random % 2 == 0) {
-//				maxAngle *= -1;
-//			}
-//		}
-//	}
-//}
-
-
 /****************************************************ƒ_ƒ[ƒW‚Ìˆ—********************************************************/
 void Sandbag::Damage(int damage_)
 {
@@ -294,7 +277,6 @@ void Sandbag::ChangeBattleAction(BATTLEACTION nextBattleAction){
 	battleActionInitilize[battleModeParam.battleActionID]();
 	battleActionUpdate[battleModeParam.battleActionID]();
 }
-
 
 void Sandbag::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability){
 	if (XMVector3Length(playerVec).x > offBattleRange && battleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION){

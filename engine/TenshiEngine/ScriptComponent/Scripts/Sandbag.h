@@ -83,7 +83,6 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	//void SetHitWall(bool hitWall);
 	void Damage(int damage_);
 
 private:
@@ -98,6 +97,7 @@ private:
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
 	std::map<ACTIONMODE,std::function<void()>> actionModeFinalize;
+
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();
 	void TrackingModeFinalize();
@@ -174,6 +174,8 @@ private:
 	float view;
 	//移動量
 	XMVECTOR vec;
+	//受けるダメージを保存するもの
+	int damage;
 
 	//捜索時の移動ポイントの数値
 	int moveCount;
@@ -191,5 +193,4 @@ private:
 	//重力
 	XMVECTOR mGravity;
 
-	int damage;
 };
