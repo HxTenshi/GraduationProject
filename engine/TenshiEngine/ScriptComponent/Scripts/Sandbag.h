@@ -122,8 +122,8 @@ private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE float trackingSpeed;
 	SERIALIZE float trackingRange;
-	SERIALIZE float battleRange;
-	SERIALIZE float noBattleRange;
+	SERIALIZE float onBattleRange;
+	SERIALIZE float offBattleRange;
 	SERIALIZE float trackingAngle;
 	SERIALIZE float trackingRotateSpeed;
 	SERIALIZE int hp;
@@ -134,6 +134,7 @@ private:
 	SERIALIZE GameObject movePoints;
 	SERIALIZE float aproachRotateSpeed;
 	SERIALIZE float correctionRotateSpeed;
+	SERIALIZE bool drawLog;
 
 	//‘O•ûŒü
 	XMVECTOR forward;
