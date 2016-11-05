@@ -7,8 +7,6 @@
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Sandbag::Initialize(){
 	mGravity = XMVectorSet(0, -9.81f, 0, 1);
-	concussion = 0.0f;
-	damageFlag = false;
 	moveCount = 0;
 	moveCountUp = true;
 
@@ -31,9 +29,9 @@ void Sandbag::Initialize(){
 	battleActionUpdate[BATTLEACTION::APPROACHACTION] = std::bind(&Sandbag::ApproachModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::APPROACHACTION] = std::bind(&Sandbag::ApproachModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKACTION] = std::bind(&Sandbag::AttackModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKACTION] = std::bind(&Sandbag::AttackModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKACTION] = std::bind(&Sandbag::AttackModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Sandbag::AttackModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Sandbag::AttackModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Sandbag::AttackModeFinalize, this);
 
 	battleActionInitilize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Sandbag::JumpAttackModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Sandbag::JumpAttackModeUpdate, this);
@@ -47,6 +45,10 @@ void Sandbag::Initialize(){
 	battleActionUpdate[BATTLEACTION::BACKSTEPACTION] = std::bind(&Sandbag::BackStepModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::BACKSTEPACTION] = std::bind(&Sandbag::BackStepModeFinalize, this);
 
+	battleActionInitilize[BATTLEACTION::WINCEACTION] = std::bind(&Sandbag::WinceModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&Sandbag::WinceModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&Sandbag::WinceModeFinalize, this);
+
 	actionModeInitilize[actionModeID]();
 }
 
@@ -57,14 +59,6 @@ void Sandbag::Start(){
 //毎フレーム呼ばれます
 void Sandbag::Update(){
 	vec = XMVectorZero();
-	if (damageFlag) {
-		concussion += Hx::DeltaTime()->GetDeltaTime();
-		if (concussion > concussionTime) {
-			damageFlag = false;
-			concussion = 0.0f;
-		}
-		vec += XMVectorSet(0, jumpPower, 0, 0);
-	}
 
 	if (Input::Trigger(KeyCode::Key_1))Damage(1.0f);
 	AnimLerp();
@@ -122,17 +116,8 @@ void Sandbag::OnCollideExit(GameObject target){
 /****************************************************ダメージの処理********************************************************/
 void Sandbag::Damage(int damage)
 {
-	if (!damageFlag){
-		if (battleModeParam.battleActionID != BATTLEACTION::GUARDACTION){
-			hp -= damage;
-			damageFlag = true;
-		}
-		else{
-			//bp.battleAction = BATTLEACTION::BACKSTEPACTION;
-			//bp.guardTimeCount = 0.0f; 
-			//bp.actionDecideTime = 0.0f;
-		}
-	}
+	hp -= damage;
+	ChangeBattleAction(BATTLEACTION::WINCEACTION);
 }
 
 /**************************************************アニメーションの処理****************************************************/
@@ -210,11 +195,17 @@ void Sandbag::ChangeActionMode(ACTIONMODE nextActionMode){
 	actionModeUpdate[actionModeID]();
 }
 
+void Sandbag::ChangeBattleAction(BATTLEACTION nextBattleAction){
+	battleModeParam.beforeBattleActionID = battleModeParam.battleActionID;
+	battleModeParam.battleActionID = nextBattleAction;
+	battleActionInitilize[battleModeParam.battleActionID]();
+	battleActionUpdate[battleModeParam.battleActionID]();
+}
+
+
 void Sandbag::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability){
 	if (XMVector3Length(playerVec).x > offBattleRange && battleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION){
-		battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
-		battleActionInitilize[battleModeParam.battleActionID]();
-		battleActionUpdate[battleModeParam.battleActionID]();
+		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 		return;
 	}
 
@@ -229,23 +220,20 @@ void Sandbag::ChangeBattleAction(int guardProbability, int approachProbability, 
 	jumpAttackProbability_ = attackProbability_ - jumpAttackProbability;
 
 	if (randam > guardProbability_) {
-		battleModeParam.battleActionID = BATTLEACTION::GUARDACTION;
+		ChangeBattleAction(BATTLEACTION::GUARDACTION);
 	}
 	else if (randam > approachProbability_) {
-		battleModeParam.battleActionID = BATTLEACTION::APPROACHACTION;
+		ChangeBattleAction(BATTLEACTION::APPROACHACTION);
 	}
 	else if (randam > backstepProbability_) {
-		battleModeParam.battleActionID = BATTLEACTION::BACKSTEPACTION;
+		ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
 	}
 	else if (randam > attackProbability_){
-		battleModeParam.battleActionID = BATTLEACTION::ATTACKACTION;
+		ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
 	}
 	else if (randam > jumpAttackProbability_){
-		battleModeParam.battleActionID = BATTLEACTION::JUMPATTACKACTION;
+		ChangeBattleAction(BATTLEACTION::JUMPATTACKACTION);
 	}
-
-	battleActionInitilize[battleModeParam.battleActionID]();
-	battleActionUpdate[battleModeParam.battleActionID]();
 
 }
 
@@ -465,7 +453,7 @@ void Sandbag::AttackModeUpdate()
 		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 	}
 
-	AnimChange(ANIM_ID::ANIM_ATTACK_LONGITUDINAL, 5.0f, false);
+	AnimChange(ANIM_ID::ANIM_ATTACK_DOWN, 5.0f, false);
 	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
 		battleActionFinalize[battleModeParam.battleActionID]();
 	};
@@ -575,4 +563,47 @@ void Sandbag::BackStepModeUpdate()
 void Sandbag::BackStepModeFinalize()
 {
 	ChangeBattleAction(30, 0, 0, 0, 70);
+}
+
+void Sandbag::WinceModeInitilize(){
+	if (drawLog)
+		Hx::Debug()->Log("BATTLE	WINCE");
+}
+
+void Sandbag::WinceModeUpdate(){
+	auto anim = modelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+
+	AnimChange(ANIM_ID::ANIM_ATTACK_SIDE, 5.0f, false);
+	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
+		battleActionFinalize[battleModeParam.battleActionID]();
+	};
+}
+
+void Sandbag::WinceModeFinalize(){
+	ChangeBattleAction(40, 0, 40, 20, 0);
+}
+
+void Sandbag::HitInGuardModeInitilize(){
+
+}
+
+void Sandbag::HitInGuardModeUpdate(){
+
+}
+
+void Sandbag::HitInGuardModeFinalize(){
+
+}
+
+void Sandbag::AttackMonckeyModeInitilize(){
+
+}
+
+void Sandbag::AttackMonckeyModeUpdate(){
+
+}
+
+void Sandbag::AttackMonckeyModeFinalize(){
+
 }

@@ -14,17 +14,23 @@ struct AnimParameter {
 };
 
 enum BATTLEACTION{
+	NONE,
 	CONFRONTACTION,
 	APPROACHACTION,
-	ATTACKACTION,
+	ATTACKDOWNACTION,
 	JUMPATTACKACTION,
 	GUARDACTION,
-	BACKSTEPACTION
+	BACKSTEPACTION,
+	WINCEACTION,
+	HITINGUARDACTION,
+	ATTACKMONCKEYACTION
 };
 
 struct BattleModeParameter{	
 	//バトル中のアクションのID
-	BATTLEACTION battleActionID;
+	BATTLEACTION battleActionID = BATTLEACTION::NONE;
+
+	BATTLEACTION beforeBattleActionID = BATTLEACTION::NONE;
 	
 	//バトルモード中の思考時間を図るもの
 	float count = 0.0f;
@@ -38,17 +44,19 @@ enum ANIM_ID{
 	ANIM_IDLE,
 	ANIM_WALK_FORWARD,
 	ANIM_BACKSTEP,
-	ANIM_ATTACK_LONGITUDINAL,
+	ANIM_ATTACK_DOWN,
 	ANIM_GUARD,
 	ANIM_JUMPSRASH,
 	ANIM_ATTACK_SIDE,
-	ANIM_MONCKEYATTACK,
+	ANIM_ATTACK_MONCKEY,
 	ANIM_PROVOCATION,
 	ANIM_RUSH,
 	ANIM_SIDESTEPLEFT,
 	ANIM_SIDESTEPRIGHT,
 	ANIM_THRUST,
 	ANIM_THRUSTRUN,
+	ANIM_WINCE,
+	ANIM_HITINGUARD
 };
 
 enum ACTIONMODE{
@@ -78,6 +86,7 @@ private:
 	float GetNowAnimTime();
 
 	void ChangeActionMode(ACTIONMODE nextActionMode);
+	void ChangeBattleAction(BATTLEACTION nextBattleAction);
 	void ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability);
 
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
@@ -119,6 +128,18 @@ private:
 	void BackStepModeUpdate();
 	void BackStepModeFinalize();
 
+	void WinceModeInitilize();
+	void WinceModeUpdate();
+	void WinceModeFinalize();
+
+	void HitInGuardModeInitilize();
+	void HitInGuardModeUpdate();
+	void HitInGuardModeFinalize();
+
+	void AttackMonckeyModeInitilize();
+	void AttackMonckeyModeUpdate();
+	void AttackMonckeyModeFinalize();
+
 	//メンバ変数
 	SERIALIZE float trackingSpeed;
 	SERIALIZE float trackingRange;
@@ -127,8 +148,6 @@ private:
 	SERIALIZE float trackingAngle;
 	SERIALIZE float trackingRotateSpeed;
 	SERIALIZE int hp;
-	SERIALIZE float concussionTime;
-	SERIALIZE float jumpPower;
 	SERIALIZE GameObject player;
 	SERIALIZE GameObject modelObject;
 	SERIALIZE GameObject movePoints;
@@ -160,10 +179,4 @@ private:
 
 	//重力
 	XMVECTOR mGravity;
-
-	//ダメージを受けているかどうか
-	bool damageFlag;
-	//ダメージを受けている間の時間
-	float concussion;
-
 };
