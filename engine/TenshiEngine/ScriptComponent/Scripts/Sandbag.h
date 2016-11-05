@@ -35,6 +35,12 @@ struct BattleModeParameter{
 	//バトルモード中の思考時間を図るもの
 	float count = 0.0f;
 
+	//同じアクションが何回続いたかカウント
+	int sameActionCount = 0;
+
+	//同じアクションが連続で行われている場合このアクションは一番最初か？
+	bool firstInSameAction = true;
+
 	//バトルモード中のアプローチとガード時にどちらに回転するか決める為
 	bool rotateVecPlus = true;
 };
@@ -47,16 +53,16 @@ enum ANIM_ID{
 	ANIM_ATTACK_DOWN,
 	ANIM_GUARD,
 	ANIM_JUMPSRASH,
-	ANIM_ATTACK_SIDE,
+	ANIM_WINCE,
+	ANIM_HITINGUARD,
 	ANIM_ATTACK_MONCKEY,
+	ANIM_ATTACK_SIDE,
 	ANIM_PROVOCATION,
 	ANIM_RUSH,
 	ANIM_SIDESTEPLEFT,
 	ANIM_SIDESTEPRIGHT,
 	ANIM_THRUST,
 	ANIM_THRUSTRUN,
-	ANIM_WINCE,
-	ANIM_HITINGUARD
 };
 
 enum ACTIONMODE{
@@ -78,10 +84,10 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 	//void SetHitWall(bool hitWall);
-	void Damage(int damage);
+	void Damage(int damage_);
 
 private:
-	void AnimChange(int id, float lerpSpeed, bool roop = true);
+	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
 	void AnimLerp();
 	float GetNowAnimTime();
 
@@ -112,9 +118,9 @@ private:
 	void ApproachModeUpdate();
 	void ApproachModeFinalize();
 
-	void AttackModeInitilize();
-	void AttackModeUpdate();
-	void AttackModeFinalize();
+	void AttackDownModeInitilize();
+	void AttackDownModeUpdate();
+	void AttackDownModeFinalize();
 
 	void JumpAttackModeInitilize();
 	void JumpAttackModeUpdate();
@@ -135,6 +141,8 @@ private:
 	void HitInGuardModeInitilize();
 	void HitInGuardModeUpdate();
 	void HitInGuardModeFinalize();
+	//今回は何回我慢するか(hitInGuardMinCount～hitInGuardMaxCount)
+	int PatienceInThisTime;
 
 	void AttackMonckeyModeInitilize();
 	void AttackMonckeyModeUpdate();
@@ -154,6 +162,9 @@ private:
 	SERIALIZE float aproachRotateSpeed;
 	SERIALIZE float correctionRotateSpeed;
 	SERIALIZE bool drawLog;
+	SERIALIZE int hitInGuardMinCount;
+	SERIALIZE int hitInGuardMaxCount;
+	SERIALIZE int absolutelyAvoidInHitAttackProbability;
 
 	//前方向
 	XMVECTOR forward;
@@ -179,4 +190,6 @@ private:
 
 	//重力
 	XMVECTOR mGravity;
+
+	int damage;
 };
