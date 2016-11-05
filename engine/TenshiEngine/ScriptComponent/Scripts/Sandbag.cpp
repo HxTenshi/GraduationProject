@@ -413,6 +413,7 @@ void Sandbag::ConfrontModeFinalize()
 void Sandbag::ApproachModeInitilize()
 {
 	battleModeParam.count = 0.0f;
+	battleModeParam.rotateVecPlus = !battleModeParam.rotateVecPlus;
 }
 
 void Sandbag::ApproachModeUpdate()
@@ -421,7 +422,7 @@ void Sandbag::ApproachModeUpdate()
 	if (!player)return;
 	XMVECTOR playerPos = player->mTransform->WorldPosition();
 	auto trans = XMMatrixTranslationFromVector(XMVector3Normalize(gameObject->mTransform->WorldPosition() - playerPos) * battleRange);
-	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime());
+	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime() * (battleModeParam.rotateVecPlus == true ? 1.0f : -1.0f));
 	auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot),XMMatrixTranslationFromVector(playerPos));
 	
 	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * trackingSpeed;
@@ -498,6 +499,12 @@ void Sandbag::JumpAttackModeFinalize()
 void Sandbag::GuardModeInitilize()
 {
 	battleModeParam.count = 0.0f;
+	if (rand() % 2 == 0){
+		battleModeParam.rotateVecPlus = true;
+	}
+	else{
+		battleModeParam.rotateVecPlus = false;
+	}
 }
 
 void Sandbag::GuardModeUpdate()
@@ -505,7 +512,7 @@ void Sandbag::GuardModeUpdate()
 	if (!player)return;
 	XMVECTOR playerPos = player->mTransform->WorldPosition();
 	auto trans = XMMatrixTranslationFromVector(XMVector3Normalize(gameObject->mTransform->WorldPosition() - playerPos) * battleRange);
-	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime());
+	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime() * (battleModeParam.rotateVecPlus == true ? 1.0f : -1.0f));
 	auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot), XMMatrixTranslationFromVector(playerPos));
 
 	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * trackingSpeed;

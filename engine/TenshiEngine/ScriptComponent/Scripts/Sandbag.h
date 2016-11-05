@@ -28,6 +28,9 @@ struct BattleModeParameter{
 	
 	//バトルモード中の思考時間を図るもの
 	float count = 0.0f;
+
+	//バトルモード中のアプローチとガード時にどちらに回転するか決める為
+	bool rotateVecPlus = true;
 };
 
 
@@ -131,6 +134,7 @@ private:
 	SERIALIZE GameObject movePoints;
 	SERIALIZE float aproachRotateSpeed;
 	SERIALIZE float correctionRotateSpeed;
+
 	//前方向
 	XMVECTOR forward;
 	//playerへのベクトル
