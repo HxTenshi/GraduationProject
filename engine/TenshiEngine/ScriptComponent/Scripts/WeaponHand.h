@@ -1,7 +1,7 @@
 
 #pragma once
 #include "main.h"
-
+#include "Weapon.h"
 
 class WeaponHand :public IDllScriptComponent{
 public:
@@ -17,7 +17,8 @@ public:
 		return m_ActionFree;
 	}
 
-	void SetWeapon(GameObject weapon);
+	GameObject GetHandWeapon();
+	void SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback);
 
 	void LowAttack_1();
 	void LowAttack_2();

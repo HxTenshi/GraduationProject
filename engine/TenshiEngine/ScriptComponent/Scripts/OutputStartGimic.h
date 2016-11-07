@@ -3,7 +3,7 @@
 #include "main.h"
 
 
-class GetEnemy :public IDllScriptComponent{
+class OutputStartGimic :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -13,20 +13,13 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
-	struct MinVect{
-		enum Enum {
-			left,
-			right,
-		};
-	};
-
-	GameObject GetMinEnemy();
-	GameObject GetPointMinEnemy(GameObject currentTarget, MinVect::Enum minVect);
+	bool OnStart();
 
 private:
-	//ƒƒ“ƒo•Ï
-
-	std::list<GameObject> m_EnemyList;
+	//ƒƒ“ƒo•Ï”
 	SERIALIZE
-		GameObject m_Camera;
+	bool m_StartMatineeMode;
+
+	SERIALIZE
+	GameObject m_Output;
 };

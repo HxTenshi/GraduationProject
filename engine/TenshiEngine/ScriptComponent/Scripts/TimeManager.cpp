@@ -8,37 +8,37 @@ void TimeManager::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void TimeManager::Start(){
-	isSlow_ = false;
-	scaleTime_ = 1.0f;
+	m_isSlow = false;
+	m_scaleTime = 1.0f;
 }
 
 //毎フレーム呼ばれます
 void TimeManager::Update(){
 	
 	if (Input::Down(KeyCode::Key_Z)) {
-		isSlow_ = true;
+		m_isSlow = true;
 	}
 	if (Input::Down(KeyCode::Key_X)) {
-		isSlow_ = false;
+		m_isSlow = false;
 	}
 	//デルタタイムを取得
 	float deltaTime = Hx::DeltaTime()->GetNoScaleDeltaTime();
 
 	//何秒必要とするか
-	float temp = 1.0f / slowRate_;
+	float temp = 1.0f / m_slowRate;
 
 	//スロー時の処理
 	if (IsSlow()) 
-		scaleTime_ -= temp * deltaTime;
+		m_scaleTime -= temp * deltaTime;
 
 	//通常時の処理
 	else if(!IsSlow())
-		scaleTime_ += temp* deltaTime;
+		m_scaleTime += temp* deltaTime;
 
 	//0.1～1.0fに収まるようにクランプ
-	scaleTime_ = min(max(0.1f,scaleTime_), 1.0f);
+	m_scaleTime = min(max(0.1f,m_scaleTime), 1.0f);
 	//値を入れる
-	Hx::DeltaTime()->SetTimeScale(scaleTime_);
+	Hx::DeltaTime()->SetTimeScale(m_scaleTime);
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -47,11 +47,15 @@ void TimeManager::Finish(){
 }
 
 void TimeManager::OnSlow() {
-	isSlow_ = true;
+	m_isSlow = true;
+}
+
+void TimeManager::OffSlow(){
+	m_isSlow = false;
 }
 
 bool TimeManager::IsSlow() {
-	return isSlow_;
+	return m_isSlow;
 }
 
 //コライダーとのヒット時に呼ばれます

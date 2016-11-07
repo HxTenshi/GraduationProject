@@ -20,12 +20,14 @@ struct AttackState {
 	float KoutyokuTime;
 	float NextTime;
 	float DamageScale;
+	float AddSpecial;
 	std::function<void(void)> AttackFunc;
 };
 
 class CharacterControllerComponent;
 class PlayerController :public IDllScriptComponent{
 public:
+	PlayerController();
 	void Initialize()override;
 	void Start()override;
 	void Update()override;
@@ -60,6 +62,8 @@ public:
 	void Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel = KnockBack::None);
 	bool IsInvisible();
 	bool IsDead();
+	bool IsDogde();
+	bool IsGuard();
 
 	void SetSpecial(float power);
 	void AddSpecial(float power);
@@ -112,8 +116,10 @@ private:
 	bool attack();
 	void throwAway(GameObject target = NULL, bool isMove = false);
 	void lockOn();
+	void GettingWeapon();
 
 	void changeAnime(int id);
+	void animeFlip();
 
 	//メンバ変数
 
@@ -135,6 +141,7 @@ private:
 	float m_HP;
 	SERIALIZE
 	float m_SpecialPower;
+	const float m_SpecialPowerMax;
 
 	SERIALIZE
 	GameObject m_AnimeModel;
@@ -144,12 +151,20 @@ private:
 	float m_JumpPower;
 	SERIALIZE
 	float m_MoveSpeed;
+
+	//11 / 04追加更新
 	SERIALIZE
 	GameObject m_WeaponHand;
 	SERIALIZE
 	GameObject m_GetEnemy;
 	SERIALIZE
+	GameObject m_GetWeapon;
+	SERIALIZE
+	GameObject m_marker;
+	SERIALIZE
 	GameObject m_TimeManager;
+	GameObject m_tempWeapon;
+	float m_InputF_Time;	//Fキー何秒押されたか
 
 	SERIALIZE 
 	GameObject mMoveAvility;
@@ -166,9 +181,11 @@ private:
 	XMVECTOR mVelocity;
 
 	bool m_IsGround;
+	bool m_IsGuard;
 
 	bool m_LockOnEnabled;
 
+	int m_CurrentAnimeID_Stack;
 	int m_CurrentAnimeID;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;

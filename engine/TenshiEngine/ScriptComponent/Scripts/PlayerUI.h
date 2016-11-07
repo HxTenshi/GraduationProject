@@ -2,8 +2,8 @@
 #pragma once
 #include "main.h"
 
-
-class GetEnemy :public IDllScriptComponent{
+class TextComponent;
+class PlayerUI :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -13,20 +13,9 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
-	struct MinVect{
-		enum Enum {
-			left,
-			right,
-		};
-	};
-
-	GameObject GetMinEnemy();
-	GameObject GetPointMinEnemy(GameObject currentTarget, MinVect::Enum minVect);
-
 private:
-	//ƒƒ“ƒo•Ï
-
-	std::list<GameObject> m_EnemyList;
+	//ƒƒ“ƒo•Ï”
 	SERIALIZE
-		GameObject m_Camera;
+	GameObject m_Player;
+	weak_ptr<TextComponent> m_TextComponent;
 };

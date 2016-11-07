@@ -2,6 +2,7 @@
 #pragma once
 #include "main.h"
 # include "WeaponControl.h"
+#include <functional>
 enum AttackType {
 	WEAK,
 	USUALLY,
@@ -9,6 +10,16 @@ enum AttackType {
 };
 class Weapon :public IDllScriptComponent{
 public:
+	struct HitState {
+		enum Type {
+			Damage,
+			Guard,
+			Counter,
+			Dogde
+		};
+	};
+	typedef std::function<void(GameObject, HitState::Type)> HitCollbackType;
+
 	void Initialize()override;
 	void Start()override;
 	void Update()override;
@@ -24,6 +35,10 @@ public:
 	void ThrowAway(XMVECTOR& throwdir);
 
 	void WeaponUsePhysX();
+	/// <summary>
+	///攻撃時のコールバック関数追加
+	/// </summary>
+	void SetHitCollback(const HitCollbackType& collback);
 	void GetWeapon();
 	void Attack();
 private:
@@ -53,4 +68,6 @@ private:
 	float m_weapon_rot;
 	bool is_hand;
 	bool is_ground_hit;
+
+	HitCollbackType m_HitCollback;
 };

@@ -10,6 +10,7 @@ public:
 	void Update()override;
 	void Finish()override;
 	void OnSlow();
+	void OffSlow();
 	bool IsSlow();
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
@@ -17,8 +18,8 @@ public:
 
 private:
 	//ƒƒ“ƒo•Ï”
-	float isSlow_;
-	float scaleTime_;
+	float m_isSlow;
+	float m_scaleTime;
 	SERIALIZE
-	float slowRate_;
+	float m_slowRate;
 };

@@ -1,6 +1,5 @@
 #include "WeaponHand.h"
 #include "h_standard.h"
-#include "Weapon.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void WeaponHand::Initialize(){
@@ -8,6 +7,7 @@ void WeaponHand::Initialize(){
 	m_IsGuard = false;
 	m_ActionFree = false;
 	m_Wave = 0.0f;
+	mWeapon = NULL;
 
 	m_AttackFunction = [](){};
 }
@@ -100,7 +100,12 @@ void WeaponHand::OnCollideExit(GameObject target){
 	(void)target;
 }
 
-void WeaponHand::SetWeapon(GameObject weapon)
+GameObject WeaponHand::GetHandWeapon()
+{
+	return mWeapon;
+}
+
+void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback)
 {
 	if (mWeapon)return;
 	//if (mWeapon) {
@@ -121,8 +126,8 @@ void WeaponHand::SetWeapon(GameObject weapon)
 
 	if (auto scr = mWeapon->GetScript<Weapon>()) {
 		scr->GetWeapon();
+		scr->SetHitCollback(collback);
 	}
-
 }
 
 void WeaponHand::LowAttack_1()
@@ -204,6 +209,14 @@ void WeaponHand::FloatLowAttack_1()
 
 void WeaponHand::SpecialAttack()
 {
+	m_AttackTime = 3.0f;
+	m_AttackFunction = [&]() {
+		if (m_AttackTime > 0.0f) {
+			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
+			m_AttackTime = max(m_AttackTime, 0.0f);
+			mWeapon->mTransform->Rotate(XMVectorSet(0, 0, m_AttackTime * 40.0f, 1));
+		}
+	};
 }
 
 

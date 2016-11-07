@@ -6,6 +6,8 @@
 #include "WeaponHand.h"
 # include "MoveAbility.h"
 #include "TPSCamera.h"
+#include "GetWeapon.h"
+#include "TimeManager.h"
 #include "GetEnemy.h"
 # include "AimController.h"
 
@@ -27,13 +29,22 @@ struct AnimeID {
 		Idle,
 		Move,
 		AttackLow1,
+		Guard,
+		Dogde,
+		KnockBack,
 		Count,
 	};
 };
 
+PlayerController::PlayerController()
+	:m_SpecialPowerMax(100.0f)
+	, m_SpecialPower(0.0f)
+{
+}
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PlayerController::Initialize(){
+	m_InputF_Time = 0.0f;
 	m_FloatJumpTimer = 0.0f;
 	mJump = XMVectorZero();
 	mGravity = XMVectorSet(0, -9.81f, 0,1);
@@ -45,6 +56,7 @@ void PlayerController::Initialize(){
 	m_InvisibleTime = 0.0f;
 	m_IsInvisible = false;
 	m_IsDead = false;
+	m_IsGuard = false;
 
 	m_DodgeTimer = 0.0f;
 	m_MoveVelo = XMVectorZero();
@@ -78,6 +90,7 @@ void PlayerController::Initialize(){
 	attack.NextLowID = AttackID::Low2;
 	attack.NextHighID = AttackID::High2;
 	attack.MoutionID = AnimeID::AttackLow1;
+	attack.AddSpecial = 2.0f;
 
 	attack.KoutyokuTime = 0.5f;
 	attack.NextTime = 0.5f;
@@ -166,6 +179,7 @@ void PlayerController::Initialize(){
 	m_CurrentAttack.NextTime = 0.0f;
 	m_CurrentAttack.DamageScale = 0.0f;
 	m_CurrentAttack.AttackTime = 0.0f;
+	m_CurrentAttack.AddSpecial = 0.0f;
 	m_CurrentAttack.AttackFunc = [](){};
 
 }
@@ -186,6 +200,15 @@ void PlayerController::Update(){
 	}
 
 	m_StateFunc[m_PlayerState].Excute();
+
+	animeFlip();
+
+	if (Input::Down(KeyCode::Key_O)) {
+		Damage(5.0f,XMVectorSet(0,0,-1,1),KnockBack::Low);
+	}
+	if (Input::Down(KeyCode::Key_P)) {
+		Damage(10.0f, XMVectorSet(0, 0, -1, 1), KnockBack::Down);
+	}
 
 	if (!m_WeaponHand)return;
 
@@ -307,6 +330,12 @@ void PlayerController::PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum
 
 void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel)
 {
+	if (IsDogde()) {
+		return;
+	}
+	if (IsGuard() && XMVector3Dot(mVelocity, attackVect).x > 0) {
+		return;
+	}
 	AddHP(-damage);
 	PlayKnockBack(attackVect,knockBackLevel);
 }
@@ -321,16 +350,26 @@ bool PlayerController::IsDead()
 	return m_IsDead;
 }
 
+bool PlayerController::IsDogde()
+{
+	return m_PlayerState == PlayerState::Dodge;
+}
+
+bool PlayerController::IsGuard()
+{
+	return m_IsGuard;
+}
+
 void PlayerController::SetSpecial(float power)
 {
 	m_SpecialPower = power;
-	m_SpecialPower = min(max(m_SpecialPower, 0.0f), 100.0f);
+	m_SpecialPower = min(max(m_SpecialPower, 0.0f), m_SpecialPowerMax);
 }
 
 void PlayerController::AddSpecial(float power)
 {
 	m_SpecialPower += power;
-	m_SpecialPower = min(max(m_SpecialPower,0.0f),100.0f);
+	m_SpecialPower = min(max(m_SpecialPower,0.0f), m_SpecialPowerMax);
 }
 
 float PlayerController::GetSpecial()
@@ -413,19 +452,33 @@ void PlayerController::FreeExcute()
 
 	rotate();
 
+	//周りの武器の取得,選択関連
+	GettingWeapon();
+
 	if (dodge()) {
 		SetPlayerState(PlayerState::Dodge);
 		return;
 	}
 
+
 	if (!m_WeaponHand)return;
 	if (Input::Down(MouseCode::Right)) {
 		guard();
+		changeAnime(AnimeID::Guard);
+	}
+	else {
+		m_IsGuard = false;
+		if (mVelocity.x == 0.0f&&mVelocity.y == 0.0f) {
+			changeAnime(AnimeID::Idle);
+		}
+		else {
+			changeAnime(AnimeID::Move);
+		}
 	}
 	if (attack()) {
 		SetPlayerState(PlayerState::Attack);
 	}
-	changeAnime(AnimeID::Idle);
+
 
 
 	if (Input::Down(KeyCode::Key_K)) {
@@ -444,6 +497,7 @@ void PlayerController::FreeExcute()
 
 void PlayerController::FreeExit()
 {
+	m_IsGuard = false;
 }
 
 void PlayerController::AttackEnter()
@@ -515,6 +569,7 @@ void PlayerController::AttackExit()
 	m_CurrentAttack.NextTime = 0.0f;
 	m_CurrentAttack.DamageScale = 0.0f;
 	m_CurrentAttack.AttackTime = 0.0f;
+	m_CurrentAttack.AddSpecial = 0.0f;
 	m_CurrentAttack.AttackFunc = []() {};
 
 	m_NextAttack = -1;
@@ -522,16 +577,15 @@ void PlayerController::AttackExit()
 
 void PlayerController::DodgeEnter()
 {
-	auto v = mVelocity;
+	auto v = mJump;
 	if (abs(v.x) == 0 && abs(v.z) == 0) {
 		v = gameObject->mTransform->Forward();
 	}
-	m_MoveVelo = XMVectorZero();
 	mJump = XMVectorZero();
 
 	m_DodgeTimer = 1.0f;
 
-	m_MoveVelo += v * m_MoveSpeed * 2;
+	m_MoveVelo = XMVector3Normalize(v) * m_MoveSpeed * 2;
 	mJump.y += m_JumpPower / 2.0f;
 }
 
@@ -546,7 +600,7 @@ void PlayerController::DodgeExcute()
 		SetPlayerState(PlayerState::Free);
 	}
 
-	changeAnime(AnimeID::Idle);
+	changeAnime(AnimeID::Dogde);
 }
 
 void PlayerController::DodgeExit()
@@ -579,7 +633,7 @@ void PlayerController::KnockBackExcute()
 	if (m_InvisibleTime <= 0.0f) {
 		SetPlayerState(PlayerState::Free);
 	}
-	changeAnime(AnimeID::Idle);
+	changeAnime(AnimeID::KnockBack);
 }
 
 void PlayerController::KnockBackExit()
@@ -785,6 +839,7 @@ void PlayerController::guard()
 	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
 	if (weaponHand) {
 		weaponHand->Guard();
+		m_IsGuard = true;
 	}
 }
 
@@ -796,6 +851,12 @@ bool PlayerController::attack()
 		}
 		if (Input::Trigger(KeyCode::Key_V)) {
 			m_NextAttack = AttackID::High1;
+		}
+		if (Input::Trigger(KeyCode::Key_B)) {
+			if (GetSpecial() >= m_SpecialPowerMax) {
+				m_NextAttack = AttackID::Special;
+				SetSpecial(0.0f);
+			}
 		}
 	}
 	else {
@@ -914,12 +975,97 @@ void PlayerController::lockOn()
 
 }
 
+void PlayerController::GettingWeapon(){
+
+	//早期リターン
+	if (!m_WeaponHand) return;
+	if (!m_GetWeapon) return;
+	if (!m_TimeManager) return;
+
+	//GetWeaponのスクリプトの取得
+	auto getWeapon = m_GetWeapon->GetScript<GetWeapon>();
+	if (!getWeapon) return;
+	
+	//WeaponHandのスクリプトの取得
+	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+	if (!weaponHand) return;
+
+	//TimeManagerのスクリプトの取得
+	auto timeMgr = m_TimeManager->GetScript<TimeManager>();
+	if (!timeMgr) return;
+
+	if (!m_marker) return;
+
+	if (weaponHand->GetHandWeapon()) {
+		m_marker->Disable();
+		return;
+	}
+
+	if (m_tempWeapon) {
+		m_marker->Enable();
+		XMVECTOR markerPos = m_tempWeapon->mTransform->WorldPosition() + XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		m_marker->mTransform->WorldPosition(markerPos);
+	}
+	else {
+		m_marker->Disable();
+	}
+
+	//一定時間長押ししたら
+	if (m_InputF_Time > 0.5f) {
+		//スローモードにする
+		timeMgr->OnSlow();
+
+		if (Input::Trigger(KeyCode::Key_G)) {
+			//選択対象から左に一番近いものを取得
+			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::left);
+			if(t)
+			m_tempWeapon = t;
+
+		}
+		else if (Input::Trigger(KeyCode::Key_H)) {
+			//選択対象から右に一番近いものを取得
+			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::right);
+			if (t)
+				m_tempWeapon = t;
+		}
+	}
+
+	//Fキーを押している時間をカウント
+	if (Input::Down(KeyCode::Key_F)) {
+		m_InputF_Time += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+	}
+	//Fキーを話したら
+	else if (Input::Up(KeyCode::Key_F)) {
+		if (m_tempWeapon) { 
+		//選択した武器をセット
+			weaponHand->SetWeapon(m_tempWeapon, [&](auto o, auto t) {
+					if (t == Weapon::HitState::Damage) {
+						AddSpecial(m_CurrentAttack.AddSpecial);
+					}
+				}
+			);
+		}
+		//カウントをリセット
+		m_InputF_Time = 0.0f;
+		//スローモード解除
+		timeMgr->OffSlow();
+	}
+	else {
+		//常に一番近い武器を取得
+		m_tempWeapon = getWeapon->GetMinWeapon();
+	}
+}
+
 #include <algorithm>
 void PlayerController::changeAnime(int id)
 {
+	m_CurrentAnimeID_Stack = id;
+}
 
+void PlayerController::animeFlip()
+{
 	if (!m_AnimeModel)return;
-	if (id == m_CurrentAnimeID)return;
+	if (m_CurrentAnimeID_Stack == m_CurrentAnimeID)return;
 	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
 	if (!anime)return;
 	if (m_CurrentAnimeID >= 0) {
@@ -927,9 +1073,9 @@ void PlayerController::changeAnime(int id)
 		p.mWeight = 0.0f;
 		anime->SetAnimetionParam(m_CurrentAnimeID, p);
 	}
-	auto p = anime->GetAnimetionParam(id);
+	auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Stack);
 	p.mTime = 0.0f;
 	p.mWeight = 1.0f;
-	anime->SetAnimetionParam(id, p);
-	m_CurrentAnimeID = id;
+	anime->SetAnimetionParam(m_CurrentAnimeID_Stack, p);
+	m_CurrentAnimeID = m_CurrentAnimeID_Stack;
 }
