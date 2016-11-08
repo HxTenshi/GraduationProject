@@ -33,6 +33,7 @@ struct AnimeID {
 		Dogde,
 		KnockBack,
 		Down,
+		AttackHigh1,
 		Count,
 	};
 };
@@ -76,6 +77,7 @@ void PlayerController::Initialize(){
 	AddFunc(KnockBack);
 	AddFunc(Down);
 	AddFunc(Movie);
+	AddFunc(Dead);
 
 	m_PlayerState = (PlayerState::Enum)-1;
 	SetPlayerState(PlayerState::Lock);
@@ -130,6 +132,8 @@ void PlayerController::Initialize(){
 	attack.ID = AttackID::High1;
 	attack.NextLowID = -1;
 	attack.NextHighID = AttackID::High2;
+	attack.MoutionID = AnimeID::AttackHigh1;
+	attack.DamageScale = 2.0f;
 	attack.AttackFunc = [&]() {
 		auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
 		if (weaponHand) {
@@ -337,8 +341,8 @@ void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBac
 	if (IsGuard() && XMVector3Dot(mVelocity, attackVect).x > 0) {
 		return;
 	}
-	AddHP(-damage);
 	PlayKnockBack(attackVect,knockBackLevel);
+	AddHP(-damage);
 }
 
 bool PlayerController::IsInvisible()
@@ -423,6 +427,8 @@ void PlayerController::Dead()
 	m_HP = 0.0f;
 	m_IsDead = true;
 	m_IsInvisible = true;
+
+	SetPlayerState(PlayerState::Dead);
 }
 
 void PlayerController::LockEnter()
@@ -619,6 +625,8 @@ void PlayerController::KnockBackEnter()
 	m_MoveVelo.z = mVelocity.z;
 	mVelocity *= -1;
 	mVelocity.y = 0.0f;
+
+	m_MoveVelo = XMVectorZero();
 	rotate();
 
 }
@@ -653,6 +661,8 @@ void PlayerController::DownEnter()
 	m_MoveVelo.z = mVelocity.z;
 	mVelocity *= -1;
 	mVelocity.y = 0.0f;
+
+	m_MoveVelo = XMVectorZero();
 	rotate();
 }
 
@@ -687,6 +697,24 @@ void PlayerController::MovieExcute()
 
 void PlayerController::MovieExit()
 {
+}
+
+void PlayerController::DeadEnter()
+{
+	m_IsInvisible = true;
+	m_IsDead = true;
+}
+
+void PlayerController::DeadExcute()
+{
+	lockOn();
+	changeAnime(AnimeID::Down);
+}
+
+void PlayerController::DeadExit()
+{
+	m_IsInvisible = false;
+	m_IsDead = false;
 }
 
 void PlayerController::move()
@@ -975,7 +1003,7 @@ void PlayerController::lockOn()
 	}
 
 }
-
+#include "Sandbag.h"
 void PlayerController::GettingWeapon(){
 
 	//早期リターン
@@ -1040,11 +1068,15 @@ void PlayerController::GettingWeapon(){
 		if (m_tempWeapon) { 
 		//選択した武器をセット
 			weaponHand->SetWeapon(m_tempWeapon, [&](auto o, auto t) {
-					if (t == Weapon::HitState::Damage) {
-						AddSpecial(m_CurrentAttack.AddSpecial);
+				if (Sandbag* scr = o->GetScript<Sandbag>()) {
+					if (m_CurrentAttack.AttackTime > 0.0f) {
+						scr->Damage((int)m_CurrentAttack.DamageScale);
+						if (t == Weapon::HitState::Damage) {
+							AddSpecial(m_CurrentAttack.AddSpecial);
+						}
 					}
 				}
-			);
+			});
 		}
 		//カウントをリセット
 		m_InputF_Time = 0.0f;

@@ -45,6 +45,7 @@ public:
 			KnockBack,
 			Down,
 			Movie,
+			Dead,
 			Count,
 		};
 	};
@@ -107,6 +108,10 @@ private:
 	void MovieEnter();
 	void MovieExcute();
 	void MovieExit();
+
+	void DeadEnter();
+	void DeadExcute();
+	void DeadExit();
 
 	void move();
 	void moveUpdate();

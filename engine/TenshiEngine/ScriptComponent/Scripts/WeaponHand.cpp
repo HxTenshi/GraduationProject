@@ -75,7 +75,11 @@ void WeaponHand::Update(){
 		mWeapon->mTransform->Position(XMVectorZero());
 		mWeapon->mTransform->Rotate(XMVectorZero());
 
-		m_AttackFunction();
+		//m_AttackFunction();
+		if (m_AttackTime > 0.0f) {
+			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
+			m_AttackTime = max(m_AttackTime, 0.0f);
+		}
 	}
 	m_IsGuard = false;
 }

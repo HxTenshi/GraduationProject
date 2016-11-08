@@ -54,12 +54,12 @@ void Weapon::OnCollideBegin(GameObject target){
 				}
 		}
 	}
-	if (target->GetLayer() == 3 & is_hand) {
+	if (target->GetLayer() == 3 && is_hand) {
 		//サンドバッグへのダメージの処理
 		if (auto scr = target->GetScript<Sandbag>()) {
 			if (!is_ground_hit) {
 				m_Recast = 0.0f;
-				scr->Damage(m_AttackForce);
+				//scr->Damage(m_AttackForce);
 				m_HitCollback(target,HitState::Damage);
 			}
 		}
@@ -158,7 +158,7 @@ void Weapon::GetWeapon()
 
 void Weapon::ThrowAwayAction()
 {
-	if (is_ground_hit)return;
+	if (is_ground_hit || is_hand)return;
 	m_weapon_rot = max(m_weapon_rot, 0);
 	auto rot = gameObject->mTransform->WorldQuaternion();
 	gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*450 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
