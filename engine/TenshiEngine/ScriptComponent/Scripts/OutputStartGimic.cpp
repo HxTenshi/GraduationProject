@@ -50,4 +50,10 @@ bool OutputStartGimic::OnStart(){
 
 		return scr->IsPlay();
 	}
+
+	if (m_StartInstanceObjectMode) {
+		auto ins = Hx::Instance(m_Output);
+		ins->Enable();
+		return (bool)ins;
+	}
 }

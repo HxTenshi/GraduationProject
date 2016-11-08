@@ -23,7 +23,8 @@ enum BATTLEACTION{
 	BACKSTEPACTION,
 	WINCEACTION,
 	HITINGUARDACTION,
-	ATTACKMONCKEYACTION
+	ATTACKMONCKEYACTION,
+	DEADACTION
 };
 
 struct BattleModeParameter{	
@@ -56,8 +57,8 @@ enum ANIM_ID{
 	ANIM_WINCE,
 	ANIM_HITINGUARD,
 	ANIM_ATTACK_MONCKEY,
-	ANIM_ATTACK_SIDE,
 	ANIM_PROVOCATION,
+	ANIM_ATTACK_SIDE,
 	ANIM_RUSH,
 	ANIM_SIDESTEPLEFT,
 	ANIM_SIDESTEPRIGHT,
@@ -84,6 +85,7 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 	void Damage(int damage_);
+	void Attack(GameObject player);
 
 private:
 	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
@@ -148,6 +150,10 @@ private:
 	void AttackMonckeyModeUpdate();
 	void AttackMonckeyModeFinalize();
 
+	void DeadModeInitilize();
+	void DeadModeUpdate();
+	void DeadModeFinalize();
+
 	//ÉÅÉìÉoïœêî
 	SERIALIZE float trackingSpeed;
 	SERIALIZE float trackingRange;
@@ -156,6 +162,7 @@ private:
 	SERIALIZE float trackingAngle;
 	SERIALIZE float trackingRotateSpeed;
 	SERIALIZE int hp;
+	SERIALIZE int attackDamage;
 	SERIALIZE GameObject player;
 	SERIALIZE GameObject modelObject;
 	SERIALIZE GameObject movePoints;

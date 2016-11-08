@@ -32,6 +32,7 @@ struct AnimeID {
 		Guard,
 		Dogde,
 		KnockBack,
+		Down,
 		Count,
 	};
 };
@@ -666,7 +667,7 @@ void PlayerController::DownExcute()
 	if (m_InvisibleTime <= 0.0f) {
 		SetPlayerState(PlayerState::Free);
 	}
-	changeAnime(AnimeID::Idle);
+	changeAnime(AnimeID::Down);
 }
 
 void PlayerController::DownExit()

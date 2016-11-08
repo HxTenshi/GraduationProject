@@ -3,9 +3,10 @@
 #include "../h_standard.h"
 #include "../h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
+#include "PlayerController.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
-void Sandbag::Initialize(){
+void Sandbag::Initialize() {
 	mGravity = XMVectorSet(0, -9.81f, 0, 1);
 	moveCount = 0;
 	moveCountUp = true;
@@ -57,7 +58,15 @@ void Sandbag::Initialize(){
 	battleActionUpdate[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Sandbag::AttackMonckeyModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Sandbag::AttackMonckeyModeFinalize, this);
 
+	battleActionInitilize[BATTLEACTION::DEADACTION] = std::bind(&Sandbag::DeadModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&Sandbag::DeadModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&Sandbag::DeadModeFinalize, this);
+
 	actionModeInitilize[actionModeID]();
+
+	if (!player) {
+		player = Hx::FindActor("Player");
+	}
 
 	if (drawLog){
 		Hx::Debug()->Log("捜索時の歩くスピード：" + std::to_string(trackingSpeed));
@@ -127,7 +136,7 @@ void Sandbag::OnCollideExit(GameObject target){
 void Sandbag::Damage(int damage_)
 {
 	damage = damage_;
-	if (actionModeID == ACTIONMODE::BATTLEMODE){
+	if (actionModeID == ACTIONMODE::BATTLEMODE && battleModeParam.battleActionID != BATTLEACTION::DEADACTION){
 		if (rand() % 100 > (99 - absolutelyAvoidInHitAttackProbability) &&
 			battleModeParam.battleActionID != BATTLEACTION::HITINGUARDACTION &&
 			battleModeParam.battleActionID != BATTLEACTION::WINCEACTION	&&
@@ -146,6 +155,28 @@ void Sandbag::Damage(int damage_)
 				ChangeBattleAction(BATTLEACTION::WINCEACTION);
 			}
 		}
+	}
+}
+
+void Sandbag::Attack(GameObject player_)
+{
+	if (drawLog)
+		Hx::Debug()->Log("何かにに武器が当たった");
+	if (battleModeParam.battleActionID == BATTLEACTION::ATTACKDOWNACTION ||
+		battleModeParam.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION ||
+		battleModeParam.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
+		if (drawLog)
+			Hx::Debug()->Log("playerに攻撃がHit");
+		if (!player_)return;
+		auto playerScript = player_->GetScript<PlayerController>();
+		if (!playerScript)return;
+
+		if (battleModeParam.battleActionID == BATTLEACTION::ATTACKDOWNACTION)
+			playerScript->Damage(attackDamage, XMVector3Normalize(player_->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()),PlayerController::KnockBack::Low);
+		else if(battleModeParam.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION)
+			playerScript->Damage(attackDamage, XMVector3Normalize(player_->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+		else if (battleModeParam.battleActionID == BATTLEACTION::JUMPATTACKACTION)
+			playerScript->Damage(attackDamage, XMVector3Normalize(player_->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 	}
 }
 
@@ -319,6 +350,7 @@ void Sandbag::TrackingModeInitilize()
 		Hx::Debug()->Log("捜索モードへ移行");
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
 	if (!navi)return;
+	if (!movePoints)return;
 	auto movePointList = movePoints->mTransform->Children();
 	int maxMoveCount = movePointList.size();
 	if (maxMoveCount == 0)return;
@@ -362,6 +394,7 @@ void Sandbag::TrackingModeUpdate()
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
 	if (!navi)return;
 	if (navi->IsMoveEnd()) {
+		if (!movePoints)return;
 		auto movePointList = movePoints->mTransform->Children();
 		int maxMoveCount = movePointList.size();
 		if (maxMoveCount == 0)return;
@@ -644,6 +677,10 @@ void Sandbag::WinceModeInitilize(){
 	hp -= damage;
 	if (drawLog)
 		Hx::Debug()->Log(std::to_string(damage) + "ダメージ喰らった。残りの体力は" + std::to_string(hp));
+	if (hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
 	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 }
 
@@ -705,4 +742,27 @@ void Sandbag::AttackMonckeyModeUpdate(){
 
 void Sandbag::AttackMonckeyModeFinalize(){
 	ChangeBattleAction(40, 40, 20, 0, 0);
+}
+
+void Sandbag::DeadModeInitilize()
+{
+	if (drawLog) {
+		Hx::Debug()->Log("死んだ");
+	}
+
+	AnimChange(ANIM_ID::ANIM_PROVOCATION, 5.0f, false, true);
+}
+
+void Sandbag::DeadModeUpdate()
+{
+	auto anim = modelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+
+	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
+		Hx::DestroyObject(gameObject);
+	};
+}
+
+void Sandbag::DeadModeFinalize()
+{
 }

@@ -3,7 +3,7 @@
 #include "main.h"
 
 
-class OutputStartGimic :public IDllScriptComponent{
+class EnemyWeapon :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -13,16 +13,8 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
-	bool OnStart();
-
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
-	bool m_StartMatineeMode;
-
-	SERIALIZE
-	bool m_StartInstanceObjectMode;
-
-	SERIALIZE
-	GameObject m_Output;
+		GameObject enemy;
 };
