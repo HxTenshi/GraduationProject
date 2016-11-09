@@ -768,6 +768,7 @@ void Sandbag::DeadModeUpdate()
 	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
 		if (!myWeapon)return;
 		//gameObject->Enable();
+		gameObject->RemoveComponent<CharacterControllerComponent>();
 		Hx::DestroyObject(myWeapon);
 		Hx::DestroyObject(gameObject);
 	};
