@@ -18,7 +18,7 @@ public:
 			Dogde
 		};
 	};
-	typedef std::function<void(GameObject, Weapon*, HitState::Type)> HitCollbackType;
+	typedef std::function<void(GameObject, Weapon*, Weapon::HitState::Type)> HitCollbackType;
 
 	void Initialize()override;
 	void Start()override;
