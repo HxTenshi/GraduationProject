@@ -29,7 +29,7 @@ void WeaponTip::OnCollideBegin(GameObject target){
 
 //コライダーとのヒット中に呼ばれます
 void WeaponTip::OnCollideEnter(GameObject target){
-	(void)target;
+	if (!target)return;
 	if (target->GetLayer() == 4) {
 		if (m_weapon->GetScript<Weapon>()) {
 			m_weapon->GetScript<Weapon>()->WeaponUsePhysX();

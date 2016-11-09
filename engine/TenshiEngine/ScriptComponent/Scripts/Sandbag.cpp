@@ -96,7 +96,10 @@ void Sandbag::Start(){
 void Sandbag::Update(){
 	vec = XMVectorZero();
 
-	if (Input::Trigger(KeyCode::Key_1))Damage(1.0f);
+	if (Input::Trigger(KeyCode::Key_1)) {
+		Damage(1.0f);
+	}
+
 	AnimLerp();
 
 	actionModeUpdate[actionModeID]();
@@ -288,25 +291,29 @@ float Sandbag::GetNowAnimTime(){
 
 /********************************************アクションの変更、戦闘時の変更************************************************/
 void Sandbag::ChangeActionMode(ACTIONMODE nextActionMode){
-	actionModeID = nextActionMode;
-	actionModeInitilize[actionModeID]();
-	actionModeUpdate[actionModeID]();
+	if (battleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
+		actionModeID = nextActionMode;
+		actionModeInitilize[actionModeID]();
+		actionModeUpdate[actionModeID]();
+	}
 }
 
 void Sandbag::ChangeBattleAction(BATTLEACTION nextBattleAction){
-	if (battleModeParam.battleActionID == nextBattleAction){
-		battleModeParam.sameActionCount++;
-		battleModeParam.firstInSameAction = false;
-	}
-	else{
-		battleModeParam.sameActionCount = 0;
-		battleModeParam.firstInSameAction = true;
-	}
+	if (battleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
+		if (battleModeParam.battleActionID == nextBattleAction) {
+			battleModeParam.sameActionCount++;
+			battleModeParam.firstInSameAction = false;
+		}
+		else {
+			battleModeParam.sameActionCount = 0;
+			battleModeParam.firstInSameAction = true;
+		}
 
-	battleModeParam.beforeBattleActionID = battleModeParam.battleActionID;
-	battleModeParam.battleActionID = nextBattleAction;
-	battleActionInitilize[battleModeParam.battleActionID]();
-	battleActionUpdate[battleModeParam.battleActionID]();
+		battleModeParam.beforeBattleActionID = battleModeParam.battleActionID;
+		battleModeParam.battleActionID = nextBattleAction;
+		battleActionInitilize[battleModeParam.battleActionID]();
+		battleActionUpdate[battleModeParam.battleActionID]();
+	}
 }
 
 void Sandbag::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability){
@@ -759,6 +766,9 @@ void Sandbag::DeadModeUpdate()
 	if (!anim)return;
 
 	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
+		if (!myWeapon)return;
+		//gameObject->Enable();
+		Hx::DestroyObject(myWeapon);
 		Hx::DestroyObject(gameObject);
 	};
 }

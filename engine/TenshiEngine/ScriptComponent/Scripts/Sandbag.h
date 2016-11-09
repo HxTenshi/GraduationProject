@@ -164,6 +164,7 @@ private:
 	SERIALIZE int hp;
 	SERIALIZE int attackDamage;
 	SERIALIZE GameObject player;
+	SERIALIZE GameObject myWeapon;
 	SERIALIZE GameObject modelObject;
 	SERIALIZE GameObject movePoints;
 	SERIALIZE float aproachRotateSpeed;

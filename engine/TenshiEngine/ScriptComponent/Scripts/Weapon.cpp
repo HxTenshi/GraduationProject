@@ -42,6 +42,7 @@ void Weapon::Finish(){
 //コライダーとのヒット時に呼ばれます
 void Weapon::OnCollideBegin(GameObject target){
 	//投げたときだけの制御
+	if (!target)return;
 
 	if (mIsEnemyThrow) {
 		if (mWeaponControl) {
