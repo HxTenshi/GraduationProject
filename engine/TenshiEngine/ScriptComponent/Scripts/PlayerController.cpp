@@ -485,21 +485,6 @@ void PlayerController::FreeExcute()
 	if (attack()) {
 		SetPlayerState(PlayerState::Attack);
 	}
-
-
-
-	if (Input::Down(KeyCode::Key_K)) {
-		auto v = mVelocity;
-		v *= -1;
-		v.y *= -1;
-		PlayKnockBack(v, KnockBack::Low);
-	}
-	if (Input::Down(KeyCode::Key_L)) {
-		auto v = mVelocity;
-		v *= -1;
-		v.y = 5	;
-		PlayKnockBack(v, KnockBack::Down);
-	}
 }
 
 void PlayerController::FreeExit()
