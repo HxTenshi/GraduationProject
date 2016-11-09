@@ -10,7 +10,7 @@ void Weapon::Initialize(){
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
 
-	SetHitCollback([](auto o, auto t) {});
+	SetHitCollback([](auto o,auto w, auto t) {});
 	//auto child = gameObject->mTransform->Children();
 	//for (auto it = child.begin(); it != child.end(); ++it) {
 	//	if (it->Get()->Name == "hit") {
@@ -61,17 +61,17 @@ void Weapon::OnCollideBegin(GameObject target){
 			if (!is_ground_hit) {
 				m_Recast = 0.0f;
 				//scr->Damage(m_AttackForce);
-				m_HitCollback(target,HitState::Damage);
+				m_HitCollback(target,this,HitState::Damage);
 			}
 		}
 	}
 	mIsEnemyThrow = false;
-}
+} 
 
 //コライダーとのヒット中に呼ばれます
 void Weapon::OnCollideEnter(GameObject target) {
 	(void)target;
-
+	 
 }
 
 //コライダーとのロスト時に呼ばれます
@@ -97,7 +97,7 @@ bool Weapon::isBreak()
 /// </summary>
 void Weapon::ThrowAway()
 {
-	SetHitCollback([](auto o,auto t) {});
+	SetHitCollback([](auto o,auto w,auto t) {});
 
 	is_hand = false;
 	is_ground_hit = false;

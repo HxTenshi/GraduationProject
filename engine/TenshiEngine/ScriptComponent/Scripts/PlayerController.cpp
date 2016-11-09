@@ -1052,13 +1052,15 @@ void PlayerController::GettingWeapon(){
 	else if (Input::Up(KeyCode::Key_F)) {
 		if (m_tempWeapon) { 
 		//選択した武器をセット
-			weaponHand->SetWeapon(m_tempWeapon, [&](auto o, auto t) {
+			weaponHand->SetWeapon(m_tempWeapon, [&](auto o,Weapon* w, auto t) {
 				if (Sandbag* scr = o->GetScript<Sandbag>()) {
 					if (m_CurrentAttack.AttackTime > 0.0f) {
-						scr->Damage((int)m_CurrentAttack.DamageScale);
+
+						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower());
 						if (t == Weapon::HitState::Damage) {
 							AddSpecial(m_CurrentAttack.AddSpecial);
 						}
+						
 					}
 				}
 			});

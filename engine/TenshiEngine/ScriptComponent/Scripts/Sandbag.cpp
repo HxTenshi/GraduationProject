@@ -136,7 +136,7 @@ void Sandbag::OnCollideExit(GameObject target){
 }
 
 /****************************************************É_ÉÅÅ[ÉWÇÃèàóù********************************************************/
-void Sandbag::Damage(int damage_)
+void Sandbag::Damage(float damage_)
 {
 	damage = damage_;
 	if (actionModeID == ACTIONMODE::BATTLEMODE && battleModeParam.battleActionID != BATTLEACTION::DEADACTION){

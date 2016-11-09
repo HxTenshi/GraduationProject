@@ -84,7 +84,7 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	void Damage(int damage_);
+	void Damage(float damage_);
 	void Attack(GameObject player);
 
 private:
@@ -161,7 +161,7 @@ private:
 	SERIALIZE float offBattleRange;
 	SERIALIZE float trackingAngle;
 	SERIALIZE float trackingRotateSpeed;
-	SERIALIZE int hp;
+	SERIALIZE float hp;
 	SERIALIZE int attackDamage;
 	SERIALIZE GameObject player;
 	SERIALIZE GameObject myWeapon;
@@ -183,7 +183,7 @@ private:
 	//移動量
 	XMVECTOR vec;
 	//受けるダメージを保存するもの
-	int damage;
+	float damage;
 
 	//捜索時の移動ポイントの数値
 	int moveCount;
