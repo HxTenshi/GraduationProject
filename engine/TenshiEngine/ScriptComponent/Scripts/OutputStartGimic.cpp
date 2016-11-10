@@ -15,7 +15,7 @@ void OutputStartGimic::Start(){
 void OutputStartGimic::Update(){
 
 	if (Input::Trigger(KeyCode::Key_L)) {
-		OnStart();
+		OnStart(NULL);
 	}
 }
 
@@ -39,7 +39,7 @@ void OutputStartGimic::OnCollideExit(GameObject target){
 	(void)target;
 }
 
-bool OutputStartGimic::OnStart(){
+bool OutputStartGimic::OnStart(GameObject Sender){
 	if (!m_Output)return false;
 
 	if (m_StartMatineeMode) {

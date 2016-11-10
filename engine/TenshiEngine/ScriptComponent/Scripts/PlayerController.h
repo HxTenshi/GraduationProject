@@ -12,16 +12,17 @@ enum NextAttack {
 };
 
 struct AttackState {
-	int ID;
-	int NextLowID;
-	int NextHighID;
-	int MoutionID;
-	float AttackTime;
-	float KoutyokuTime;
-	float NextTime;
-	float DamageScale;
-	float AddSpecial;
-	std::function<void(void)> AttackFunc;
+	int ID = -1;
+	int NextLowID = -1;
+	int NextHighID = -1;
+	int MoutionID = -1;
+	float AttackTime = 0.0f;
+	float KoutyokuTime = 0.0f;
+	float NextTime = 0.0f;
+	float DamageScale = 0.0f;
+	float AddSpecial = 0.0f;
+	float AttackMove = 0.0f;
+	std::function<void(void)> AttackFunc = []() {};
 };
 
 class CharacterControllerComponent;
@@ -40,6 +41,7 @@ public:
 		enum Enum {
 			Lock,
 			Free,
+			Guard,
 			Dodge,
 			Attack,
 			KnockBack,
@@ -79,6 +81,7 @@ public:
 	float GetMaxHP();
 
 	void Dead();
+	void AddCoroutine(const std::function<bool(void)>& func);
 private:
 
 	void LockEnter();
@@ -88,6 +91,10 @@ private:
 	void FreeEnter();
 	void FreeExcute();
 	void FreeExit();
+
+	void GuardEnter();
+	void GuardExcute();
+	void GuardExit();
 
 	void AttackEnter();
 	void AttackExcute();
@@ -114,6 +121,7 @@ private:
 	void DeadExit();
 
 	void move();
+	void dontmove();
 	void moveUpdate();
 	void rotate();
 	bool dodge();
@@ -124,10 +132,13 @@ private:
 	void GettingWeapon();
 
 	void changeAnime(int id);
+	float getMoutionTime(int id);
 	void animeFlip();
 
+	void stateFlip();
 	//ÉÅÉìÉoïœêî
 
+	PlayerState::Enum m_PlayerState_Stack;
 	PlayerState::Enum m_PlayerState;
 	struct StateFunc{
 		std::function<void(void)> Enter = []() {};
@@ -176,15 +187,31 @@ private:
 	SERIALIZE 
 	GameObject mAimController;
 
+	SERIALIZE
+	PrefabAsset m_BloodParticle;
+	SERIALIZE
+	PrefabAsset m_GuardParticle;
+
 	float m_FloatJumpTimer;
 
-	float m_DodgeTimer;
 	XMVECTOR m_MoveVelo;
 	XMVECTOR mJump;
 	XMVECTOR mGravity;
 	//å¸Ç≠Ç◊Ç´ï˚å¸
 	XMVECTOR mVelocity;
 
+	struct DogdeParam {
+		XMVECTOR Velocity = XMVectorZero();
+		float Timer = 0.0f;
+	} m_DogdeParam;
+
+	float m_RotateLimit;
+	struct GuardParam{
+		bool AttackGuard = false;
+		float KnockBackTime = 0.0f;
+		float JustTime = 0.0f;
+		float JustTimeCooldomn = 0.0f;
+	} m_GuardParam;
 	bool m_IsGround;
 	bool m_IsGuard;
 
@@ -199,4 +226,7 @@ private:
 	int m_NextAttack;
 	AttackState m_CurrentAttack;
 	std::vector<AttackState> m_AttackStateList;
+
+
+	std::list<std::function<bool(void)>> m_UpdateCoroutine;
 };

@@ -15,12 +15,14 @@ void TimeManager::Start(){
 //毎フレーム呼ばれます
 void TimeManager::Update(){
 	
-	if (Input::Down(KeyCode::Key_Z)) {
-		m_isSlow = true;
+	//現在のタイムスケール
+	auto ts = Hx::DeltaTime()->GetTimeScale();
+	
+	//外部からいじられた可能性があるため処理を一時停止
+	if (abs(m_scaleTime - ts) > FLT_EPSILON) {
+		return;
 	}
-	if (Input::Down(KeyCode::Key_X)) {
-		m_isSlow = false;
-	}
+
 	//デルタタイムを取得
 	float deltaTime = Hx::DeltaTime()->GetNoScaleDeltaTime();
 

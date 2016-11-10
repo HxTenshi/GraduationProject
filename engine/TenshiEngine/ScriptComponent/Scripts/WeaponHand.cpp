@@ -3,13 +3,9 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void WeaponHand::Initialize(){
-	m_AttackTime = 0.0f;
-	m_IsGuard = false;
 	m_ActionFree = false;
 	m_Wave = 0.0f;
 	mWeapon = NULL;
-
-	m_AttackFunction = [](){};
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -20,8 +16,6 @@ void WeaponHand::Start(){
 //毎フレーム呼ばれます
 void WeaponHand::Update(){
 	if (!mWeapon) {
-		m_AttackTime = 0.0f;
-
 		return;
 	}
 	if (m_NowGetAction) {
@@ -66,22 +60,11 @@ void WeaponHand::Update(){
 		return;
 	}
 
-	if (m_IsGuard) {
-		if(m_GuardPos)
-			mWeapon->mTransform->SetParent(m_GuardPos);
-	}
-	else {
+	{
 		mWeapon->mTransform->SetParent(gameObject);
 		mWeapon->mTransform->Position(XMVectorZero());
 		mWeapon->mTransform->Rotate(XMVectorZero());
-
-		//m_AttackFunction();
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-		}
 	}
-	m_IsGuard = false;
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -134,102 +117,6 @@ void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& col
 	}
 }
 
-void WeaponHand::LowAttack_1()
-{
-	m_AttackTime = 1.0f;
-	m_AttackFunction = [&]() {
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-			mWeapon->mTransform->Rotate(XMVectorSet(m_AttackTime * 10.0f, 0, 0, 1));
-		}
-	};
-}
-void WeaponHand::LowAttack_2()
-{
-	m_AttackTime = 1.0f;
-	m_AttackFunction = [&]() {
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-			mWeapon->mTransform->Rotate(XMVectorSet(0, 0, m_AttackTime * 10.0f, 1));
-		}
-	};
-}
-void WeaponHand::LowAttack_3()
-{
-	m_AttackTime = 1.0f;
-	m_AttackFunction = [&]() {
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-			mWeapon->mTransform->Rotate(XMVectorSet(m_AttackTime * 40.0f, 0, 0, 1));
-		}
-	};
-}
-
-void WeaponHand::HighAttack_1()
-{
-	m_AttackTime = 1.0f;
-	m_AttackFunction = [&]() {
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-
-			auto pos = sin(m_AttackTime * XM_PI) * 1.0f;
-			mWeapon->mTransform->Position(XMVectorSet(0,0,pos,1));
-			mWeapon->mTransform->Rotate(XMVectorSet(m_AttackTime * 40.0f, 0, 0, 1));
-		}
-	};
-}
-
-void WeaponHand::HighAttack_2()
-{
-	m_AttackTime = 1.0f;
-	m_AttackFunction = [&]() {
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-
-			auto pos1 = sin(m_AttackTime * XM_PI) * 1.0f;
-			auto pos2 = (sin(m_AttackTime * XM_PI * 2)) * 2.0f;
-			mWeapon->mTransform->Position(XMVectorSet(pos2, 0, pos1,1));
-			mWeapon->mTransform->Rotate(XMVectorSet(0, 0, m_AttackTime * 40.0f, 1));
-		}
-	};
-}
-
-void WeaponHand::FloatLowAttack_1()
-{
-	m_AttackTime = 1.0f;
-	m_AttackFunction = [&]() {
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-			mWeapon->mTransform->Rotate(XMVectorSet(0, 0, m_AttackTime * 40.0f, 1));
-		}
-	};
-}
-
-void WeaponHand::SpecialAttack()
-{
-	m_AttackTime = 3.0f;
-	m_AttackFunction = [&]() {
-		if (m_AttackTime > 0.0f) {
-			m_AttackTime -= Hx::DeltaTime()->GetDeltaTime();
-			m_AttackTime = max(m_AttackTime, 0.0f);
-			mWeapon->mTransform->Rotate(XMVectorSet(0, 0, m_AttackTime * 40.0f, 1));
-		}
-	};
-}
-
-
-void WeaponHand::Guard()
-{
-	m_IsGuard = true;
-
-}
-
 void WeaponHand::ThrowAway()
 {
 	if (!mWeapon || !m_ActionFree)return;
@@ -238,6 +125,7 @@ void WeaponHand::ThrowAway()
 		//scr->ThrowAway(v);
 		mWeapon = NULL;
 		scr->ThrowAway();
+		m_ActionFree = false;
 	}
 }
 
@@ -263,6 +151,7 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 	if (auto scr = mWeapon->GetScript<Weapon>()) {
 		mWeapon = NULL;
 		scr->ThrowAway(targetVector * power);
+		m_ActionFree = false;
 	}
 }
 
@@ -273,5 +162,6 @@ void WeaponHand::ThrowAway(XMVECTOR vector)
 	if (auto scr = mWeapon->GetScript<Weapon>()) {
 		mWeapon = NULL;
 		scr->ThrowAway(vector * power);
+		m_ActionFree = false;
 	}
 }

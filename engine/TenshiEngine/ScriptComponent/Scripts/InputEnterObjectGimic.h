@@ -1,9 +1,9 @@
 
 #pragma once
 #include "main.h"
-#include "OutputGimic.h"
 
-class OutputStartGimic :public OutputGimic {
+
+class InputEnterObjectGimic :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -13,16 +13,12 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
-	bool OnStart(GameObject Sender) override;
-
 private:
 	//ÉÅÉìÉoïœêî
-	SERIALIZE
-	bool m_StartMatineeMode;
+	SERIALIZE GameObject _m_OutputGimic;
 
-	SERIALIZE
-	bool m_StartInstanceObjectMode;
-
-	SERIALIZE
-	GameObject m_Output;
+	SERIALIZE GameObject m_TargetObj;
+	SERIALIZE std::string m_TargetName;
+	SERIALIZE int m_TargetLayer;
+	SERIALIZE std::string m_TargetScript;
 };

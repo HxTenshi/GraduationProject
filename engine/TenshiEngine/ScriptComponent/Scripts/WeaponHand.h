@@ -20,15 +20,6 @@ public:
 	GameObject GetHandWeapon();
 	void SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback);
 
-	void LowAttack_1();
-	void LowAttack_2();
-	void LowAttack_3();
-	void HighAttack_1();
-	void HighAttack_2();
-	void FloatLowAttack_1();
-	void SpecialAttack();
-	void Guard();
-
 	void ThrowAway();
 	void ThrowAway(XMVECTOR vector);
 	void ThrowAway(GameObject target,bool isMove);
@@ -47,11 +38,4 @@ private:
 	float m_GetPosDistance;
 
 	bool m_ActionFree;
-
-	SERIALIZE
-	GameObject m_GuardPos;
-	float m_AttackTime;
-	bool m_IsGuard;
-
-	std::function<void(void)> m_AttackFunction;
 };

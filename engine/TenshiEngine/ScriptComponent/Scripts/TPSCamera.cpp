@@ -76,7 +76,7 @@ void TPSCamera::Update(){
 	}
 
 	if (mLookTarget) {
-		auto eye = gameObject->mTransform->WorldPosition();
+		auto eye = mTarget->mTransform->WorldPosition();
 		auto at = mLookTarget->mTransform->WorldPosition();
 		auto rotate = XMMatrixTranspose(XMMatrixLookAtLH(eye, at, XMVectorSet(0, 1, 0, 1)));
 		auto q = XMQuaternionRotationMatrix(rotate);
