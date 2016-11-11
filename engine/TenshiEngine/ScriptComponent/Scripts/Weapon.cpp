@@ -83,14 +83,14 @@ void Weapon::OnCollideExit(GameObject target){
 /// </summary>
 void Weapon::Damage(int damage)
 {
-	m_Endurance -= damage;
+	m_param.Damage(damage);
 }
 /// <summary>
 ///•Ší‚ª‰ó‚ê‚½‚Ì”»’è
 /// </summary>
 bool Weapon::isBreak()
 {
-	return (m_Endurance <= 0) ? true : false;
+	return m_param.isBreak();
 }
 /// <summary>
 ///•Ší‚ğÌ‚Ä‚éˆ—
@@ -107,7 +107,7 @@ void Weapon::ThrowAway()
 	gameObject->mTransform->SetParent(Hx::GetRootActor());
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
-	gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,1.0f,1.0f) * 10, ForceMode::eIMPULSE);
+	gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
 }
 void Weapon::ThrowAttack()
 {
@@ -155,6 +155,40 @@ void Weapon::GetWeapon()
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	gameObject->GetComponent<PhysXComponent>()->SetKinematic(false);
 	Hx::Debug()->Log("get");
+}
+
+float Weapon::GetAttackPower()
+{
+	return m_param.AttackParam();
+}
+
+float Weapon::GetDurable()
+{
+	return m_param.GetDurable();
+}
+
+WeaponType Weapon::GetWeaponType()
+{
+	return m_param.GetWeaponType();
+}
+
+void Weapon::SwapWeapon(GameObject target)
+{
+	if (!is_hand)return;
+
+	XMVECTOR pos = gameObject->mTransform->WorldPosition();
+	XMVECTOR rot = gameObject->mTransform->Rotate();
+	GameObject parent = gameObject->mTransform->GetParent();
+
+	gameObject->mTransform->WorldPosition(target->mTransform->WorldPosition());
+	gameObject->mTransform->Rotate(target->mTransform->Rotate());
+
+	target->mTransform->WorldPosition(pos);
+	target->mTransform->Rotate(rot);
+	//effect
+
+	
+
 }
 
 void Weapon::ThrowAwayAction()

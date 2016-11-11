@@ -30,7 +30,7 @@ namespace funifuni {
 		//耐久値が無くなったか
 		bool isBreak();
 		//耐久値の取得
-		int GetDurable();
+		float GetDurable();
 
 		//攻撃力の取得
 		float AttackParam();
@@ -44,26 +44,30 @@ namespace funifuni {
 		//攻撃力のセット
 		void SetAttack(float attack);
 		//耐久値のセット
-		void SetDurable(int durable);
+		void SetDurable(float durable);
 		//耐久値のダメージの設定
-		void SetDurableDamage(int low, int strong);
+		void SetDurableDamage(float low, float strong);
 		//ウエポンのタイプをセット
 		void SetWeaponType(WeaponType type);
 		//ウエポンのタイプをセット
 		void SetWeaponType(std::string type);
 		//ウエポンのタイプを取得
 		WeaponType GetWeaponType();
+		//ダメージ関数
+		void Damage(float damage);
+
+
 	private:
 		//名前
 		std::string m_Name;
 		//攻撃力
 		float m_AttackParam;
 		//耐久値
-		int m_Durable;
+		float m_Durable;
 		//弱攻撃の耐久ダメージ
-		int m_LowDurableDamage;
+		float m_LowDurableDamage;
 		//強攻撃の耐久ダメージ
-		int m_StrongDurableDamage;
+		float m_StrongDurableDamage;
 		//武器の種類
 		WeaponType m_Type;
 	};
