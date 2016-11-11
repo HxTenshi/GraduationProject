@@ -141,17 +141,20 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 	else if (angle < 0)angle += 360.0f;
 	Hx::Debug()->Log("Y : "+std::to_string(angle));
 	GameObject character = gameObject->mTransform->GetParent();
-	character->mTransform->DegreeRotate(XMVectorSet(0, angle, 0, 0));
+	if (character)
+	{
+		character->mTransform->DegreeRotate(XMVectorSet(0, angle, 0, 0));
 
-	mWeapon->GetComponent<PhysXComponent>()->SetGravity(false);
+		mWeapon->GetComponent<PhysXComponent>()->SetGravity(false);
 
-	XMVECTOR targetVector = XMVector3Normalize(log);
-	float power = 1;
-	character->mTransform->AddForce(targetVector * 30,ForceMode::eIMPULSE);
-	if (auto scr = mWeapon->GetScript<Weapon>()) {
-		mWeapon = NULL;
-		scr->ThrowAway(targetVector * power);
-		m_ActionFree = false;
+		XMVECTOR targetVector = XMVector3Normalize(log);
+		float power = 1;
+		character->mTransform->AddForce(targetVector * 30, ForceMode::eIMPULSE);
+		if (auto scr = mWeapon->GetScript<Weapon>()) {
+			mWeapon = NULL;
+			scr->ThrowAway(targetVector * power);
+			m_ActionFree = false;
+		}
 	}
 }
 
