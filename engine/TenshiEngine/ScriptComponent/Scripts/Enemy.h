@@ -53,7 +53,7 @@ enum ANIM_ID{
 	ANIM_BACKSTEP,
 	ANIM_ATTACK_DOWN,
 	ANIM_GUARD,
-	ANIM_JUMPSRASH,
+	ANIM_JUMPATTACK,
 	ANIM_WINCE,
 	ANIM_HITINGUARD,
 	ANIM_ATTACK_MONCKEY,
@@ -75,7 +75,7 @@ const float APPROACHTIME = 1.0f;
 const float GUARDTIME = 1.0f;
 
 
-class Sandbag :public IDllScriptComponent{
+class Enemy :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
