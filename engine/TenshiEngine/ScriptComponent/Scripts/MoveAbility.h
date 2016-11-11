@@ -16,6 +16,8 @@ public:
 	void SetPoint(GameObject target, weak_ptr<CharacterControllerComponent> cc);
 	void OnMove();
 
+	void KnockBack(std::function<void(void)> function,GameObject target);
+
 private:
 	//ƒƒ“ƒo•Ï”
 	weak_ptr<CharacterControllerComponent> mCC;

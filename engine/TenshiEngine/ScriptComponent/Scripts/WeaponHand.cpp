@@ -140,7 +140,7 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 	if (angle > 360)angle -= 360.0f;
 	else if (angle < 0)angle += 360.0f;
 	Hx::Debug()->Log("Y : "+std::to_string(angle));
-	GameObject character = Hx::FindActor("キャラクター");
+	GameObject character = gameObject->mTransform->GetParent();
 	character->mTransform->DegreeRotate(XMVectorSet(0, angle, 0, 0));
 
 	mWeapon->GetComponent<PhysXComponent>()->SetGravity(false);

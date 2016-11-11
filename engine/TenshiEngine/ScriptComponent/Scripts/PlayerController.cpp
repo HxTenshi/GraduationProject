@@ -276,7 +276,7 @@ void PlayerController::Update(){
 			}
 		}
 
-		if (Input::Down(KeyCode::Key_O)) {
+		if (Input::Down(KeyCode::Key_U)) {
 			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 				script->OnMove();
 			}
