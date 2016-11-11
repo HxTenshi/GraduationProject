@@ -1197,7 +1197,7 @@ void PlayerController::lockOn()
 	}
 
 }
-#include "Sandbag.h"
+#include "Enemy.h"
 void PlayerController::GettingWeapon(){
 
 	//早期リターン
@@ -1262,7 +1262,7 @@ void PlayerController::GettingWeapon(){
 		if (m_tempWeapon) { 
 		//選択した武器をセット
 			weaponHand->SetWeapon(m_tempWeapon, [&](auto o,Weapon* w, auto t) {
-				if (Sandbag* scr = o->GetScript<Sandbag>()) {
+				if (Enemy* scr = o->GetScript<Enemy>()) {
 					if (m_CurrentAttack.AttackTime > 0.0f) {
 
 						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower());

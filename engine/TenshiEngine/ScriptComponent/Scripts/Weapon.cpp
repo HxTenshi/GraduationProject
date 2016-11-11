@@ -2,7 +2,7 @@
 #include "Input/Input.h"
 #include "h_component.h"
 #include "h_standard.h"
-#include "Sandbag.h"
+#include "Enemy.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Weapon::Initialize(){
 	is_hand = false;
@@ -57,7 +57,7 @@ void Weapon::OnCollideBegin(GameObject target){
 	}
 	if (target->GetLayer() == 3 && is_hand) {
 		//サンドバッグへのダメージの処理
-		if (auto scr = target->GetScript<Sandbag>()) {
+		if (auto scr = target->GetScript<Enemy>()) {
 			if (!is_ground_hit) {
 				m_Recast = 0.0f;
 				//scr->Damage(m_AttackForce);
