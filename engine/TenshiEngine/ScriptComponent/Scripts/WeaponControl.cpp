@@ -40,20 +40,35 @@ void WeaponControl::OnCollideExit(GameObject target){
 
 void WeaponControl::HitActor(GameObject target,GameObject weapon)
 {
-	IsEnemy(target,weapon);
+	Hx::Debug()->Log("“–‚½‚Á‚Ä‚¢‚é‚Í‚¸");
+	if (target->GetLayer() == 3){
+		Hx::Debug()->Log("“ª‚É");
+		SearchEnemyBone(target, weapon, "Head");
+	}
+	else if (target->GetLayer() == 12) {
+		Hx::Debug()->Log("‘Ì‚É");
+		SearchEnemyBone(target, weapon, "Spine");
+	}
+
 }
 
-
 //
-void WeaponControl::IsEnemy(GameObject target,GameObject weapon)
+void WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::string name)
 {
 		//‚±‚±‚Å‘ÎÛ‚Ì“G‚Ì•R•t‚¯
 		auto mirrer = weapon->GetComponent<BoneMirrorComponent>();
-		Hx::Debug()->Log("“–‚½‚Á‚½SandBag‚Ìq‚©‚ç“Á—á‚ÌLayer(10)‚ğŒŸo‚µ‚Ä‚»‚ÌƒIƒuƒWƒFƒNƒg‚ÌBone‚ğŒ©‚Ä‚¢‚é");
-		auto targetObject = target->mTransform->Children();
+		std::list<GameObject> targetObject;
+		if (target->GetLayer() == 3){
+			targetObject = target->mTransform->Children();
+		}
+		else if (target->GetLayer() == 12) {
+			targetObject = target->mTransform->GetParent()->mTransform->Children();
+		}
+
 		for (auto i : targetObject) {
 			if (i->GetLayer() == 10)target = i;
 		}
+
 		mirrer->ChangeTargetBone(target);
 		mirrer->Enable();
 
@@ -61,7 +76,7 @@ void WeaponControl::IsEnemy(GameObject target,GameObject weapon)
 		int id = 0;
 		for (auto name : vector)
 		{
-			if (name == "Head")
+			if (name == name)
 			{
 				break;
 			}
@@ -70,12 +85,15 @@ void WeaponControl::IsEnemy(GameObject target,GameObject weapon)
 
 		//’Ç]‚·‚é
 		mirrer->SetTargetBoneID(id);
-		
-		//h‚³‚é
-		//weapon->mTransform->SetParent(target);
-		//weapon->mTransform->WorldPosition(target->mTransform->WorldPosition()+XMVectorSet(0,2,0,0));
-		//•Ší‚Ì‰ñ“](h‚³‚é•ûŒü)
-		//weapon->mTransform->DegreeRotate(XMVectorSet(90,0,0,0));
-		//weapon->GetComponent<PhysXComponent>()->SetKinematic(false);
-		//weapon->
+}
+
+//“ª‚É“–‚½‚Á‚½‚©?
+bool WeaponControl::IsHitHead(GameObject target)
+{
+	//for (GameObject i : target->mTransform->Children())
+	//{
+	//	if (i->GetLayer() == 12)return true;
+	//}
+	if (target->GetLayer() == 12)return true;
+	return false;
 }
