@@ -35,14 +35,14 @@ namespace funifuni {
 	/// <summary>
 	///耐久値のセット
 	/// </summary>
-	void WeaponParametor::SetDurable(int durable)
+	void WeaponParametor::SetDurable(float durable)
 	{
 		m_Durable = durable;
 	}
 	/// <summary>
 	///耐久値のダメージの設定
 	/// </summary>
-	void WeaponParametor::SetDurableDamage(int low, int strong)
+	void WeaponParametor::SetDurableDamage(float low, float strong)
 	{
 		m_LowDurableDamage = low;
 		m_StrongDurableDamage = strong;
@@ -61,6 +61,10 @@ namespace funifuni {
 	{
 		return m_Type;
 	}
+	void WeaponParametor::Damage(float damage)
+	{
+		m_Durable -= damage;
+	}
 	/// <summary>
 	///武器の耐久値がなくなったか
 	/// </summary>
@@ -71,7 +75,7 @@ namespace funifuni {
 	/// <summary>
 	///耐久値の取得
 	/// </summary>
-	int WeaponParametor::GetDurable()
+	float WeaponParametor::GetDurable()
 	{
 		return m_Durable;
 	}
