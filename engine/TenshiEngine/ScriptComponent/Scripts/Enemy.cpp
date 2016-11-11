@@ -11,6 +11,8 @@ void Enemy::Initialize() {
 	moveCount = 0;
 	moveCountUp = true;
 
+	childTranckingSpeed = 1.0f;
+
 	actionModeID = ACTIONMODE::TRACKINGMODE;
 	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 
@@ -357,27 +359,39 @@ void Enemy::TrackingModeInitilize()
 		Hx::Debug()->Log("‘{õƒ‚[ƒh‚ÖˆÚs");
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
 	if (!navi)return;
-	if (!movePoints)return;
-	auto movePointList = movePoints->mTransform->Children();
-	int maxMoveCount = movePointList.size();
-	if (maxMoveCount == 0)return;
-	int i = 0;
-	float movePointLenMin;
-	for (auto itr : movePointList) {
-		auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - itr->mTransform->WorldPosition()).x;
-		if (i == 0 || movePointLenMin > movePointLen) {
-			movePointLenMin = movePointLen;
-			moveCount = i;
+
+	GameObject movePoint;
+	if (!child) {
+		if (!movePoints)return;
+		auto movePointList = movePoints->mTransform->Children();
+		int maxMoveCount = movePointList.size();
+		if (maxMoveCount == 0)return;
+		int i = 0;
+		float movePointLenMin;
+		for (auto itr : movePointList) {
+			auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - itr->mTransform->WorldPosition()).x;
+			if (i == 0 || movePointLenMin > movePointLen) {
+				movePointLenMin = movePointLen;
+				moveCount = i;
+			}
+			i++;
 		}
-		i++;
+		movePoint = *movePointList.begin();
+		i = 0;
+		for (auto itr = movePointList.begin(); i <= moveCount; ++itr, ++i) {
+			movePoint = *itr;
+		}
 	}
-	GameObject movePoint = *movePointList.begin();
-	i = 0;
-	for (auto itr = movePointList.begin(); i <= moveCount; ++itr, ++i) {
-		movePoint = *itr;
+	else {
+		movePoint = movePoints;
+		trackingRotateSpeed *= 2;
 	}
 	navi->RootCreate(gameObject, movePoint);
 	moveCountUp = true;
+
+	Hx::PhysX()->Raycast(gameObject->mTransform->WorldPosition(),
+		XMVector3Normalize(movePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()),
+		3.0f);
 }
 
 void Enemy::TrackingModeUpdate()
@@ -398,36 +412,58 @@ void Enemy::TrackingModeUpdate()
 		return;
 	}
 
+	if (child) {
+		if (XMVector3Length(movePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 3.0f) {
+			childTranckingSpeed = 1.5f;
+		}
+		else {
+			childTranckingSpeed = 1.0f;
+		}
+	}
+
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
 	if (!navi)return;
 	if (navi->IsMoveEnd()) {
-		if (!movePoints)return;
-		auto movePointList = movePoints->mTransform->Children();
-		int maxMoveCount = movePointList.size();
-		if (maxMoveCount == 0)return;
-		maxMoveCount--;
-		int i = 0;
-		GameObject movePoint = *movePointList.begin();
-		for (auto itr = movePointList.begin(); i <= moveCount; ++itr, i++) {
-			movePoint = *itr;
-		}
-
-		if (moveCountUp) {
-			moveCount++;
-			if (moveCount == maxMoveCount) {
-				moveCountUp = false;
+		GameObject movePoint;
+		if (!child) {
+			if (!movePoints)return;
+			auto movePointList = movePoints->mTransform->Children();
+			int maxMoveCount = movePointList.size();
+			if (maxMoveCount == 0)return;
+			maxMoveCount--;
+			int i = 0;
+			movePoint = *movePointList.begin();
+			for (auto itr = movePointList.begin(); i <= moveCount; ++itr, i++) {
+				movePoint = *itr;
 			}
+
+			if (moveCountUp) {
+				moveCount++;
+				if (moveCount == maxMoveCount) {
+					moveCountUp = false;
+				}
+			}
+			else {
+				moveCount--;
+				if (moveCount == 0) {
+					moveCountUp = true;
+				}
+			}
+			navi->RootCreate(gameObject, movePoint);
 		}
 		else {
-			moveCount--;
-			if (moveCount == 0) {
-				moveCountUp = true;
+			movePoint = movePoints;
+			if (XMVector3Length(movePoint->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 1.0f) {
+				childTranckingSpeed = 0.0f;
+			}
+			else {
+				childTranckingSpeed = 1.0f;
+				navi->RootCreate(gameObject, movePoint);
 			}
 		}
-		navi->RootCreate(gameObject, movePoint);
 	}
-
-	navi->Move(trackingSpeed * Hx::DeltaTime()->GetDeltaTime());
+	
+	navi->Move(trackingSpeed * childTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;
@@ -442,7 +478,7 @@ void Enemy::TrackingModeUpdate()
 	auto qua = gameObject->mTransform->Quaternion();
 	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 
-	vec += forward * trackingSpeed;
+	vec += forward * trackingSpeed * childTranckingSpeed;
 }
 
 void Enemy::TrackingModeFinalize()

@@ -167,6 +167,7 @@ private:
 	SERIALIZE GameObject myWeapon;
 	SERIALIZE GameObject modelObject;
 	SERIALIZE GameObject movePoints;
+	SERIALIZE bool child;
 	SERIALIZE float aproachRotateSpeed;
 	SERIALIZE float correctionRotateSpeed;
 	SERIALIZE bool drawLog;
@@ -198,6 +199,7 @@ private:
 	//アニメーションに必要なパラメーター
 	AnimParameter animparam;
 
+	float childTranckingSpeed;
 	//重力
 	XMVECTOR mGravity;
 
