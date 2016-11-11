@@ -16,7 +16,9 @@ public:
 
 	//Weapon‚ÌBigin‚ÅŒÄ‚ñ‚Å‚à‚ç‚¤
 	void HitActor(GameObject target, GameObject weapon);
-	void IsEnemy(GameObject target, GameObject weapon);
+	void SearchEnemyBone(GameObject target, GameObject weapon,std::string name);
+
+	bool IsHitHead(GameObject target);
 
 private:
 	//ƒƒ“ƒo•Ï”
