@@ -1,4 +1,4 @@
-#include "Sandbag.h"
+#include "Enemy.h"
 
 #include "../h_standard.h"
 #include "../h_component.h"
@@ -6,7 +6,7 @@
 #include "PlayerController.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
-void Sandbag::Initialize() {
+void Enemy::Initialize() {
 	mGravity = XMVectorSet(0, -9.81f, 0, 1);
 	moveCount = 0;
 	moveCountUp = true;
@@ -14,53 +14,53 @@ void Sandbag::Initialize() {
 	actionModeID = ACTIONMODE::TRACKINGMODE;
 	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 
-	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&Sandbag::TrackingModeInitilize, this/*,std::placeholders::_1*/);
-	actionModeUpdate[ACTIONMODE::TRACKINGMODE] = std::bind(&Sandbag::TrackingModeUpdate, this);
-	actionModeFinalize[ACTIONMODE::TRACKINGMODE] = std::bind(&Sandbag::TrackingModeFinalize, this);
+	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&Enemy::TrackingModeInitilize, this/*,std::placeholders::_1*/);
+	actionModeUpdate[ACTIONMODE::TRACKINGMODE] = std::bind(&Enemy::TrackingModeUpdate, this);
+	actionModeFinalize[ACTIONMODE::TRACKINGMODE] = std::bind(&Enemy::TrackingModeFinalize, this);
 
-	actionModeInitilize[ACTIONMODE::BATTLEMODE] = std::bind(&Sandbag::BattleModeInitilize, this);
-	actionModeUpdate[ACTIONMODE::BATTLEMODE] = std::bind(&Sandbag::BattleModeUpdate, this);
-	actionModeFinalize[ACTIONMODE::BATTLEMODE] = std::bind(&Sandbag::BattleModeFinalize, this);
+	actionModeInitilize[ACTIONMODE::BATTLEMODE] = std::bind(&Enemy::BattleModeInitilize, this);
+	actionModeUpdate[ACTIONMODE::BATTLEMODE] = std::bind(&Enemy::BattleModeUpdate, this);
+	actionModeFinalize[ACTIONMODE::BATTLEMODE] = std::bind(&Enemy::BattleModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::CONFRONTACTION] = std::bind(&Sandbag::ConfrontModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::CONFRONTACTION] = std::bind(&Sandbag::ConfrontModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::CONFRONTACTION] = std::bind(&Sandbag::ConfrontModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::CONFRONTACTION] = std::bind(&Enemy::ConfrontModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::CONFRONTACTION] = std::bind(&Enemy::ConfrontModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::CONFRONTACTION] = std::bind(&Enemy::ConfrontModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::APPROACHACTION] = std::bind(&Sandbag::ApproachModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::APPROACHACTION] = std::bind(&Sandbag::ApproachModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::APPROACHACTION] = std::bind(&Sandbag::ApproachModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::APPROACHACTION] = std::bind(&Enemy::ApproachModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::APPROACHACTION] = std::bind(&Enemy::ApproachModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::APPROACHACTION] = std::bind(&Enemy::ApproachModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Sandbag::AttackDownModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Sandbag::AttackDownModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Sandbag::AttackDownModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Enemy::AttackDownModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Enemy::AttackDownModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Enemy::AttackDownModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Sandbag::JumpAttackModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Sandbag::JumpAttackModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Sandbag::JumpAttackModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Enemy::JumpAttackModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Enemy::JumpAttackModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Enemy::JumpAttackModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::GUARDACTION] = std::bind(&Sandbag::GuardModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::GUARDACTION] = std::bind(&Sandbag::GuardModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::GUARDACTION] = std::bind(&Sandbag::GuardModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::GUARDACTION] = std::bind(&Enemy::GuardModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::GUARDACTION] = std::bind(&Enemy::GuardModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::GUARDACTION] = std::bind(&Enemy::GuardModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::BACKSTEPACTION] = std::bind(&Sandbag::BackStepModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::BACKSTEPACTION] = std::bind(&Sandbag::BackStepModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::BACKSTEPACTION] = std::bind(&Sandbag::BackStepModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::BACKSTEPACTION] = std::bind(&Enemy::BackStepModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::BACKSTEPACTION] = std::bind(&Enemy::BackStepModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::BACKSTEPACTION] = std::bind(&Enemy::BackStepModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::WINCEACTION] = std::bind(&Sandbag::WinceModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&Sandbag::WinceModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&Sandbag::WinceModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::WINCEACTION] = std::bind(&Enemy::WinceModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&Enemy::WinceModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&Enemy::WinceModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::HITINGUARDACTION] = std::bind(&Sandbag::HitInGuardModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::HITINGUARDACTION] = std::bind(&Sandbag::HitInGuardModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::HITINGUARDACTION] = std::bind(&Sandbag::HitInGuardModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::HITINGUARDACTION] = std::bind(&Enemy::HitInGuardModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::HITINGUARDACTION] = std::bind(&Enemy::HitInGuardModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::HITINGUARDACTION] = std::bind(&Enemy::HitInGuardModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Sandbag::AttackMonckeyModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Sandbag::AttackMonckeyModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Sandbag::AttackMonckeyModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Enemy::AttackMonckeyModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Enemy::AttackMonckeyModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Enemy::AttackMonckeyModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::DEADACTION] = std::bind(&Sandbag::DeadModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&Sandbag::DeadModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&Sandbag::DeadModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeFinalize, this);
 
 	actionModeInitilize[actionModeID]();
 
@@ -89,11 +89,11 @@ void Sandbag::Initialize() {
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
-void Sandbag::Start(){
+void Enemy::Start(){
 }
 
 //毎フレーム呼ばれます
-void Sandbag::Update(){
+void Enemy::Update(){
 	vec = XMVectorZero();
 
 	if (Input::Trigger(KeyCode::Key_1)) {
@@ -116,27 +116,27 @@ void Sandbag::Update(){
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
-void Sandbag::Finish(){
+void Enemy::Finish(){
 
 }
 
 //コライダーとのヒット時に呼ばれます
-void Sandbag::OnCollideBegin(GameObject target) {
+void Enemy::OnCollideBegin(GameObject target) {
 	(void)target;
 }
 
 //コライダーとのヒット中に呼ばれます
-void Sandbag::OnCollideEnter(GameObject target){
+void Enemy::OnCollideEnter(GameObject target){
 	(void)target;
 }
 
 //コライダーとのロスト時に呼ばれます
-void Sandbag::OnCollideExit(GameObject target){
+void Enemy::OnCollideExit(GameObject target){
 	(void)target;
 }
 
 /****************************************************ダメージの処理********************************************************/
-void Sandbag::Damage(float damage_)
+void Enemy::Damage(float damage_)
 {
 	damage = damage_;
 	if (actionModeID == ACTIONMODE::BATTLEMODE && battleModeParam.battleActionID != BATTLEACTION::DEADACTION){
@@ -161,7 +161,7 @@ void Sandbag::Damage(float damage_)
 	}
 }
 
-void Sandbag::Attack(GameObject player_)
+void Enemy::Attack(GameObject player_)
 {
 	if (drawLog)
 		Hx::Debug()->Log("何かにに武器が当たった");
@@ -184,7 +184,7 @@ void Sandbag::Attack(GameObject player_)
 }
 
 /**************************************************アニメーションの処理****************************************************/
-void Sandbag::AnimChange(int id, float speed, bool roop, bool forcingChange)
+void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
 {
 	if (forcingChange){
 		if (drawLog)
@@ -243,7 +243,7 @@ void Sandbag::AnimChange(int id, float speed, bool roop, bool forcingChange)
 	}
 }
 
-void Sandbag::AnimLerp()
+void Enemy::AnimLerp()
 {
 	if (animparam.animLerpFlag) {
 		if (!modelObject)return;
@@ -278,7 +278,7 @@ void Sandbag::AnimLerp()
 	}
 }
 
-float Sandbag::GetNowAnimTime(){
+float Enemy::GetNowAnimTime(){
 	if (!modelObject)return 0;
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return 0;
@@ -290,7 +290,7 @@ float Sandbag::GetNowAnimTime(){
 }
 
 /********************************************アクションの変更、戦闘時の変更************************************************/
-void Sandbag::ChangeActionMode(ACTIONMODE nextActionMode){
+void Enemy::ChangeActionMode(ACTIONMODE nextActionMode){
 	if (battleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
 		actionModeID = nextActionMode;
 		actionModeInitilize[actionModeID]();
@@ -298,7 +298,7 @@ void Sandbag::ChangeActionMode(ACTIONMODE nextActionMode){
 	}
 }
 
-void Sandbag::ChangeBattleAction(BATTLEACTION nextBattleAction){
+void Enemy::ChangeBattleAction(BATTLEACTION nextBattleAction){
 	if (battleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
 		if (battleModeParam.battleActionID == nextBattleAction) {
 			battleModeParam.sameActionCount++;
@@ -316,7 +316,7 @@ void Sandbag::ChangeBattleAction(BATTLEACTION nextBattleAction){
 	}
 }
 
-void Sandbag::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability){
+void Enemy::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability){
 	if (XMVector3Length(playerVec).x > offBattleRange && battleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION){
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 		return;
@@ -351,7 +351,7 @@ void Sandbag::ChangeBattleAction(int guardProbability, int approachProbability, 
 }
 
 /****************************************************捜索時の処理**********************************************************/
-void Sandbag::TrackingModeInitilize()
+void Enemy::TrackingModeInitilize()
 {
 	if (drawLog)
 		Hx::Debug()->Log("捜索モードへ移行");
@@ -380,7 +380,7 @@ void Sandbag::TrackingModeInitilize()
 	moveCountUp = true;
 }
 
-void Sandbag::TrackingModeUpdate()
+void Enemy::TrackingModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 	if (!player)return;
@@ -445,14 +445,14 @@ void Sandbag::TrackingModeUpdate()
 	vec += forward * trackingSpeed;
 }
 
-void Sandbag::TrackingModeFinalize()
+void Enemy::TrackingModeFinalize()
 {
 	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 	ChangeActionMode(ACTIONMODE::BATTLEMODE);
 }
 
 /****************************************************戦闘時の処理**********************************************************/
-void Sandbag::BattleModeInitilize()
+void Enemy::BattleModeInitilize()
 {
 	if (drawLog)
 		Hx::Debug()->Log("戦闘モードへ移行");
@@ -460,7 +460,7 @@ void Sandbag::BattleModeInitilize()
 	battleActionInitilize[battleModeParam.battleActionID]();
 }
 
-void Sandbag::BattleModeUpdate()
+void Enemy::BattleModeUpdate()
 {
 	if (!player)return;
 	XMVECTOR playerPos = player->mTransform->WorldPosition();
@@ -479,19 +479,19 @@ void Sandbag::BattleModeUpdate()
 	battleActionUpdate[battleModeParam.battleActionID]();
 }
 
-void Sandbag::BattleModeFinalize()
+void Enemy::BattleModeFinalize()
 {
 	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 	ChangeActionMode(ACTIONMODE::TRACKINGMODE);
 }
 
-void Sandbag::ConfrontModeInitilize()
+void Enemy::ConfrontModeInitilize()
 {
 	if (drawLog)
 		Hx::Debug()->Log("近づく");
 }
 
-void Sandbag::ConfrontModeUpdate()
+void Enemy::ConfrontModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 	if (XMVector3Length(playerVec).x <= onBattleRange){
@@ -508,12 +508,12 @@ void Sandbag::ConfrontModeUpdate()
 	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 }
 
-void Sandbag::ConfrontModeFinalize()
+void Enemy::ConfrontModeFinalize()
 {
 	ChangeBattleAction(30, 30, 20, 20, 0);
 }
 
-void Sandbag::ApproachModeInitilize()
+void Enemy::ApproachModeInitilize()
 {
 	if (drawLog)
 		Hx::Debug()->Log("周りをうろつく");
@@ -521,7 +521,7 @@ void Sandbag::ApproachModeInitilize()
 	battleModeParam.rotateVecPlus = !battleModeParam.rotateVecPlus;
 }
 
-void Sandbag::ApproachModeUpdate()
+void Enemy::ApproachModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 	if (!player)return;
@@ -544,18 +544,18 @@ void Sandbag::ApproachModeUpdate()
 	}
 }
 
-void Sandbag::ApproachModeFinalize()
+void Enemy::ApproachModeFinalize()
 {
 	ChangeBattleAction(30, 0, 40, 30, 0);
 }
 
-void Sandbag::AttackDownModeInitilize()
+void Enemy::AttackDownModeInitilize()
 {
 	if (drawLog)
 		Hx::Debug()->Log("縦切り");
 }
 
-void Sandbag::AttackDownModeUpdate()
+void Enemy::AttackDownModeUpdate()
 {
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
@@ -574,23 +574,23 @@ void Sandbag::AttackDownModeUpdate()
 	};
 }
 
-void Sandbag::AttackDownModeFinalize()
+void Enemy::AttackDownModeFinalize()
 {
 	ChangeBattleAction(40, 40, 20, 0, 0);
 }
 
-void Sandbag::JumpAttackModeInitilize()
+void Enemy::JumpAttackModeInitilize()
 {
 	if (drawLog)
 		Hx::Debug()->Log("ジャンプ切り");
 }
 
-void Sandbag::JumpAttackModeUpdate()
+void Enemy::JumpAttackModeUpdate()
 {
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	AnimChange(ANIM_ID::ANIM_JUMPSRASH, 5.0f, false);
+	AnimChange(ANIM_ID::ANIM_JUMPATTACK, 5.0f, false);
 	if (GetNowAnimTime() < 12.5f) {
 		vec += forward * 20.0f;
 	}
@@ -599,13 +599,13 @@ void Sandbag::JumpAttackModeUpdate()
 	};
 }
 
-void Sandbag::JumpAttackModeFinalize()
+void Enemy::JumpAttackModeFinalize()
 {
 	ChangeBattleAction(40, 20, 10, 30, 0);
 	//ChangeBattleAction(0, 0, 100, 0, 0);
 }
 
-void Sandbag::GuardModeInitilize()
+void Enemy::GuardModeInitilize()
 {
 	if (drawLog)
 		Hx::Debug()->Log("ガード");
@@ -618,7 +618,7 @@ void Sandbag::GuardModeInitilize()
 	}
 }
 
-void Sandbag::GuardModeUpdate()
+void Enemy::GuardModeUpdate()
 {
 	if (!player)return;
 	XMVECTOR playerPos = player->mTransform->WorldPosition();
@@ -642,18 +642,18 @@ void Sandbag::GuardModeUpdate()
 	}
 }
 
-void Sandbag::GuardModeFinalize()
+void Enemy::GuardModeFinalize()
 {
 	ChangeBattleAction(20, 30, 20, 30, 0);
 }
 
-void Sandbag::BackStepModeInitilize()
+void Enemy::BackStepModeInitilize()
 {
 	if (drawLog)
 		Hx::Debug()->Log("バックステップ");
 }
 
-void Sandbag::BackStepModeUpdate()
+void Enemy::BackStepModeUpdate()
 {
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
@@ -675,12 +675,12 @@ void Sandbag::BackStepModeUpdate()
 	}
 }
 
-void Sandbag::BackStepModeFinalize()
+void Enemy::BackStepModeFinalize()
 {
 	ChangeBattleAction(30, 0, 0, 0, 70);
 }
 
-void Sandbag::WinceModeInitilize(){
+void Enemy::WinceModeInitilize(){
 	hp -= damage;
 	if (drawLog)
 		Hx::Debug()->Log(std::to_string(damage) + "ダメージ喰らった。残りの体力は" + std::to_string(hp));
@@ -691,7 +691,7 @@ void Sandbag::WinceModeInitilize(){
 	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 }
 
-void Sandbag::WinceModeUpdate(){
+void Enemy::WinceModeUpdate(){
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
@@ -699,11 +699,11 @@ void Sandbag::WinceModeUpdate(){
 	};
 }
 
-void Sandbag::WinceModeFinalize(){
+void Enemy::WinceModeFinalize(){
 	ChangeBattleAction(40, 0, 40, 20, 0);
 }
 
-void Sandbag::HitInGuardModeInitilize(){
+void Enemy::HitInGuardModeInitilize(){
 	if (drawLog)
 		Hx::Debug()->Log("防いだ");
 	AnimChange(ANIM_ID::ANIM_HITINGUARD, 5.0f, false, true);
@@ -715,7 +715,7 @@ void Sandbag::HitInGuardModeInitilize(){
 	}
 }
 
-void Sandbag::HitInGuardModeUpdate(){
+void Enemy::HitInGuardModeUpdate(){
 	if (PatienceInThisTime > battleModeParam.sameActionCount){
 		auto anim = modelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
@@ -728,16 +728,16 @@ void Sandbag::HitInGuardModeUpdate(){
 	}
 }
 
-void Sandbag::HitInGuardModeFinalize(){
+void Enemy::HitInGuardModeFinalize(){
 	ChangeBattleAction(40, 0, 40, 20, 0);
 }
 
-void Sandbag::AttackMonckeyModeInitilize(){
+void Enemy::AttackMonckeyModeInitilize(){
 	if (drawLog)
 		Hx::Debug()->Log("モンキーアタック");
 }
 
-void Sandbag::AttackMonckeyModeUpdate(){
+void Enemy::AttackMonckeyModeUpdate(){
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
@@ -747,11 +747,11 @@ void Sandbag::AttackMonckeyModeUpdate(){
 	};
 }
 
-void Sandbag::AttackMonckeyModeFinalize(){
+void Enemy::AttackMonckeyModeFinalize(){
 	ChangeBattleAction(40, 40, 20, 0, 0);
 }
 
-void Sandbag::DeadModeInitilize()
+void Enemy::DeadModeInitilize()
 {
 	if (drawLog) {
 		Hx::Debug()->Log("死んだ");
@@ -760,7 +760,7 @@ void Sandbag::DeadModeInitilize()
 	AnimChange(ANIM_ID::ANIM_PROVOCATION, 5.0f, false, true);
 }
 
-void Sandbag::DeadModeUpdate()
+void Enemy::DeadModeUpdate()
 {
 	auto anim = modelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
@@ -774,6 +774,6 @@ void Sandbag::DeadModeUpdate()
 	};
 }
 
-void Sandbag::DeadModeFinalize()
+void Enemy::DeadModeFinalize()
 {
 }

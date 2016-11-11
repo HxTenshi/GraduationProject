@@ -1,6 +1,6 @@
 #include "GetEnemy.h"
 #include "h_standard.h"
-#include "Sandbag.h"
+#include "Enemy.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void GetEnemy::Initialize(){
@@ -24,7 +24,7 @@ void GetEnemy::Finish(){
 //コライダーとのヒット時に呼ばれます
 void GetEnemy::OnCollideBegin(GameObject target){
 	if (!target)return;
-	if (!target->GetScript<Sandbag>())return;
+	if (!target->GetScript<Enemy>())return;
 	m_EnemyList.push_back(target);
 }
 
@@ -36,7 +36,7 @@ void GetEnemy::OnCollideEnter(GameObject target){
 //コライダーとのロスト時に呼ばれます
 void GetEnemy::OnCollideExit(GameObject target){
 	if (!target)return;
-	if (!target->GetScript<Sandbag>())return;
+	if (!target->GetScript<Enemy>())return;
 	m_EnemyList.remove_if([&](auto o) {
 		return o == target || !o; });
 }
