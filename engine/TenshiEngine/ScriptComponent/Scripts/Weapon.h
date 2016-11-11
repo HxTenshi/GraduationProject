@@ -2,6 +2,7 @@
 #pragma once
 #include "main.h"
 # include "WeaponControl.h"
+#include "WeaponCommon.h"
 #include <functional>
 enum AttackType {
 	WEAK,
@@ -44,6 +45,18 @@ public:
 	float GetAttackPower() {
 		return m_AttackForce;
 	}
+	//武器の捨て方の種類を指定
+	void WeaponThrowAwayType(WeaponType type) {
+
+	}
+	WeaponType GetWeaponType() {
+	
+	}
+private:
+	//武器の捨て方の種類
+	void SwordThrowAway() {
+
+	}
 private:
 	void ThrowAwayAction();
 	void PierceSupport(GameObject obj);
@@ -67,9 +80,9 @@ private:
 	SERIALIZE GameObject mWeaponControl;
 	bool mIsEnemyThrow;
 	AttackType m_attack_type;
-private:
-	//武器のパラメータ
 
+	//武器のパラメータ
+	funifuni::WeaponParametor m_param;
 private:
 	float m_weapon_rot;
 	bool is_hand;

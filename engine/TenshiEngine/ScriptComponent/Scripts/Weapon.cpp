@@ -107,7 +107,7 @@ void Weapon::ThrowAway()
 	gameObject->mTransform->SetParent(Hx::GetRootActor());
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
-	gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
+	gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,1.0f,1.0f) * 10, ForceMode::eIMPULSE);
 }
 void Weapon::ThrowAttack()
 {
@@ -123,7 +123,7 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 	mIsEnemyThrow = true;
 	ThrowAway();
 	is_ground_hit = true;
-	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir*30.0f, ForceMode::eIMPULSE);
+	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir*50.0f, ForceMode::eIMPULSE);
 }
 void Weapon::WeaponUsePhysX()
 {
@@ -162,7 +162,7 @@ void Weapon::ThrowAwayAction()
 	if (is_ground_hit || is_hand)return;
 	m_weapon_rot = max(m_weapon_rot, 0);
 	auto rot = gameObject->mTransform->WorldQuaternion();
-	gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*450 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
+	gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*900 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
 }
 
 void Weapon::PierceSupport(GameObject obj)

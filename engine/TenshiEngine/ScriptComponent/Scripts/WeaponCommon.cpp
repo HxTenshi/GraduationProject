@@ -47,12 +47,19 @@ namespace funifuni {
 		m_LowDurableDamage = low;
 		m_StrongDurableDamage = strong;
 	}
-	void WeaponParametor::SetAllParam(std::string name, float attack, int durable, int low, int strong)
+	void WeaponParametor::SetWeaponType(WeaponType type)
 	{
-		SetName(name);
-		SetAttack(attack);
-		SetDurable(durable);
-		SetDurableDamage(low, strong);
+		m_Type = type;
+	}
+	void WeaponParametor::SetWeaponType(std::string type)
+	{
+		if (type == "Ssord")m_Type = WeaponType::Sword;
+		if (type == "Rance")m_Type = WeaponType::Rance;
+		if (type == "Axe")m_Type = WeaponType::Axe;
+	}
+	WeaponType WeaponParametor::GetWeaponType()
+	{
+		return m_Type;
 	}
 	/// <summary>
 	///ïêäÌÇÃëœãvílÇ™Ç»Ç≠Ç»Ç¡ÇΩÇ©

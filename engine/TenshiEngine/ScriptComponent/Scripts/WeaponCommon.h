@@ -7,21 +7,10 @@
 
 
 
-//*****************************************************//
-//				WeaponMagnificationType
-//*****************************************************//
-
-enum class WeaponMagnificationType {
-	Mag_One_Weak = 0,
-	Mag_Two_Weak,
-	Mag_Three_Weak,
-	Mag_Fly_Weak,
-	Mag_Strong,
-	Mag_Fly_Strong,
-	Mag_Attracted,
-	Mag_Jumped,
-	Mag_Deathblow,
-	Mag_Throw
+enum WeaponType {
+	Sword,
+	Rance,
+	Axe
 };
 class WeaponCommon :public IDllScriptComponent{
 	
@@ -38,8 +27,6 @@ namespace funifuni {
 		~WeaponParametor();
 
 
-		//耐久値へのダメージ
-		void DurableDamage(WeaponMagnificationType type);
 		//耐久値が無くなったか
 		bool isBreak();
 		//耐久値の取得
@@ -60,9 +47,12 @@ namespace funifuni {
 		void SetDurable(int durable);
 		//耐久値のダメージの設定
 		void SetDurableDamage(int low, int strong);
-
-		void SetAllParam(std::string name, float attack, int durable, int low, int strong);
-
+		//ウエポンのタイプをセット
+		void SetWeaponType(WeaponType type);
+		//ウエポンのタイプをセット
+		void SetWeaponType(std::string type);
+		//ウエポンのタイプを取得
+		WeaponType GetWeaponType();
 	private:
 		//名前
 		std::string m_Name;
@@ -74,7 +64,8 @@ namespace funifuni {
 		int m_LowDurableDamage;
 		//強攻撃の耐久ダメージ
 		int m_StrongDurableDamage;
-
+		//武器の種類
+		WeaponType m_Type;
 	};
 	//class CSVLoader {
 	//public:
