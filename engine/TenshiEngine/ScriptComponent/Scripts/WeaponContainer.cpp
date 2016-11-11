@@ -9,7 +9,6 @@ void WeaponContainer::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void WeaponContainer::Start(){
-	mWeapn = mGetWeapon->GetScript<GetWeapon>();
 }
 
 //毎フレーム呼ばれます

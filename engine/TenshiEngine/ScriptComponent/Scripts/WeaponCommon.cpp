@@ -2,30 +2,6 @@
 
 
 namespace funifuni {
-
-	//*****************************************************//
-	//					WeaponMagnification
-	//*****************************************************//
-	//コンストラクタ
-	WeaponMagnification::WeaponMagnification()
-	{
-	}
-	//倍率の追加
-	void WeaponMagnification::AddMag(float mag)
-	{
-		m_Magnification.push_back(mag);
-	}
-	//倍率の取得
-	float WeaponMagnification::GetMagnification(WeaponMagnificationType type)
-	{
-		if (m_Magnification.size() < (int)type)return 0.0f;
-		return m_Magnification[(int)type];
-	}
-
-	int WeaponMagnification::GetLange()
-	{
-		return m_Magnification.size();
-	}
 	//*****************************************************//
 	//					  WeaponParametor
 	//*****************************************************//
@@ -41,13 +17,7 @@ namespace funifuni {
 	WeaponParametor::~WeaponParametor()
 	{
 	}
-	/// <summary>
-	///倍率のテーブルから倍率の取得。
-	/// </summary>
-	const WeaponMagnification& WeaponParametor::GetMagnification()
-	{
-		return m_Magnification;
-	}
+
 	/// <summary>
 	///名前のセット
 	/// </summary>
@@ -61,13 +31,6 @@ namespace funifuni {
 	void WeaponParametor::SetAttack(float attack)
 	{
 		m_AttackParam = attack;
-	}
-	/// <summary>
-	///倍率のテーブルの参照を変数に格納
-	/// </summary>
-	void WeaponParametor::SetMagnification(const WeaponMagnification & mag)
-	{
-		m_Magnification = mag;
 	}
 	/// <summary>
 	///耐久値のセット
@@ -92,24 +55,6 @@ namespace funifuni {
 		SetDurableDamage(low, strong);
 	}
 	/// <summary>
-	///耐久値へのダメージ
-	/// </summary>
-	void WeaponParametor::DurableDamage(WeaponMagnificationType type)
-	{
-		if (isOverLange(type))return;
-		if (type == WeaponMagnificationType::Mag_Deathblow) {
-			m_Durable = 0;
-			return;
-		}
-		if (type <= WeaponMagnificationType::Mag_Fly_Weak) {
-			m_Durable -= m_LowDurableDamage;
-
-		}
-		else {
-			m_Durable -= m_StrongDurableDamage;
-		}
-	}
-	/// <summary>
 	///武器の耐久値がなくなったか
 	/// </summary>
 	bool WeaponParametor::isBreak()
@@ -129,24 +74,6 @@ namespace funifuni {
 	float WeaponParametor::AttackParam()
 	{
 		return m_AttackParam;
-	}
-	/// <summary>
-	///攻撃時のダメージの取得
-	/// </summary>
-	float WeaponParametor::AttackDamage(WeaponMagnificationType type)
-	{
-		if (isOverLange(type))return 0.0f;
-
-		float mag = m_Magnification.GetMagnification(type);
-
-		return m_AttackParam*mag;
-	}
-	/// <summary>
-	///耐久値のテーブルから取得できるか？
-	/// </summary>
-	bool WeaponParametor::isOverLange(WeaponMagnificationType type)
-	{
-		return m_Magnification.GetLange() > (int)type;
 	}
 
 	//CSVLoader::CSVLoader()

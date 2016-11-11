@@ -57,47 +57,6 @@ void WeaponTable::OnCollideExit(GameObject target){
 void WeaponTable::TableInit()
 {
 }
-
-void WeaponTable::AddMagnification(std::string name, funifuni::WeaponMagnification mag)
-{
-	m_Magnification.insert(std::make_pair(name, mag));
-}
-
-void WeaponTable::AddParametor(std::string name, funifuni::WeaponParametor param)
-{
-	m_Param.insert(std::make_pair(name, param));
-}
-
-void WeaponTable::LoadMagnification(std::string magname)
-{
-	std::ifstream ifs(magname);
-	if (!ifs) {
-		return;
-	}
-
-	//csvファイルを1行ずつ読み込む
-	std::string str;
-	std::vector<std::string> p;
-	while (getline(ifs, str)) {
-		std::string token;
-		std::istringstream stream(str);
-
-		while (getline(stream, token, ',')) {
-			p.push_back(token);
-		}
-		funifuni::WeaponMagnification mg;
-		int count = 0;
-		for (auto i = p.begin(); i != p.end(); ++i) {
-			if (count != 0) {
-				mg.AddMag(std::stof(i->data()));
-			}
-			++count;
-		}
-		AddMagnification(p.data()[0], mg);
-		p.clear();
-	}
-}
-
 void WeaponTable::LoadWeaponParametor(std::string paramname)
 {
 	std::ifstream ifs(paramname);
@@ -120,7 +79,6 @@ void WeaponTable::LoadWeaponParametor(std::string paramname)
 		wp.SetName(data[1]);
 		wp.SetDurable(std::stoi(data[2]));
 		wp.SetAttack(std::stof(data[3]));
-		AddParametor(data[1], wp);
 		std::cout << std::endl;
 		p.clear();
 	}

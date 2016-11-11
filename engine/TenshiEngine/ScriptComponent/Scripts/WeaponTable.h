@@ -9,6 +9,10 @@
 
 class WeaponTable :public IDllScriptComponent{
 public:
+	static WeaponTable* get() {
+		static WeaponTable w;
+		return &w;
+	}
 	void Initialize()override;
 	void Start()override;
 	void Update()override;
@@ -17,9 +21,6 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 	void TableInit();
-	void AddMagnification(std::string name, funifuni::WeaponMagnification mag);
-	void AddParametor(std::string name, funifuni::WeaponParametor param);
-	void LoadMagnification(std::string magname);
 	void LoadWeaponParametor(std::string paramname);
 	void DebugLog();
 	template<class... Args>
@@ -40,8 +41,6 @@ public:
 	}
 
 private:
-	//î{ó¶
-	std::map<std::string, funifuni::WeaponMagnification> m_Magnification;
 	//çUåÇóÕ
 	std::map<std::string, funifuni::WeaponParametor> m_Param;
 	//ÇÉÇìÇñ

@@ -68,6 +68,9 @@ private:
 	bool mIsEnemyThrow;
 	AttackType m_attack_type;
 private:
+	//•Ší‚Ìƒpƒ‰ƒ[ƒ^
+
+private:
 	float m_weapon_rot;
 	bool is_hand;
 	bool is_ground_hit;

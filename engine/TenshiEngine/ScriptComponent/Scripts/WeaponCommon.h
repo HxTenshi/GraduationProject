@@ -28,20 +28,7 @@ class WeaponCommon :public IDllScriptComponent{
 };
 
 namespace funifuni {
-	//*****************************************************//
-	//					WeaponMagnification
-	//*****************************************************//
 
-	//インスペクターで入れないでください
-	class WeaponMagnification {
-	public:
-		WeaponMagnification();
-		void AddMag(float mag);
-		float GetMagnification(WeaponMagnificationType type);
-		int GetLange();
-	private:
-		std::vector<float> m_Magnification;
-	};
 	//*****************************************************//
 	//					WeaponParametor
 	//*****************************************************//
@@ -49,11 +36,6 @@ namespace funifuni {
 	public:
 		WeaponParametor();
 		~WeaponParametor();
-
-
-
-		//倍率のテーブルから倍率の取得。
-		const WeaponMagnification& GetMagnification();
 
 
 		//耐久値へのダメージ
@@ -65,8 +47,6 @@ namespace funifuni {
 
 		//攻撃力の取得
 		float AttackParam();
-		//攻撃時のダメージの取得
-		float AttackDamage(WeaponMagnificationType type);
 
 		//****************************************************//
 		//                       Set関数
@@ -76,22 +56,16 @@ namespace funifuni {
 		void SetName(std::string name);
 		//攻撃力のセット
 		void SetAttack(float attack);
-		//倍率のテーブルの参照を変数に格納
-		void SetMagnification(const WeaponMagnification& mag);
 		//耐久値のセット
 		void SetDurable(int durable);
 		//耐久値のダメージの設定
 		void SetDurableDamage(int low, int strong);
 
 		void SetAllParam(std::string name, float attack, int durable, int low, int strong);
-	private:
-		bool isOverLange(WeaponMagnificationType type);
 
 	private:
 		//名前
 		std::string m_Name;
-		//倍率
-		WeaponMagnification m_Magnification;
 		//攻撃力
 		float m_AttackParam;
 		//耐久値
