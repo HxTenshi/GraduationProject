@@ -13,7 +13,27 @@ struct AnimParameter {
 	bool afterAnimLoop = true;
 };
 
-enum BATTLEACTION{
+struct TRACKINGACTION {
+	enum Enum {
+		NONE,
+		PARENTTRACKING,
+		CHILDTRACKING,
+	};
+};
+
+struct TrackingModeParameter {
+	//今のアクションのID
+	TRACKINGACTION::Enum trackingActionID = TRACKINGACTION::NONE;
+
+	//前のアクションのID
+	TRACKINGACTION::Enum beforetrackingActionID = TRACKINGACTION::NONE;
+	
+	//ナビメッシュを使うかどうか
+	bool naviMeshFlag = true;
+};
+
+struct BATTLEACTION {
+	enum Enum {
 	NONE,
 	CONFRONTACTION,
 	APPROACHACTION,
@@ -25,18 +45,15 @@ enum BATTLEACTION{
 	HITINGUARDACTION,
 	ATTACKMONCKEYACTION,
 	DEADACTION
-};
-
-struct TrackingModeParameter {
-	//ナビメッシュを使うかどうか
-	bool naviMeshFlag = true;
+	};
 };
 
 struct BattleModeParameter{	
-	//バトル中のアクションのID
-	BATTLEACTION battleActionID = BATTLEACTION::NONE;
+	//今のアクションのID
+	BATTLEACTION::Enum battleActionID = BATTLEACTION::NONE;
 
-	BATTLEACTION beforeBattleActionID = BATTLEACTION::NONE;
+	//前のアクションのID
+	BATTLEACTION::Enum beforeBattleActionID = BATTLEACTION::NONE;
 	
 	//バトルモード中の思考時間を図るもの
 	float count = 0.0f;
@@ -91,6 +108,7 @@ public:
 	void OnCollideExit(GameObject target)override;
 	void Damage(float damage_);
 	void Attack(GameObject player);
+	bool GetChildFlag() { return m_Child; }
 
 private:
 	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
@@ -98,7 +116,7 @@ private:
 	float GetNowAnimTime();
 
 	void ChangeActionMode(ACTIONMODE nextActionMode);
-	void ChangeBattleAction(BATTLEACTION nextBattleAction);
+	void ChangeBattleAction(BATTLEACTION::Enum nextBattleAction);
 	void ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability);
 
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
@@ -109,13 +127,25 @@ private:
 	void TrackingModeUpdate();
 	void TrackingModeFinalize();
 
+	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionInitilize;
+	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionUpdate;
+	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionFinalize;
+
+	void ParentTrackingModeInitilize();
+	void ParentTrackingModeUpdate();
+	void ParentTrackingModeFinalize();
+
+	void ChildTrackingModeInitilize();
+	void ChildTrackingModeUpdate();
+	void ChildTrackingModeFinalize();
+
 	void BattleModeInitilize();
 	void BattleModeUpdate();
 	void BattleModeFinalize();
 
-	std::map<BATTLEACTION, std::function<void()>> battleActionInitilize;
-	std::map<BATTLEACTION, std::function<void()>> battleActionUpdate;
-	std::map<BATTLEACTION, std::function<void()>> battleActionFinalize;
+	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionInitilize;
+	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
+	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
 
 	void ConfrontModeInitilize();
 	void ConfrontModeUpdate();
@@ -148,6 +178,7 @@ private:
 	void HitInGuardModeInitilize();
 	void HitInGuardModeUpdate();
 	void HitInGuardModeFinalize();
+
 	//今回は何回我慢するか(m_HitInGuardMinCount～m_HitInGuardMaxCount)
 	int PatienceInThisTime;
 

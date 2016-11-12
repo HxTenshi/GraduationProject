@@ -18,6 +18,9 @@ private:
 	SERIALIZE
 	GameObject m_EnemyTeam;
 
+	/// <summary>
+	///Enemy‚Ì“ü‚ê•¨‚ÖGameObject‚ð“ü‚ê‚é
+	/// </summary>
 	void EnemyTeamIntoEnemyContainer(GameObject g);
 
 	std::vector<std::vector<GameObject>> m_EnemyContainer;
