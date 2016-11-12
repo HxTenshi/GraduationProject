@@ -7,14 +7,21 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
-	mGravity = XMVectorSet(0, -9.81f, 0, 1);
-	moveCount = 0;
-	moveCountUp = true;
+	m_Gravity = XMVectorSet(0, -9.81f, 0, 1);
+	m_MoveCount = 0;
+	m_MoveCountUp = true;
 
-	childTranckingSpeed = 1.0f;
+	if (!m_Child) {
+		if (!m_MovePoints)return;
+		for (auto i : m_MovePoints->mTransform->Children()) {
+			m_MovePointsVec.push_back(i);
+		}
+	}
 
-	actionModeID = ACTIONMODE::TRACKINGMODE;
-	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	m_ChildTranckingSpeed = 1.0f;
+
+	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
+	m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&Enemy::TrackingModeInitilize, this/*,std::placeholders::_1*/);
 	actionModeUpdate[ACTIONMODE::TRACKINGMODE] = std::bind(&Enemy::TrackingModeUpdate, this);
@@ -64,29 +71,29 @@ void Enemy::Initialize() {
 	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeFinalize, this);
 
-	actionModeInitilize[actionModeID]();
+	actionModeInitilize[m_ActionModeID]();
 
-	if (!player) {
-		player = Hx::FindActor("Player");
+	if (!m_Player) {
+		m_Player = Hx::FindActor("Player");
 	}
 
-	if (drawLog){
-		Hx::Debug()->Log("捜索時の歩くスピード：" + std::to_string(trackingSpeed));
-		Hx::Debug()->Log("捜索時の視界の距離：" + std::to_string(trackingRange));
-		Hx::Debug()->Log("捜索時の視界の範囲：" + std::to_string(trackingAngle) + "度");
-		Hx::Debug()->Log("捜索時の回転スピード：" + std::to_string(trackingRotateSpeed));
-		Hx::Debug()->Log("攻撃をする範囲に入る距離：" + std::to_string(onBattleRange));
-		Hx::Debug()->Log("攻撃をする範囲から抜ける距離：" + std::to_string(offBattleRange));
-		Hx::Debug()->Log("体力：" + std::to_string(hp));
-		Hx::Debug()->Log("周りをうろつく時の回転スピード：" + std::to_string(aproachRotateSpeed));
-		Hx::Debug()->Log("攻撃時の回転の補正時の回転スピード：" + std::to_string(correctionRotateSpeed));
-		Hx::Debug()->Log("ログを表示するかどうか：" + drawLog ? "TRUE" : "FALSE");
-		Hx::Debug()->Log("ガードした時に反撃するまでの回数の最低：" + std::to_string(hitInGuardMinCount) + "回から");
-		Hx::Debug()->Log("ガードした時に反撃するまでの回数の最高：" + std::to_string(hitInGuardMaxCount) + "回までをランダムで選択します");
-		Hx::Debug()->Log("攻撃を受けた際絶対回避する確率：" + std::to_string(absolutelyAvoidInHitAttackProbability) + "%");
-		Hx::Debug()->Log("playerにはplayerのGameObjectを入れてください");
-		Hx::Debug()->Log("modelObjectにはenemyのモデルを表示しているのGameObject(例:子に入っているRezardMan)を入れてください");
-		Hx::Debug()->Log("movePointsには敵を動かしたい地点を子にまとめた親のGameObject(例:enemyMovePoint)を入れてください");
+	if (m_DrawLog){
+		Hx::Debug()->Log("捜索時の歩くスピード：" + std::to_string(m_TrackingSpeed));
+		Hx::Debug()->Log("捜索時の視界の距離：" + std::to_string(m_TrackingRange));
+		Hx::Debug()->Log("捜索時の視界の範囲：" + std::to_string(m_TrackingAngle) + "度");
+		Hx::Debug()->Log("捜索時の回転スピード：" + std::to_string(m_TrackingRotateSpeed));
+		Hx::Debug()->Log("攻撃をする範囲に入る距離：" + std::to_string(m_OnBattleRange));
+		Hx::Debug()->Log("攻撃をする範囲から抜ける距離：" + std::to_string(m_OffBattleRange));
+		Hx::Debug()->Log("体力：" + std::to_string(m_Hp));
+		Hx::Debug()->Log("周りをうろつく時の回転スピード：" + std::to_string(m_AproachRotateSpeed));
+		Hx::Debug()->Log("攻撃時の回転の補正時の回転スピード：" + std::to_string(m_CorrectionRotateSpeed));
+		Hx::Debug()->Log("ログを表示するかどうか：" + m_DrawLog ? "TRUE" : "FALSE");
+		Hx::Debug()->Log("ガードした時に反撃するまでの回数の最低：" + std::to_string(m_HitInGuardMinCount) + "回から");
+		Hx::Debug()->Log("ガードした時に反撃するまでの回数の最高：" + std::to_string(m_HitInGuardMaxCount) + "回までをランダムで選択します");
+		Hx::Debug()->Log("攻撃を受けた際絶対回避する確率：" + std::to_string(m_AbsolutelyAvoidInHitAttackProbability) + "%");
+		Hx::Debug()->Log("m_Playerにはm_PlayerのGameObjectを入れてください");
+		Hx::Debug()->Log("m_ModelObjectにはenemyのモデルを表示しているのGameObject(例:子に入っているRezardMan)を入れてください");
+		Hx::Debug()->Log("m_MovePointsには敵を動かしたい地点を子にまとめた親のGameObject(例:enemyMovePoint)を入れてください");
 	}
 }
 
@@ -96,7 +103,7 @@ void Enemy::Start(){
 
 //毎フレーム呼ばれます
 void Enemy::Update(){
-	vec = XMVectorZero();
+	m_Vec = XMVectorZero();
 
 	if (Input::Trigger(KeyCode::Key_1)) {
 		Damage(1.0f);
@@ -104,17 +111,17 @@ void Enemy::Update(){
 
 	AnimLerp();
 
-	actionModeUpdate[actionModeID]();
+	actionModeUpdate[m_ActionModeID]();
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;
 
 	//重力
 	if (!cc->IsGround()) {
-		vec += mGravity;
+		m_Vec += m_Gravity;
 	}
 
-	cc->Move(vec  * Hx::DeltaTime()->GetDeltaTime());
+	cc->Move(m_Vec  * Hx::DeltaTime()->GetDeltaTime());
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -140,20 +147,20 @@ void Enemy::OnCollideExit(GameObject target){
 /****************************************************ダメージの処理********************************************************/
 void Enemy::Damage(float damage_)
 {
-	damage = damage_;
-	if (actionModeID == ACTIONMODE::BATTLEMODE && battleModeParam.battleActionID != BATTLEACTION::DEADACTION){
-		if (rand() % 100 > (99 - absolutelyAvoidInHitAttackProbability) &&
-			battleModeParam.battleActionID != BATTLEACTION::HITINGUARDACTION &&
-			battleModeParam.battleActionID != BATTLEACTION::WINCEACTION	&&
-			battleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION &&
-			battleModeParam.battleActionID != BATTLEACTION::JUMPATTACKACTION){
-			if (drawLog){
+	m_Damage = damage_;
+	if (m_ActionModeID == ACTIONMODE::BATTLEMODE && m_BattleModeParam.battleActionID != BATTLEACTION::DEADACTION){
+		if (rand() % 100 > (99 - m_AbsolutelyAvoidInHitAttackProbability) &&
+			m_BattleModeParam.battleActionID != BATTLEACTION::HITINGUARDACTION &&
+			m_BattleModeParam.battleActionID != BATTLEACTION::WINCEACTION	&&
+			m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION &&
+			m_BattleModeParam.battleActionID != BATTLEACTION::JUMPATTACKACTION){
+			if (m_DrawLog){
 				Hx::Debug()->Log("避けた");
 			}
 			ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
 		}
 		else{
-			if (battleModeParam.battleActionID == BATTLEACTION::GUARDACTION || battleModeParam.battleActionID == BATTLEACTION::HITINGUARDACTION){
+			if (m_BattleModeParam.battleActionID == BATTLEACTION::GUARDACTION || m_BattleModeParam.battleActionID == BATTLEACTION::HITINGUARDACTION){
 				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
 			}
 			else{
@@ -163,25 +170,25 @@ void Enemy::Damage(float damage_)
 	}
 }
 
-void Enemy::Attack(GameObject player_)
+void Enemy::Attack(GameObject player)
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("何かにに武器が当たった");
-	if (battleModeParam.battleActionID == BATTLEACTION::ATTACKDOWNACTION ||
-		battleModeParam.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION ||
-		battleModeParam.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
-		if (drawLog)
-			Hx::Debug()->Log("playerに攻撃がHit");
-		if (!player_)return;
-		auto playerScript = player_->GetScript<PlayerController>();
+	if (m_BattleModeParam.battleActionID == BATTLEACTION::ATTACKDOWNACTION ||
+		m_BattleModeParam.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION ||
+		m_BattleModeParam.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
+		if (m_DrawLog)
+			Hx::Debug()->Log("m_Playerに攻撃がHit");
+		if (!player)return;
+		auto playerScript = player->GetScript<PlayerController>();
 		if (!playerScript)return;
 
-		if (battleModeParam.battleActionID == BATTLEACTION::ATTACKDOWNACTION)
-			playerScript->Damage(attackDamage, XMVector3Normalize(player_->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()),PlayerController::KnockBack::Low);
-		else if(battleModeParam.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION)
-			playerScript->Damage(attackDamage, XMVector3Normalize(player_->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-		else if (battleModeParam.battleActionID == BATTLEACTION::JUMPATTACKACTION)
-			playerScript->Damage(attackDamage, XMVector3Normalize(player_->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+		if (m_BattleModeParam.battleActionID == BATTLEACTION::ATTACKDOWNACTION)
+			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()),PlayerController::KnockBack::Low);
+		else if(m_BattleModeParam.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION)
+			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+		else if (m_BattleModeParam.battleActionID == BATTLEACTION::JUMPATTACKACTION)
+			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 	}
 }
 
@@ -189,137 +196,137 @@ void Enemy::Attack(GameObject player_)
 void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
 {
 	if (forcingChange){
-		if (drawLog)
+		if (m_DrawLog)
 			Hx::Debug()->Log("強制的にアニメーションを切り替えた");
 
 		AnimeParam ap;
-		if (!modelObject)return;
-		auto anim = modelObject->GetComponent<AnimationComponent>();
+		if (!m_ModelObject)return;
+		auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
 
-		ap = anim->GetAnimetionParam(animparam.beforeAnimId);
+		ap = anim->GetAnimetionParam(m_Animparam.beforeAnimId);
 		ap.mWeight = 0.0f;
-		ap.mLoop = animparam.beforeAnimLoop;
-		anim->SetAnimetionParam(animparam.beforeAnimId, ap);
+		ap.mLoop = m_Animparam.beforeAnimLoop;
+		anim->SetAnimetionParam(m_Animparam.beforeAnimId, ap);
 
-		ap = anim->GetAnimetionParam(animparam.nowAnimId);
+		ap = anim->GetAnimetionParam(m_Animparam.nowAnimId);
 		ap.mWeight = 0.0f;
-		ap.mLoop = animparam.afterAnimLoop;
-		anim->SetAnimetionParam(animparam.nowAnimId, ap);
+		ap.mLoop = m_Animparam.afterAnimLoop;
+		anim->SetAnimetionParam(m_Animparam.nowAnimId, ap);
 
-		animparam.nowAnimId = id;
-		animparam.afterAnimId = id;
-		animparam.beforeAnimId = id;
-		animparam.lerpSpeed = speed;
-		animparam.afterAnimLoop = roop;
+		m_Animparam.nowAnimId = id;
+		m_Animparam.afterAnimId = id;
+		m_Animparam.beforeAnimId = id;
+		m_Animparam.lerpSpeed = speed;
+		m_Animparam.afterAnimLoop = roop;
 
-		animparam.nowLerpTime = 0.0f;
-		animparam.animLerpFlag = false;
-		animparam.beforeAnimLoop = animparam.afterAnimLoop;
+		m_Animparam.nowLerpTime = 0.0f;
+		m_Animparam.animLerpFlag = false;
+		m_Animparam.beforeAnimLoop = m_Animparam.afterAnimLoop;
 
-		ap = anim->GetAnimetionParam(animparam.nowAnimId);
+		ap = anim->GetAnimetionParam(m_Animparam.nowAnimId);
 		ap.mTime = 0.0f;
 
 		ap.mWeight = 1.0f;
-		ap.mLoop = animparam.beforeAnimLoop;
-		anim->SetAnimetionParam(animparam.nowAnimId, ap);
+		ap.mLoop = m_Animparam.beforeAnimLoop;
+		anim->SetAnimetionParam(m_Animparam.nowAnimId, ap);
 
 		return;
 	}
-	if (id != animparam.beforeAnimId) {
-		if (!animparam.animLerpFlag) {
-			animparam.nowAnimId = id;
-			animparam.afterAnimId = id;
-			animparam.animLerpFlag = true;
-			animparam.lerpSpeed = speed;
-			animparam.afterAnimLoop = roop;
+	if (id != m_Animparam.beforeAnimId) {
+		if (!m_Animparam.animLerpFlag) {
+			m_Animparam.nowAnimId = id;
+			m_Animparam.afterAnimId = id;
+			m_Animparam.animLerpFlag = true;
+			m_Animparam.lerpSpeed = speed;
+			m_Animparam.afterAnimLoop = roop;
 
 			AnimeParam ap;
-			if (!modelObject)return;
-			auto anim = modelObject->GetComponent<AnimationComponent>();
+			if (!m_ModelObject)return;
+			auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 			if (!anim)return;
-			ap = anim->GetAnimetionParam(animparam.afterAnimId);
+			ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
 			ap.mTime = 0.0f;
-			anim->SetAnimetionParam(animparam.afterAnimId, ap);
+			anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
 		}
 	}
 }
 
 void Enemy::AnimLerp()
 {
-	if (animparam.animLerpFlag) {
-		if (!modelObject)return;
-		auto anim = modelObject->GetComponent<AnimationComponent>();
+	if (m_Animparam.animLerpFlag) {
+		if (!m_ModelObject)return;
+		auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
 
-		animparam.nowLerpTime += animparam.lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+		m_Animparam.nowLerpTime += m_Animparam.lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
 
 		bool endFlag = false;
-		if (animparam.nowLerpTime >= 1.0f) {
-			animparam.nowLerpTime = 1.0f;
+		if (m_Animparam.nowLerpTime >= 1.0f) {
+			m_Animparam.nowLerpTime = 1.0f;
 			endFlag = true;
 		}
 
 		AnimeParam ap;
-		ap = anim->GetAnimetionParam(animparam.beforeAnimId);
-		ap.mWeight = 1.0f - animparam.nowLerpTime;
-		ap.mLoop = animparam.beforeAnimLoop;
-		anim->SetAnimetionParam(animparam.beforeAnimId, ap);
+		ap = anim->GetAnimetionParam(m_Animparam.beforeAnimId);
+		ap.mWeight = 1.0f - m_Animparam.nowLerpTime;
+		ap.mLoop = m_Animparam.beforeAnimLoop;
+		anim->SetAnimetionParam(m_Animparam.beforeAnimId, ap);
 
-		ap = anim->GetAnimetionParam(animparam.afterAnimId);
-		ap.mWeight = animparam.nowLerpTime;
-		ap.mLoop = animparam.afterAnimLoop;
-		anim->SetAnimetionParam(animparam.afterAnimId, ap);
+		ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
+		ap.mWeight = m_Animparam.nowLerpTime;
+		ap.mLoop = m_Animparam.afterAnimLoop;
+		anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
 
 		if (endFlag) {
-			animparam.beforeAnimId = animparam.afterAnimId;
-			animparam.nowLerpTime = 0.0f;
-			animparam.animLerpFlag = false;
-			animparam.beforeAnimLoop = animparam.afterAnimLoop;
+			m_Animparam.beforeAnimId = m_Animparam.afterAnimId;
+			m_Animparam.nowLerpTime = 0.0f;
+			m_Animparam.animLerpFlag = false;
+			m_Animparam.beforeAnimLoop = m_Animparam.afterAnimLoop;
 		}
 	}
 }
 
 float Enemy::GetNowAnimTime(){
-	if (!modelObject)return 0;
-	auto anim = modelObject->GetComponent<AnimationComponent>();
+	if (!m_ModelObject)return 0;
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return 0;
 
 	AnimeParam ap;
-	ap = anim->GetAnimetionParam(animparam.nowAnimId);
+	ap = anim->GetAnimetionParam(m_Animparam.nowAnimId);
 
 	return ap.mTime;
 }
 
 /********************************************アクションの変更、戦闘時の変更************************************************/
 void Enemy::ChangeActionMode(ACTIONMODE nextActionMode){
-	if (battleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
-		actionModeID = nextActionMode;
-		actionModeInitilize[actionModeID]();
-		actionModeUpdate[actionModeID]();
+	if (m_BattleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
+		m_ActionModeID = nextActionMode;
+		actionModeInitilize[m_ActionModeID]();
+		actionModeUpdate[m_ActionModeID]();
 	}
 }
 
 void Enemy::ChangeBattleAction(BATTLEACTION nextBattleAction){
-	if (battleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
-		if (battleModeParam.battleActionID == nextBattleAction) {
-			battleModeParam.sameActionCount++;
-			battleModeParam.firstInSameAction = false;
+	if (m_BattleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
+		if (m_BattleModeParam.battleActionID == nextBattleAction) {
+			m_BattleModeParam.sameActionCount++;
+			m_BattleModeParam.firstInSameAction = false;
 		}
 		else {
-			battleModeParam.sameActionCount = 0;
-			battleModeParam.firstInSameAction = true;
+			m_BattleModeParam.sameActionCount = 0;
+			m_BattleModeParam.firstInSameAction = true;
 		}
 
-		battleModeParam.beforeBattleActionID = battleModeParam.battleActionID;
-		battleModeParam.battleActionID = nextBattleAction;
-		battleActionInitilize[battleModeParam.battleActionID]();
-		battleActionUpdate[battleModeParam.battleActionID]();
+		m_BattleModeParam.beforeBattleActionID = m_BattleModeParam.battleActionID;
+		m_BattleModeParam.battleActionID = nextBattleAction;
+		battleActionInitilize[m_BattleModeParam.battleActionID]();
+		battleActionUpdate[m_BattleModeParam.battleActionID]();
 	}
 }
 
 void Enemy::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability){
-	if (XMVector3Length(playerVec).x > offBattleRange && battleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION){
+	if (XMVector3Length(m_PlayerVec).x > m_OffBattleRange && m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION){
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 		return;
 	}
@@ -355,191 +362,236 @@ void Enemy::ChangeBattleAction(int guardProbability, int approachProbability, in
 /****************************************************捜索時の処理**********************************************************/
 void Enemy::TrackingModeInitilize()
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("捜索モードへ移行");
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
 	if (!navi)return;
 
 	GameObject movePoint;
-	if (!child) {
-		if (!movePoints)return;
-		auto movePointList = movePoints->mTransform->Children();
-		int maxMoveCount = movePointList.size();
-		if (maxMoveCount == 0)return;
+	if (!m_Child) {
+		int maxMoveCount = m_MovePointsVec.size();
+		
 		int i = 0;
 		float movePointLenMin;
-		for (auto itr : movePointList) {
-			auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - itr->mTransform->WorldPosition()).x;
+		for (auto j : m_MovePointsVec) {
+			auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - j->mTransform->WorldPosition()).x;
 			if (i == 0 || movePointLenMin > movePointLen) {
 				movePointLenMin = movePointLen;
-				moveCount = i;
+				m_MoveCount = i;
+				movePoint = j;
 			}
 			i++;
 		}
-		movePoint = *movePointList.begin();
-		i = 0;
-		for (auto itr = movePointList.begin(); i <= moveCount; ++itr, ++i) {
-			movePoint = *itr;
-		}
+		navi->RootCreate(gameObject, movePoint);
 	}
 	else {
-		movePoint = movePoints;
-		trackingRotateSpeed *= 2;
+		if(!m_MovePoints)return;
+		movePoint = m_MovePoints;
+		m_TrackingRotateSpeed *= 2;
+		auto rayMyPos = gameObject->mTransform->WorldPosition();
+		rayMyPos.y = rayMyPos.y + 3;
+		auto rayBossPos = m_MovePoints->mTransform->WorldPosition();
+		rayMyPos.y = rayMyPos.y + 3;
+		if (Hx::PhysX()->Raycast(rayMyPos,
+			XMVector3Normalize(rayBossPos - rayMyPos),
+			XMVector3Length(rayBossPos - rayMyPos).x, 
+			Layer::UserTag4)) {
+			movePoint = m_MovePoints;
+			navi->RootCreate(gameObject, movePoint);
+			m_TrackingModeParam.naviMeshFlag = true;
+		}
+		else {
+			m_TrackingModeParam.naviMeshFlag = false;
+		}
 	}
-	navi->RootCreate(gameObject, movePoint);
-	moveCountUp = true;
-
-	Hx::PhysX()->Raycast(gameObject->mTransform->WorldPosition(),
-		XMVector3Normalize(movePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()),
-		3.0f);
+	m_MoveCountUp = true;
 }
 
 void Enemy::TrackingModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-	if (!player)return;
-	XMVECTOR playerPos = player->mTransform->WorldPosition();
+	if (!m_Player)return;
+	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
 
-	forward = XMVector3Normalize(gameObject->mTransform->Forward());
-	playerVec = playerPos - gameObject->mTransform->WorldPosition();
-	forward.y = 0.0f;
-	playerVec.y = 0.0f;
-	view = acos(XMVector3Dot(forward, XMVector3Normalize(playerVec)).x);
-	if (XMVector3Length(forward - XMVector3Normalize(playerVec)).x < 0.01f)view = 0.0f;
-
-	if ((XMVector3Length(playerVec).x < trackingRange && view / 3.14f * 180.0f < trackingAngle)) {
-		actionModeFinalize[actionModeID]();
+	m_Forward = XMVector3Normalize(gameObject->mTransform->Forward());
+	m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
+	m_Forward.y = 0.0f;
+	m_PlayerVec.y = 0.0f;
+	m_View = acos(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x);
+	if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
+	auto rayMyPos = gameObject->mTransform->WorldPosition();
+	rayMyPos.y = rayMyPos.y + 3;
+	auto rayYourPos = m_Player->mTransform->WorldPosition();
+	rayMyPos.y = rayMyPos.y + 3;
+	if ((XMVector3Length(m_PlayerVec).x < m_TrackingRange && m_View / 3.14f * 180.0f < m_TrackingAngle) &&
+		!Hx::PhysX()->Raycast(rayMyPos,
+			XMVector3Normalize(rayYourPos - rayMyPos),
+			XMVector3Length(rayYourPos - rayMyPos).x,
+			Layer::UserTag4)) {
+		actionModeFinalize[m_ActionModeID]();
 		return;
 	}
 
-	if (child) {
-		if (XMVector3Length(movePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 3.0f) {
-			childTranckingSpeed = 1.5f;
+	if (!Hx::PhysX()->Raycast(rayMyPos,
+		XMVector3Normalize(rayYourPos - rayMyPos),
+		XMVector3Length(rayYourPos - rayMyPos).x,
+		Layer::UserTag4))Hx::Debug()->Log("壁じゃない");
+
+	if (m_Child) {
+		if(!m_MovePoints)return;
+		rayMyPos = gameObject->mTransform->WorldPosition();
+		rayMyPos.y = rayMyPos.y + 3;
+		rayYourPos = m_MovePoints->mTransform->WorldPosition();
+		rayMyPos.y = rayMyPos.y + 3;
+		if (Hx::PhysX()->Raycast(rayMyPos,
+			XMVector3Normalize(rayYourPos - rayMyPos),
+			XMVector3Length(rayYourPos - rayMyPos).x,
+			Layer::UserTag4)) {
+			m_TrackingModeParam.naviMeshFlag = true;
 		}
 		else {
-			childTranckingSpeed = 1.0f;
+			m_TrackingModeParam.naviMeshFlag = false;
+		}
+
+		if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 1.0f) {
+			m_ChildTranckingSpeed = 1.5f;
+		}
+		else {
+			m_ChildTranckingSpeed = 1.0f;
 		}
 	}
 
-	auto navi = gameObject->GetComponent<NaviMeshComponent>();
-	if (!navi)return;
-	if (navi->IsMoveEnd()) {
-		GameObject movePoint;
-		if (!child) {
-			if (!movePoints)return;
-			auto movePointList = movePoints->mTransform->Children();
-			int maxMoveCount = movePointList.size();
-			if (maxMoveCount == 0)return;
-			maxMoveCount--;
-			int i = 0;
-			movePoint = *movePointList.begin();
-			for (auto itr = movePointList.begin(); i <= moveCount; ++itr, i++) {
-				movePoint = *itr;
-			}
+	if (m_TrackingModeParam.naviMeshFlag) {
+		auto navi = gameObject->GetComponent<NaviMeshComponent>();
+		if (!navi)return;
+		if (navi->IsMoveEnd()) {
+			GameObject movePoint;
+			if (!m_Child) {
+				if (!m_MovePoints)return;
+				int maxMoveCount = m_MovePointsVec.size() - 1;
+				if (m_MovePointsVec.size() == 0)return;
+				if (m_MoveCountUp) {
+					m_MoveCount++;
+					if (m_MoveCount > maxMoveCount) {
+						m_MoveCount = maxMoveCount - 1;
+						m_MoveCountUp = false;
+					}
+				}
+				else {
+					m_MoveCount--;
+					if (m_MoveCount < 0) {
+						m_MoveCount = 1;
+						m_MoveCountUp = true;
+					}
+				}
 
-			if (moveCountUp) {
-				moveCount++;
-				if (moveCount == maxMoveCount) {
-					moveCountUp = false;
-				}
+				navi->RootCreate(gameObject, m_MovePointsVec[m_MoveCount]);
 			}
 			else {
-				moveCount--;
-				if (moveCount == 0) {
-					moveCountUp = true;
+				if (!m_MovePoints)return;
+				movePoint = m_MovePoints;
+				if (XMVector3Length(movePoint->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 1.0f) {
+					m_ChildTranckingSpeed = 0.0f;
+				}
+				else {
+					m_ChildTranckingSpeed = 1.0f;
+					navi->RootCreate(gameObject, movePoint);
 				}
 			}
-			navi->RootCreate(gameObject, movePoint);
 		}
-		else {
-			movePoint = movePoints;
-			if (XMVector3Length(movePoint->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 1.0f) {
-				childTranckingSpeed = 0.0f;
-			}
-			else {
-				childTranckingSpeed = 1.0f;
-				navi->RootCreate(gameObject, movePoint);
-			}
-		}
+
+		navi->Move(m_TrackingSpeed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
+
+		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+		if (!cc)return;
+
+		auto naviVec = XMVector3Normalize(navi->GetPosition() - gameObject->mTransform->WorldPosition());
+		m_Forward.y = 0;
+		naviVec.y = 0;
+		auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, naviVec));
+		auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+		m_View = acos(XMVector3Dot(m_Forward, naviVec).x);
+		if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
+		auto qua = gameObject->mTransform->Quaternion();
+		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 	}
-	
-	navi->Move(trackingSpeed * childTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
+	else {
+		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+		if (!cc)return;
 
-	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-	if (!cc)return;
+		auto childVec = XMVector3Normalize(m_MovePoints->mTransform->WorldPosition() -gameObject->mTransform->WorldPosition());
+		m_Forward.y = 0;
+		childVec.y = 0;
+		auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, childVec));
+		auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+		m_View = acos(XMVector3Dot(m_Forward, childVec).x);
+		if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
+		auto qua = gameObject->mTransform->Quaternion();
+		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+	}
 
-	auto naviVec = XMVector3Normalize(navi->GetPosition() - gameObject->mTransform->WorldPosition());
-	forward.y = 0;
-	naviVec.y = 0;
-	auto cross = XMVector3Normalize(XMVector3Cross(forward, naviVec));
-	auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	view = acos(XMVector3Dot(forward, naviVec).x);
-	if (view < trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
-	auto qua = gameObject->mTransform->Quaternion();
-	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
-
-	vec += forward * trackingSpeed * childTranckingSpeed;
+	m_Vec += m_Forward * m_TrackingSpeed * m_ChildTranckingSpeed;
 }
 
 void Enemy::TrackingModeFinalize()
 {
-	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 	ChangeActionMode(ACTIONMODE::BATTLEMODE);
 }
 
 /****************************************************戦闘時の処理**********************************************************/
 void Enemy::BattleModeInitilize()
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("戦闘モードへ移行");
-	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
-	battleActionInitilize[battleModeParam.battleActionID]();
+	m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	battleActionInitilize[m_BattleModeParam.battleActionID]();
 }
 
 void Enemy::BattleModeUpdate()
 {
-	if (!player)return;
-	XMVECTOR playerPos = player->mTransform->WorldPosition();
+	if (!m_Player)return;
+	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
 
-	forward = XMVector3Normalize(gameObject->mTransform->Forward());
-	playerVec = playerPos - gameObject->mTransform->WorldPosition();
-	forward.y = 0.0f;
-	playerVec.y = 0.0f;
-	view = acos(XMVector3Dot(forward, XMVector3Normalize(playerVec)).x);
-	if (XMVector3Length(forward - XMVector3Normalize(playerVec)).x < 0.01f)view = 0.0f;
+	m_Forward = XMVector3Normalize(gameObject->mTransform->Forward());
+	m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
+	m_Forward.y = 0.0f;
+	m_PlayerVec.y = 0.0f;
+	m_View = acos(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x);
+	if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
 
-	if (XMVector3Length(playerVec).x > trackingRange) {
-		actionModeFinalize[actionModeID]();
+	if (XMVector3Length(m_PlayerVec).x > m_TrackingRange) {
+		actionModeFinalize[m_ActionModeID]();
 		return;
 	}
-	battleActionUpdate[battleModeParam.battleActionID]();
+	battleActionUpdate[m_BattleModeParam.battleActionID]();
 }
 
 void Enemy::BattleModeFinalize()
 {
-	battleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 	ChangeActionMode(ACTIONMODE::TRACKINGMODE);
 }
 
 void Enemy::ConfrontModeInitilize()
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("近づく");
 }
 
 void Enemy::ConfrontModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-	if (XMVector3Length(playerVec).x <= onBattleRange){
+	if (XMVector3Length(m_PlayerVec).x <= m_OnBattleRange){
 		battleActionFinalize[BATTLEACTION::CONFRONTACTION]();
 	}
 	else {
-		vec += forward * trackingSpeed;
+		m_Vec += m_Forward * m_TrackingSpeed;
 	}
 
-	auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
-	auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	if (view < trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
+	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+	if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
 	auto qua = gameObject->mTransform->Quaternion();
 	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 }
@@ -551,32 +603,32 @@ void Enemy::ConfrontModeFinalize()
 
 void Enemy::ApproachModeInitilize()
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("周りをうろつく");
-	battleModeParam.count = 0.0f;
-	battleModeParam.rotateVecPlus = !battleModeParam.rotateVecPlus;
+	m_BattleModeParam.count = 0.0f;
+	m_BattleModeParam.rotateVecPlus = !m_BattleModeParam.rotateVecPlus;
 }
 
 void Enemy::ApproachModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-	if (!player)return;
-	XMVECTOR playerPos = player->mTransform->WorldPosition();
-	auto trans = XMMatrixTranslationFromVector(XMVector3Normalize(gameObject->mTransform->WorldPosition() - playerPos) * onBattleRange);
-	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime() * (battleModeParam.rotateVecPlus == true ? 1.0f : -1.0f));
+	if (!m_Player)return;
+	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
+	auto trans = XMMatrixTranslationFromVector(XMVector3Normalize(gameObject->mTransform->WorldPosition() - playerPos) * m_OnBattleRange);
+	auto rot = XMMatrixRotationY(m_AproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime() * (m_BattleModeParam.rotateVecPlus == true ? 1.0f : -1.0f));
 	auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot), XMMatrixTranslationFromVector(playerPos));
 
-	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * trackingSpeed;
+	m_Vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * m_TrackingSpeed;
 
-	auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
-	auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	if (view < trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
+	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+	if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
 	auto qua = gameObject->mTransform->Quaternion();
 	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 
-	battleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
-	if (battleModeParam.count > APPROACHTIME){
-		battleActionFinalize[battleModeParam.battleActionID]();
+	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
+	if (m_BattleModeParam.count > APPROACHTIME){
+		battleActionFinalize[m_BattleModeParam.battleActionID]();
 	}
 }
 
@@ -587,26 +639,26 @@ void Enemy::ApproachModeFinalize()
 
 void Enemy::AttackDownModeInitilize()
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("縦切り");
 }
 
 void Enemy::AttackDownModeUpdate()
 {
-	auto anim = modelObject->GetComponent<AnimationComponent>();
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
 	if (GetNowAnimTime() < 1.0f){
-		auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
-		auto trackingNowAngle = correctionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-		if (view < correctionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+		auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
+		auto trackingNowAngle = m_CorrectionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+		if (m_View < m_CorrectionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
 		auto qua = gameObject->mTransform->Quaternion();
 		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 	}
 
 	AnimChange(ANIM_ID::ANIM_ATTACK_DOWN, 5.0f, false);
-	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
-		battleActionFinalize[battleModeParam.battleActionID]();
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		battleActionFinalize[m_BattleModeParam.battleActionID]();
 	};
 }
 
@@ -617,21 +669,21 @@ void Enemy::AttackDownModeFinalize()
 
 void Enemy::JumpAttackModeInitilize()
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("ジャンプ切り");
 }
 
 void Enemy::JumpAttackModeUpdate()
 {
-	auto anim = modelObject->GetComponent<AnimationComponent>();
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
 	AnimChange(ANIM_ID::ANIM_JUMPATTACK, 5.0f, false);
 	if (GetNowAnimTime() < 12.5f) {
-		vec += forward * 20.0f;
+		m_Vec += m_Forward * 20.0f;
 	}
-	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
-		battleActionFinalize[battleModeParam.battleActionID]();
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		battleActionFinalize[m_BattleModeParam.battleActionID]();
 	};
 }
 
@@ -643,38 +695,38 @@ void Enemy::JumpAttackModeFinalize()
 
 void Enemy::GuardModeInitilize()
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("ガード");
-	battleModeParam.count = 0.0f;
+	m_BattleModeParam.count = 0.0f;
 	if (rand() % 2 == 0){
-		battleModeParam.rotateVecPlus = true;
+		m_BattleModeParam.rotateVecPlus = true;
 	}
 	else{
-		battleModeParam.rotateVecPlus = false;
+		m_BattleModeParam.rotateVecPlus = false;
 	}
 }
 
 void Enemy::GuardModeUpdate()
 {
-	if (!player)return;
-	XMVECTOR playerPos = player->mTransform->WorldPosition();
-	auto trans = XMMatrixTranslationFromVector(XMVector3Normalize(gameObject->mTransform->WorldPosition() - playerPos) * onBattleRange);
-	auto rot = XMMatrixRotationY(aproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime() * (battleModeParam.rotateVecPlus == true ? 1.0f : -1.0f));
+	if (!m_Player)return;
+	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
+	auto trans = XMMatrixTranslationFromVector(XMVector3Normalize(gameObject->mTransform->WorldPosition() - playerPos) * m_OnBattleRange);
+	auto rot = XMMatrixRotationY(m_AproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime() * (m_BattleModeParam.rotateVecPlus == true ? 1.0f : -1.0f));
 	auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot), XMMatrixTranslationFromVector(playerPos));
 
-	vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * trackingSpeed;
+	m_Vec += XMVector3Normalize(pos.r[3] - gameObject->mTransform->WorldPosition()) * m_TrackingSpeed;
 
-	auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
-	auto trackingNowAngle = trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	if (view < trackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
+	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+	if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
 	auto qua = gameObject->mTransform->Quaternion();
 	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 
 	AnimChange(ANIM_ID::ANIM_GUARD, 5.0f);
 
-	battleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
-	if (battleModeParam.count > APPROACHTIME){
-		battleActionFinalize[battleModeParam.battleActionID]();
+	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
+	if (m_BattleModeParam.count > APPROACHTIME){
+		battleActionFinalize[m_BattleModeParam.battleActionID]();
 	}
 }
 
@@ -685,29 +737,29 @@ void Enemy::GuardModeFinalize()
 
 void Enemy::BackStepModeInitilize()
 {
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("バックステップ");
 }
 
 void Enemy::BackStepModeUpdate()
 {
-	auto anim = modelObject->GetComponent<AnimationComponent>();
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
 	if (GetNowAnimTime() < 1.0f){
-		auto cross = XMVector3Normalize(XMVector3Cross(forward, XMVector3Normalize(playerVec)));
-		auto trackingNowAngle = correctionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-		if (view < correctionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = view;
+		auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
+		auto trackingNowAngle = m_CorrectionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+		if (m_View < m_CorrectionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
 		auto qua = gameObject->mTransform->Quaternion();
 		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 	}
 
 	AnimChange(ANIM_ID::ANIM_BACKSTEP, 5.0f, false);
 	if (GetNowAnimTime() < 12.5f) {
-		vec -= forward * 20.0f;
+		m_Vec -= m_Forward * 20.0f;
 	}
 	else if (GetNowAnimTime() < 20.0f) {
-		battleActionFinalize[battleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.battleActionID]();
 	}
 }
 
@@ -717,10 +769,10 @@ void Enemy::BackStepModeFinalize()
 }
 
 void Enemy::WinceModeInitilize(){
-	hp -= damage;
-	if (drawLog)
-		Hx::Debug()->Log(std::to_string(damage) + "ダメージ喰らった。残りの体力は" + std::to_string(hp));
-	if (hp <= 0) {
+	m_Hp -= m_Damage;
+	if (m_DrawLog)
+		Hx::Debug()->Log(std::to_string(m_Damage) + "ダメージ喰らった。残りの体力は" + std::to_string(m_Hp));
+	if (m_Hp <= 0) {
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
@@ -728,10 +780,10 @@ void Enemy::WinceModeInitilize(){
 }
 
 void Enemy::WinceModeUpdate(){
-	auto anim = modelObject->GetComponent<AnimationComponent>();
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
-		battleActionFinalize[battleModeParam.battleActionID]();
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		battleActionFinalize[m_BattleModeParam.battleActionID]();
 	};
 }
 
@@ -740,23 +792,23 @@ void Enemy::WinceModeFinalize(){
 }
 
 void Enemy::HitInGuardModeInitilize(){
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("防いだ");
 	AnimChange(ANIM_ID::ANIM_HITINGUARD, 5.0f, false, true);
 
-	if (battleModeParam.firstInSameAction){
-		PatienceInThisTime = ((rand() % hitInGuardMaxCount) + hitInGuardMinCount);
-		if (drawLog)
+	if (m_BattleModeParam.firstInSameAction){
+		PatienceInThisTime = ((rand() % m_HitInGuardMaxCount) + m_HitInGuardMinCount);
+		if (m_DrawLog)
 			Hx::Debug()->Log(std::to_string(PatienceInThisTime + 1) + "回防いだらモンキーアタックします");
 	}
 }
 
 void Enemy::HitInGuardModeUpdate(){
-	if (PatienceInThisTime > battleModeParam.sameActionCount){
-		auto anim = modelObject->GetComponent<AnimationComponent>();
+	if (PatienceInThisTime > m_BattleModeParam.sameActionCount){
+		auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
-		if (anim->IsAnimationEnd(animparam.nowAnimId)) {
-			battleActionFinalize[battleModeParam.battleActionID]();
+		if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+			battleActionFinalize[m_BattleModeParam.battleActionID]();
 		};
 	}
 	else{
@@ -769,17 +821,17 @@ void Enemy::HitInGuardModeFinalize(){
 }
 
 void Enemy::AttackMonckeyModeInitilize(){
-	if (drawLog)
+	if (m_DrawLog)
 		Hx::Debug()->Log("モンキーアタック");
 }
 
 void Enemy::AttackMonckeyModeUpdate(){
-	auto anim = modelObject->GetComponent<AnimationComponent>();
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
 	AnimChange(ANIM_ID::ANIM_ATTACK_MONCKEY, 5.0f, false);
-	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
-		battleActionFinalize[battleModeParam.battleActionID]();
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		battleActionFinalize[m_BattleModeParam.battleActionID]();
 	};
 }
 
@@ -789,7 +841,7 @@ void Enemy::AttackMonckeyModeFinalize(){
 
 void Enemy::DeadModeInitilize()
 {
-	if (drawLog) {
+	if (m_DrawLog) {
 		Hx::Debug()->Log("死んだ");
 	}
 
@@ -798,14 +850,14 @@ void Enemy::DeadModeInitilize()
 
 void Enemy::DeadModeUpdate()
 {
-	auto anim = modelObject->GetComponent<AnimationComponent>();
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (anim->IsAnimationEnd(animparam.nowAnimId)) {
-		if (!myWeapon)return;
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		if (!m_MyWeapon)return;
 		//gameObject->Enable();
 		gameObject->RemoveComponent<CharacterControllerComponent>();
-		Hx::DestroyObject(myWeapon);
+		Hx::DestroyObject(m_MyWeapon);
 		Hx::DestroyObject(gameObject);
 	};
 }

@@ -27,6 +27,11 @@ enum BATTLEACTION{
 	DEADACTION
 };
 
+struct TrackingModeParameter {
+	//ナビメッシュを使うかどうか
+	bool naviMeshFlag = true;
+};
+
 struct BattleModeParameter{	
 	//バトル中のアクションのID
 	BATTLEACTION battleActionID = BATTLEACTION::NONE;
@@ -143,7 +148,7 @@ private:
 	void HitInGuardModeInitilize();
 	void HitInGuardModeUpdate();
 	void HitInGuardModeFinalize();
-	//今回は何回我慢するか(hitInGuardMinCount～hitInGuardMaxCount)
+	//今回は何回我慢するか(m_HitInGuardMinCount～m_HitInGuardMaxCount)
 	int PatienceInThisTime;
 
 	void AttackMonckeyModeInitilize();
@@ -155,52 +160,57 @@ private:
 	void DeadModeFinalize();
 
 	//メンバ変数
-	SERIALIZE float trackingSpeed;
-	SERIALIZE float trackingRange;
-	SERIALIZE float onBattleRange;
-	SERIALIZE float offBattleRange;
-	SERIALIZE float trackingAngle;
-	SERIALIZE float trackingRotateSpeed;
-	SERIALIZE float hp;
-	SERIALIZE int attackDamage;
-	SERIALIZE GameObject player;
-	SERIALIZE GameObject myWeapon;
-	SERIALIZE GameObject modelObject;
-	SERIALIZE GameObject movePoints;
-	SERIALIZE bool child;
-	SERIALIZE float aproachRotateSpeed;
-	SERIALIZE float correctionRotateSpeed;
-	SERIALIZE bool drawLog;
-	SERIALIZE int hitInGuardMinCount;
-	SERIALIZE int hitInGuardMaxCount;
-	SERIALIZE int absolutelyAvoidInHitAttackProbability;
+	SERIALIZE float m_TrackingSpeed;
+	SERIALIZE float m_TrackingRange;
+	SERIALIZE float m_OnBattleRange;
+	SERIALIZE float m_OffBattleRange;
+	SERIALIZE float m_TrackingAngle;
+	SERIALIZE float m_TrackingRotateSpeed;
+	SERIALIZE float m_Hp;
+	SERIALIZE int m_AttackDamage;
+	SERIALIZE GameObject m_Player;
+	SERIALIZE GameObject m_MyWeapon;
+	SERIALIZE GameObject m_ModelObject;
+	SERIALIZE GameObject m_MovePoints;
+	SERIALIZE bool m_Child;
+	SERIALIZE float m_AproachRotateSpeed;
+	SERIALIZE float m_CorrectionRotateSpeed;
+	SERIALIZE bool m_DrawLog;
+	SERIALIZE int m_HitInGuardMinCount;
+	SERIALIZE int m_HitInGuardMaxCount;
+	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
 
 	//前方向
-	XMVECTOR forward;
-	//playerへのベクトル
-	XMVECTOR playerVec;
-	//自分の正面のベクトル自分からplayerへのベクトルの角度
-	float view;
+	XMVECTOR m_Forward;
+	//m_Playerへのベクトル
+	XMVECTOR m_PlayerVec;
+	//自分の正面のベクトル自分からm_Playerへのベクトルの角度
+	float m_View;
 	//移動量
-	XMVECTOR vec;
+	XMVECTOR m_Vec;
 	//受けるダメージを保存するもの
-	float damage;
+	float m_Damage;
 
 	//捜索時の移動ポイントの数値
-	int moveCount;
+	int m_MoveCount;
 	//捜索時の移動ポイントの方向
-	bool moveCountUp;
+	bool m_MoveCountUp;
+
+
+	std::vector<GameObject> m_MovePointsVec;
 
 	//アクションモードのID
-	ACTIONMODE actionModeID;
+	ACTIONMODE m_ActionModeID;
 	//バトル中のパラメーター
-	BattleModeParameter battleModeParam;
+	BattleModeParameter m_BattleModeParam;
+	//捜索中のパラメーター
+	TrackingModeParameter m_TrackingModeParam;
 
 	//アニメーションに必要なパラメーター
-	AnimParameter animparam;
+	AnimParameter m_Animparam;
 
-	float childTranckingSpeed;
+	float m_ChildTranckingSpeed;
 	//重力
-	XMVECTOR mGravity;
+	XMVECTOR m_Gravity;
 
 };
