@@ -100,6 +100,7 @@ const float GUARDTIME = 1.0f;
 class Enemy :public IDllScriptComponent{
 public:
 	void Initialize()override;
+	void ManagerInitialize();
 	void Start()override;
 	void Update()override;
 	void Finish()override;
@@ -244,4 +245,12 @@ private:
 	//èdóÕ
 	XMVECTOR m_Gravity;
 
+public:
+	void ActionInitilize(TRACKINGACTION::Enum trackingAction);
+	void ActionUpdate(TRACKINGACTION::Enum trackingAction);
+	void ActionFinalize(TRACKINGACTION::Enum trackingAction);
+
+	void ActionInitilize(BATTLEACTION::Enum battleAction);
+	void ActionUpdate(BATTLEACTION::Enum battleAction);
+	void ActionFinalize(BATTLEACTION::Enum battleAction);
 };

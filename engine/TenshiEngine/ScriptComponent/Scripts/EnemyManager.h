@@ -9,18 +9,12 @@ struct EnemyParameter {
 
 	//今のアクションモード(TRACKING or BATTLE)のID
 	ACTIONMODE nowActionMode = ACTIONMODE::TRACKINGMODE;
+	
+	//捜索中のパラメータ
+	TrackingModeParameter trackingModeParameter;
 
-	//今の捜索中のアクションのID
-	TRACKINGACTION::Enum nowTrackingAction = TRACKINGACTION::NONE;
-
-	//前の捜索中のアクションのID
-	TRACKINGACTION::Enum beforeTrackingAction = TRACKINGACTION::NONE;
-
-	//今の戦闘中のアクションのID
-	BATTLEACTION::Enum nowBattleAction = BATTLEACTION::NONE;
-
-	//前の戦闘中のアクションのID
-	BATTLEACTION::Enum beforeBattleAction = BATTLEACTION::NONE;
+	//戦闘中のパラメータ
+	BattleModeParameter battleModeParameter;
 };
 
 struct EnemyOne {
@@ -73,10 +67,9 @@ private:
 	SERIALIZE
 	bool m_DrawFlag;
 
-	/// <summary>
-	///Enemyの入れ物へGameObjectを入れる
-	/// </summary>
+	//Enemyの入れ物へGameObjectを入れる
 	void EnemyTeamIntoEnemyContainer(GameObject g);
 
+	//
 	std::vector<EnemyTeam> m_EnemyContainer;
 };

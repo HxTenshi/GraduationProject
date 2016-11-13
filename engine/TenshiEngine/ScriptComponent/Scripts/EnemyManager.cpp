@@ -11,7 +11,19 @@ void EnemyManager::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void EnemyManager::Start(){
-
+	for (auto i : m_EnemyContainer) {
+		for (auto j : i.enemyOneVec) {
+			auto jScript = j.enemyGameObject->GetScript<Enemy>();
+			if (!jScript)return;
+			jScript->ManagerInitialize();
+			if (j.enemyParameter.nowActionMode == ACTIONMODE::TRACKINGMODE) {
+				jScript->ActionInitilize(j.enemyParameter.trackingModeParameter.trackingActionID);
+			}
+			else {
+				jScript->ActionInitilize(j.enemyParameter.battleModeParameter.battleActionID);
+			}
+		}
+	}
 }
 
 //毎フレーム呼ばれます
@@ -48,15 +60,37 @@ void EnemyManager::Update(){
 				//子分の処理
 				if (i->enemyTeamParameter.parentAlive) {
 					//親が生きていたら
+					for (auto i : m_EnemyContainer) {
+						for (auto j : i.enemyOneVec) {
+							if (j.enemyParameter.nowActionMode == ACTIONMODE::TRACKINGMODE)
+								j.enemyGameObject->GetScript<Enemy>()->ActionUpdate(j.enemyParameter.trackingModeParameter.trackingActionID);
+							else
+								j.enemyGameObject->GetScript<Enemy>()->ActionUpdate(j.enemyParameter.battleModeParameter.battleActionID);
+						}
+					}
 				}
 				else {
 					//親が死んでいたら
+					for (auto i : m_EnemyContainer) {
+						for (auto j : i.enemyOneVec) {
+							if (j.enemyParameter.nowActionMode == ACTIONMODE::TRACKINGMODE)
+								j.enemyGameObject->GetScript<Enemy>()->ActionUpdate(j.enemyParameter.trackingModeParameter.trackingActionID);
+							else
+								j.enemyGameObject->GetScript<Enemy>()->ActionUpdate(j.enemyParameter.battleModeParameter.battleActionID);
+						}
+					}
 				}
-				//どちらでも
-
 			}
 			else {
 				//親分の処理
+				for (auto i : m_EnemyContainer) {
+					for (auto j : i.enemyOneVec) {
+						if (j.enemyParameter.nowActionMode == ACTIONMODE::TRACKINGMODE)
+							j.enemyGameObject->GetScript<Enemy>()->ActionUpdate(j.enemyParameter.trackingModeParameter.trackingActionID);
+						else
+							j.enemyGameObject->GetScript<Enemy>()->ActionUpdate(j.enemyParameter.battleModeParameter.battleActionID);
+					}
+				}
 			}
 		}
 		i++;
@@ -95,7 +129,7 @@ void EnemyManager::EnemyTeamIntoEnemyContainer(GameObject g){
 		eo.enemyGameObject = newEnemyTeam;
 		eo.enemyParameter.child = false;
 		eo.enemyParameter.nowActionMode = ACTIONMODE::TRACKINGMODE;
-		eo.enemyParameter.nowTrackingAction = TRACKINGACTION::PARENTTRACKING;
+		eo.enemyParameter.trackingModeParameter.trackingActionID = TRACKINGACTION::PARENTTRACKING;
 		et.enemyOneVec.insert(et.enemyOneVec.begin(), eo);
 	}
 	else {
@@ -110,13 +144,13 @@ void EnemyManager::EnemyTeamIntoEnemyContainer(GameObject g){
 			if (iScript->GetChildFlag()) {
 				eo.enemyParameter.child = true;
 				eo.enemyParameter.nowActionMode = ACTIONMODE::TRACKINGMODE;
-				eo.enemyParameter.nowTrackingAction = TRACKINGACTION::CHILDTRACKING;
+				eo.enemyParameter.trackingModeParameter.trackingActionID = TRACKINGACTION::CHILDTRACKING;
 				et.enemyOneVec.push_back(eo);
 			}
 			else {
 				eo.enemyParameter.child = false;
 				eo.enemyParameter.nowActionMode = ACTIONMODE::TRACKINGMODE;
-				eo.enemyParameter.nowTrackingAction = TRACKINGACTION::PARENTTRACKING;
+				eo.enemyParameter.trackingModeParameter.trackingActionID = TRACKINGACTION::PARENTTRACKING;
 				et.enemyOneVec.insert(et.enemyOneVec.begin(), eo);
 			}
 		}

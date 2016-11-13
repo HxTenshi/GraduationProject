@@ -7,9 +7,26 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
+
+}
+
+void Enemy::ManagerInitialize()
+{
+	Hx::Debug()->Log("managerInit");
+
 	m_Gravity = XMVectorSet(0, -9.81f, 0, 1);
 	m_MoveCount = 0;
 	m_MoveCountUp = true;
+
+	m_ChildTranckingSpeed = 1.0f;
+	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
+	m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+
+	//actionModeInitilize[m_ActionModeID]();
+
+	if (!m_Player) {
+		m_Player = Hx::FindActor("Player");
+	}
 
 	if (!m_Child) {
 		if (!m_MovePoints)return;
@@ -17,11 +34,6 @@ void Enemy::Initialize() {
 			m_MovePointsVec.push_back(i);
 		}
 	}
-
-	m_ChildTranckingSpeed = 1.0f;
-
-	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
-	m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
 
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&Enemy::TrackingModeInitilize, this/*,std::placeholders::_1*/);
 	actionModeUpdate[ACTIONMODE::TRACKINGMODE] = std::bind(&Enemy::TrackingModeUpdate, this);
@@ -79,12 +91,6 @@ void Enemy::Initialize() {
 	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeFinalize, this);
 
-	actionModeInitilize[m_ActionModeID]();
-
-	if (!m_Player) {
-		m_Player = Hx::FindActor("Player");
-	}
-
 	if (m_DrawLog) {
 		Hx::Debug()->Log("捜索時の歩くスピード：" + std::to_string(m_TrackingSpeed));
 		Hx::Debug()->Log("捜索時の視界の距離：" + std::to_string(m_TrackingRange));
@@ -119,7 +125,7 @@ void Enemy::Update() {
 
 	AnimLerp();
 
-	actionModeUpdate[m_ActionModeID]();
+	//actionModeUpdate[m_ActionModeID]();
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;
@@ -392,6 +398,7 @@ void Enemy::TrackingModeFinalize()
 
 void Enemy::ParentTrackingModeInitilize()
 {
+	Hx::Debug()->Log("parentInit");
 	if (m_DrawLog)
 		Hx::Debug()->Log("捜索モードへ移行");
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
@@ -486,6 +493,7 @@ void Enemy::ParentTrackingModeFinalize()
 
 void Enemy::ChildTrackingModeInitilize()
 {
+	Hx::Debug()->Log("childInit");
 	if (m_DrawLog)
 		Hx::Debug()->Log("捜索モードへ移行");
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
@@ -493,7 +501,10 @@ void Enemy::ChildTrackingModeInitilize()
 
 	GameObject movePoint;
 	
-	if (!m_MovePoints)return;
+	if (!m_MovePoints) {
+		Hx::Debug()->Log("enemyMovePointの中身がないよ");
+		return;
+	}
 	movePoint = m_MovePoints;
 	m_TrackingRotateSpeed *= 2;
 	auto rayMyPos = gameObject->mTransform->WorldPosition();
@@ -955,4 +966,34 @@ void Enemy::DeadModeUpdate()
 
 void Enemy::DeadModeFinalize()
 {
+}
+
+void Enemy::ActionInitilize(TRACKINGACTION::Enum trackingAction)
+{
+	trackingActionInitilize[trackingAction]();
+}
+
+void Enemy::ActionUpdate(TRACKINGACTION::Enum trackingAction)
+{
+	trackingActionUpdate[trackingAction]();
+}
+
+void Enemy::ActionFinalize(TRACKINGACTION::Enum trackingAction)
+{
+	trackingActionFinalize[trackingAction]();
+}
+
+void Enemy::ActionInitilize(BATTLEACTION::Enum battleAction)
+{
+	battleActionInitilize[battleAction]();
+}
+
+void Enemy::ActionUpdate(BATTLEACTION::Enum battleAction)
+{
+	battleActionUpdate[battleAction]();
+}
+
+void Enemy::ActionFinalize(BATTLEACTION::Enum battleAction)
+{
+	battleActionFinalize[battleAction]();
 }
