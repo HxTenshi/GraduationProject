@@ -100,7 +100,6 @@ const float GUARDTIME = 1.0f;
 class Enemy :public IDllScriptComponent{
 public:
 	void Initialize()override;
-	void ManagerInitialize();
 	void Start()override;
 	void Update()override;
 	void Finish()override;
@@ -116,7 +115,17 @@ private:
 	void AnimLerp();
 	float GetNowAnimTime();
 
+	template<class T>
+	const T& clamp(const T& v, const T& min, const T& max) {
+		if (v <= min)return min;
+		else if (v >= max)return max;
+		return v;
+	}
+
 	void ChangeActionMode(ACTIONMODE nextActionMode);
+	void ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACTION::Enum nextTrackingAction);
+	void ChangeActionAndBattleAction(ACTIONMODE nextActionMode, BATTLEACTION::Enum nextBattleAction);
+	void ChangeTrackingAction(TRACKINGACTION::Enum nextTrackingAction);
 	void ChangeBattleAction(BATTLEACTION::Enum nextBattleAction);
 	void ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability);
 
@@ -246,11 +255,26 @@ private:
 	XMVECTOR m_Gravity;
 
 public:
-	void ActionInitilize(TRACKINGACTION::Enum trackingAction);
-	void ActionUpdate(TRACKINGACTION::Enum trackingAction);
-	void ActionFinalize(TRACKINGACTION::Enum trackingAction);
+	void SetActionMode(ACTIONMODE actionMode) {
+		ChangeActionMode(actionMode);
+	}
 
-	void ActionInitilize(BATTLEACTION::Enum battleAction);
-	void ActionUpdate(BATTLEACTION::Enum battleAction);
-	void ActionFinalize(BATTLEACTION::Enum battleAction);
+	void SetActionModeAndTrackingAction(ACTIONMODE actionMode, TRACKINGACTION::Enum trackingAction) {
+		ChangeActionAndTrackingAction(actionMode, trackingAction);
+	}
+
+	void SetActionModeAndBattleAction(ACTIONMODE actionMode, BATTLEACTION::Enum battleAction) {
+		ChangeActionAndBattleAction(actionMode, battleAction);
+	}
+
+	void SetTrackingAction(TRACKINGACTION::Enum trackingAction) {
+		ChangeTrackingAction(trackingAction);
+	}
+
+	void SetBattleAction(BATTLEACTION::Enum battleAction) {
+		ChangeBattleAction(battleAction);
+	}
+
+	bool DiscoveryPlayer();
+	bool LostPlayer();
 };
