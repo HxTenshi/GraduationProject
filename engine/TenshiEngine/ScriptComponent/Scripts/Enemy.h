@@ -30,6 +30,9 @@ struct TrackingModeParameter {
 	
 	//ナビメッシュを使うかどうか
 	bool naviMeshFlag = true;
+
+	//親が生きているかどうか
+	bool parentAlive = true;
 };
 
 struct BATTLEACTION {
@@ -40,6 +43,7 @@ struct BATTLEACTION {
 	ATTACKDOWNACTION,
 	JUMPATTACKACTION,
 	GUARDACTION,
+	PROVOCATION,
 	BACKSTEPACTION,
 	WINCEACTION,
 	HITINGUARDACTION,
@@ -58,6 +62,9 @@ struct BattleModeParameter{
 	//バトルモード中の思考時間を図るもの
 	float count = 0.0f;
 
+	//うろうろする時間
+	float decideAprochTime = 0;
+
 	//同じアクションが何回続いたかカウント
 	int sameActionCount = 0;
 
@@ -66,6 +73,15 @@ struct BattleModeParameter{
 
 	//バトルモード中のアプローチとガード時にどちらに回転するか決める為
 	bool rotateVecPlus = true;
+
+	//アクションが終わったかどうか
+	bool actionFinish = false;
+
+	//ポジションについたか
+	bool arrival = false;
+
+	//戦いを行う場所
+	XMVECTOR battlePosition = XMVectorSet(0, 0, 0, 0);
 };
 
 
@@ -93,8 +109,12 @@ enum ACTIONMODE{
 	BATTLEMODE
 };
 
-const float APPROACHTIME = 1.0f;
-const float GUARDTIME = 1.0f;
+template<class T>
+const T& clamp(const T& v, const T& min, const T& max) {
+	if (v <= min)return min;
+	else if (v >= max)return max;
+	return v;
+}
 
 
 class Enemy :public IDllScriptComponent{
@@ -109,18 +129,21 @@ public:
 	void Damage(float damage_);
 	void Attack(GameObject player);
 	bool GetChildFlag() { return m_Child; }
+	void SetParentAlive(bool flag) { m_TrackingModeParam.parentAlive = flag; }
+	BattleModeParameter GetBattleModeParameter() {
+		auto bmp = m_BattleModeParam;
+		m_BattleModeParam.actionFinish = false;
+		m_BattleModeParam.arrival = false;
+		return bmp;
+	}
+	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
+	void SetPlayer(GameObject player) { m_Player = player; }
+	float GetOnBattleRange() {return m_OnBattleRange;}
 
 private:
 	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
 	void AnimLerp();
 	float GetNowAnimTime();
-
-	template<class T>
-	const T& clamp(const T& v, const T& min, const T& max) {
-		if (v <= min)return min;
-		else if (v >= max)return max;
-		return v;
-	}
 
 	void ChangeActionMode(ACTIONMODE nextActionMode);
 	void ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACTION::Enum nextTrackingAction);
@@ -172,10 +195,14 @@ private:
 	void JumpAttackModeInitilize();
 	void JumpAttackModeUpdate();
 	void JumpAttackModeFinalize();
-	
+
 	void GuardModeInitilize();
 	void GuardModeUpdate();
 	void GuardModeFinalize();
+
+	void ProvocationModeInitilize();
+	void ProvocationModeUpdate();
+	void ProvocationModeFinalize();
 
 	void BackStepModeInitilize();
 	void BackStepModeUpdate();
@@ -188,6 +215,8 @@ private:
 	void HitInGuardModeInitilize();
 	void HitInGuardModeUpdate();
 	void HitInGuardModeFinalize();
+
+	void Prowl();
 
 	//今回は何回我慢するか(m_HitInGuardMinCount～m_HitInGuardMaxCount)
 	int PatienceInThisTime;
@@ -203,13 +232,13 @@ private:
 	//メンバ変数
 	SERIALIZE float m_TrackingSpeed;
 	SERIALIZE float m_TrackingRange;
+	SERIALIZE float m_LostRange;
 	SERIALIZE float m_OnBattleRange;
 	SERIALIZE float m_OffBattleRange;
 	SERIALIZE float m_TrackingAngle;
 	SERIALIZE float m_TrackingRotateSpeed;
 	SERIALIZE float m_Hp;
 	SERIALIZE int m_AttackDamage;
-	SERIALIZE GameObject m_Player;
 	SERIALIZE GameObject m_MyWeapon;
 	SERIALIZE GameObject m_ModelObject;
 	SERIALIZE GameObject m_MovePoints;
@@ -220,6 +249,10 @@ private:
 	SERIALIZE int m_HitInGuardMinCount;
 	SERIALIZE int m_HitInGuardMaxCount;
 	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
+	SERIALIZE float APROACHMINTIME;
+	SERIALIZE float APROACHMAXTIME;
+
+	GameObject m_Player;
 
 	//前方向
 	XMVECTOR m_Forward;

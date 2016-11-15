@@ -35,6 +35,9 @@ struct EnemyTeamParameter {
 	//’N‚ªUŒ‚‚·‚é‚©
 	int whoAttack = 0;
 
+	//UŒ‚‚ªˆêT‚µ‚½‚©
+	bool everyoneAttacked = false;
+
 	//Œ©‚Â‚¯‚Ä‚¢‚é‚©
 	bool discoveryPlayer = false;
 
@@ -69,6 +72,8 @@ private:
 	GameObject m_Enemys;
 	SERIALIZE
 	bool m_DrawFlag;
+	SERIALIZE
+	GameObject m_Player;
 
 	//Enemy‚Ì“ü‚ê•¨‚ÖGameObject‚ğ“ü‚ê‚é
 	void EnemysIntoEnemyContainer();
@@ -76,42 +81,32 @@ private:
 	//
 	std::vector<EnemyTeam> m_EnemyContainer;
 
-	void SetActionMode(EnemyOne* enemyOne,ACTIONMODE actionMode) {
-		auto jScript = enemyOne->enemyGameObject->GetScript<Enemy>();
-		if (!jScript)return;
+	void SetActionMode(EnemyOne* enemyOne, Enemy* jScript, ACTIONMODE actionMode) {
 		enemyOne->enemyParameter.nowActionMode = actionMode;
 		jScript->SetActionMode(actionMode);
 	}
 
-	void SetActionModeAndTrackingAction(EnemyOne* enemyOne, ACTIONMODE actionMode, TRACKINGACTION::Enum trackingAction) {
-		auto jScript = enemyOne->enemyGameObject->GetScript<Enemy>();
-		if (!jScript)return;
+	void SetActionModeAndTrackingAction(EnemyOne* enemyOne,Enemy* jScript, ACTIONMODE actionMode, TRACKINGACTION::Enum trackingAction) {
 		enemyOne->enemyParameter.nowActionMode = actionMode;
 		enemyOne->enemyParameter.trackingModeParameter.beforetrackingActionID = enemyOne->enemyParameter.trackingModeParameter.trackingActionID;
 		enemyOne->enemyParameter.trackingModeParameter.trackingActionID = trackingAction;
 		jScript->SetActionModeAndTrackingAction(actionMode,trackingAction);
 	}
 
-	void SetActionModeAndBattleAction(EnemyOne* enemyOne, ACTIONMODE actionMode, BATTLEACTION::Enum battleAction) {
-		auto jScript = enemyOne->enemyGameObject->GetScript<Enemy>();
-		if (!jScript)return;
+	void SetActionModeAndBattleAction(EnemyOne* enemyOne, Enemy* jScript, ACTIONMODE actionMode, BATTLEACTION::Enum battleAction) {
 		enemyOne->enemyParameter.nowActionMode = actionMode;
 		enemyOne->enemyParameter.battleModeParameter.beforeBattleActionID = enemyOne->enemyParameter.battleModeParameter.battleActionID;
 		enemyOne->enemyParameter.battleModeParameter.battleActionID = battleAction;
 		jScript->SetActionModeAndBattleAction(actionMode, battleAction);
 	}
 
-	void SetTrackingAction(EnemyOne* enemyOne, TRACKINGACTION::Enum trackingAction) {
-		auto jScript = enemyOne->enemyGameObject->GetScript<Enemy>();
-		if (!jScript)return;
+	void SetTrackingAction(EnemyOne* enemyOne, Enemy* jScript, TRACKINGACTION::Enum trackingAction) {
 		enemyOne->enemyParameter.trackingModeParameter.beforetrackingActionID = enemyOne->enemyParameter.trackingModeParameter.beforetrackingActionID;
 		enemyOne->enemyParameter.trackingModeParameter.trackingActionID = trackingAction;
 		jScript->SetTrackingAction(trackingAction);
 	}
 
-	void SetBattleAction(EnemyOne* enemyOne, BATTLEACTION::Enum battleAction) {
-		auto jScript = enemyOne->enemyGameObject->GetScript<Enemy>();
-		if (!jScript)return;
+	void SetBattleAction(EnemyOne* enemyOne, Enemy* jScript, BATTLEACTION::Enum battleAction) {
 		enemyOne->enemyParameter.battleModeParameter.beforeBattleActionID = enemyOne->enemyParameter.battleModeParameter.battleActionID;
 		enemyOne->enemyParameter.battleModeParameter.battleActionID = battleAction;
 		jScript->SetBattleAction(battleAction);
