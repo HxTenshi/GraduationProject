@@ -163,6 +163,15 @@ void EnemyManager::Update(){
 						}
 					}
 				}
+
+				if (j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::APPROACHACTION &&
+					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::GUARDACTION &&
+					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::PROVOCATION &&
+					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::CONFRONTACTION &&
+					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::ATTACKDOWNACTION &&
+					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::JUMPATTACKACTION) {
+					i->enemyTeamParameter.whoAttack++;
+				}
 			}
 			if (j->enemyParameter.child) {
 				//q•ª‚Ìˆ—
