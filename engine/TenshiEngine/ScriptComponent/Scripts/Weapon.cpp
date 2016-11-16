@@ -9,6 +9,10 @@ void Weapon::Initialize(){
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+	m_param.SetAttack(1);
+	m_param.SetDurable(10);
+	m_param.SetName("uhuuuu");
+	m_param.SetWeaponType(WeaponType::Sword);
 
 	SetHitCollback([](auto o,auto w, auto t) {});
 	//auto child = gameObject->mTransform->Children();
@@ -27,6 +31,11 @@ void Weapon::Start(){
 
 //毎フレーム呼ばれます
 void Weapon::Update(){	
+	if (Input::Down(KeyCode::Key_2)) {
+		if (mSwapTarget) {
+			SwapWeapon(mSwapTarget);
+		}
+	}
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime();
@@ -171,23 +180,31 @@ WeaponType Weapon::GetWeaponType()
 {
 	return m_param.GetWeaponType();
 }
-
+//予期せぬバグがあります
 void Weapon::SwapWeapon(GameObject target)
 {
 	if (!is_hand)return;
-
+	if (true)return;
 	XMVECTOR pos = gameObject->mTransform->WorldPosition();
+	XMVECTOR localpos = gameObject->mTransform->Position();
 	XMVECTOR rot = gameObject->mTransform->Rotate();
 	GameObject parent = gameObject->mTransform->GetParent();
 
+
 	gameObject->mTransform->WorldPosition(target->mTransform->WorldPosition());
 	gameObject->mTransform->Rotate(target->mTransform->Rotate());
-
-	target->mTransform->WorldPosition(pos);
-	target->mTransform->Rotate(rot);
-	//effect
-
 	
+	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
+	gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
+	is_hand = false;
+	is_ground_hit = true;
+	gameObject->mTransform->SetParent(NULL);
+
+
+	target->mTransform->Position(localpos);
+	target->mTransform->Rotate(rot);
+	target->mTransform->SetParent(parent);
+	//effect
 
 }
 
