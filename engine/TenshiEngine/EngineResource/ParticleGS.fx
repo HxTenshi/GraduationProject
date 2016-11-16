@@ -162,7 +162,7 @@ void GS0_Main(point GS_IN In[1],                   // ƒ|ƒCƒ“ƒg ƒvƒŠƒ~ƒeƒBƒu‚Ì“ü—
 				if (length(posv) != 0){
 				nposv = normalize(posv);
 				}
-			Out.pos += lerp(nposv, posv, Point.w) * Point.xyz;
+			Out.pos += mul(lerp(nposv, posv, Point.w) * Point.xyz,World);
 
 
 			float scale = GetRandomNumber(rand2, 355 + ID);
