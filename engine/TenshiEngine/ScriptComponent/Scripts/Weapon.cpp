@@ -39,7 +39,7 @@ void Weapon::Update(){
 	}
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
-	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime();
+	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
 	//PierceSupport(gameObject);
 	//Hx::Debug()->Log(std::to_string(gameObject->mTransform->DegreeRotate().x));
 }
