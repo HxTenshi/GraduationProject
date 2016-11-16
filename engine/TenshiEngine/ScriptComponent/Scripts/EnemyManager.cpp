@@ -112,73 +112,117 @@ void EnemyManager::Update(){
 						battlePosAngle *= -1.0f;
 					}
 				}
-				
 				jScript->SetBattlePosition(battlePos);
 
-				//何もしていない時のアクションをランダムで設定
+				//敵の戦闘時のパラメータを取得
 				auto bmp = jScript->GetBattleModeParameter();
 
-				if (i->enemyTeamParameter.everyoneAttacked) {
-					if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
-						i->enemyTeamParameter.everyoneAttacked = false;
-					}
-
-					if (i->enemyTeamParameter.everyoneAttacked) {
-						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::BACKSTEPACTION) {
-							if (bmp.actionFinish) {
-								SetBattleAction(&(*j), jScript, BATTLEACTION::JUMPATTACKACTION);
+				if (i->enemyTeamParameter.teamCount == 1) {
+					//アクションが終了したため次のを決める
+					if (bmp.actionFinish) {
+						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::CONFRONTACTION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(30, 30, 20, 20, 0, 5));
+						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::APPROACHACTION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(30, 0, 40, 30, 0, 5));
+						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::ATTACKDOWNACTION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 40, 20, 0, 0, 5));
+						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 20, 0, 30, 0, 5));
+						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::GUARDACTION) {
+							if (j->enemyParameter.battleModeParameter.beforeBattleActionID == BATTLEACTION::BACKSTEPACTION) {
+								SetBattleAction(&(*j), jScript, ChangeBattleAction(20, 30, 0, 30, 0, 5));
+							}
+							else {
+								SetBattleAction(&(*j), jScript, ChangeBattleAction(20, 30, 20, 30, 0, 5));
 							}
 						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::PROVOCATION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(30, 0, 40, 30, 0, 0));
+						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::BACKSTEPACTION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(15, 0, 0, 0, 70, 15));
+						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::WINCEACTION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 0, 40, 20, 0, 5));
+						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::HITINGUARDACTION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 0, 40, 20, 0, 5));
+						}
+						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION) {
+							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 40, 20, 0, 0, 5));
+						}
+					}
+				}
+				else{
+					//同時攻撃
+					if (i->enemyTeamParameter.everyoneAttacked) {
+						//終わったら
+						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
+							i->enemyTeamParameter.everyoneAttacked = false;
+						}
+
+						if (i->enemyTeamParameter.everyoneAttacked) {
+							//バックステップが終わったら
+							if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::BACKSTEPACTION) {
+								if (bmp.actionFinish) {
+									SetBattleAction(&(*j), jScript, BATTLEACTION::JUMPATTACKACTION);
+								}
+							}
+							else {
+								SetBattleAction(&(*j), jScript, BATTLEACTION::BACKSTEPACTION);
+							}
+						}
+					}
+					//アクションが終了したため次のを決める
+					else if (bmp.actionFinish) {
+						//攻撃が終わったら次の人を指定
+						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::ATTACKDOWNACTION) {
+							i->enemyTeamParameter.whoAttack++;
+						}
+
+						//自分の番だが攻撃できない場合
+						if (j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::APPROACHACTION &&
+							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::GUARDACTION &&
+							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::PROVOCATION &&
+							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::CONFRONTACTION &&
+							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::ATTACKDOWNACTION &&
+							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::JUMPATTACKACTION &&
+							i->enemyTeamParameter.whoAttack == howManyPeople) {
+							i->enemyTeamParameter.whoAttack++;
+						}
+
+						//全員が攻撃したら
+						if (i->enemyTeamParameter.whoAttack >= i->enemyTeamParameter.teamCount) {
+							i->enemyTeamParameter.whoAttack = 0;
+							i->enemyTeamParameter.everyoneAttacked = true;
+						}
+
+						//自分の番が来たら
+						if (bmp.arrival && i->enemyTeamParameter.whoAttack == howManyPeople) {
+							SetBattleAction(&(*j), jScript, BATTLEACTION::ATTACKDOWNACTION);
+						}
 						else {
-							SetBattleAction(&(*j), jScript, BATTLEACTION::BACKSTEPACTION);
+							//自分の番じゃなかったらランダムで指定
+							switch (rand() % 3) {
+							case 0:
+								SetBattleAction(&(*j), jScript, BATTLEACTION::APPROACHACTION);
+								break;
+							case 1:
+								SetBattleAction(&(*j), jScript, BATTLEACTION::GUARDACTION);
+								break;
+							case 2:
+								SetBattleAction(&(*j), jScript, BATTLEACTION::PROVOCATION);
+								break;
+							default:
+								break;
+							}
 						}
 					}
 				}
-				else if (bmp.actionFinish) {
-					if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::ATTACKDOWNACTION) {
-						i->enemyTeamParameter.whoAttack++;
-					}
-
-					if (i->enemyTeamParameter.whoAttack >= i->enemyTeamParameter.teamCount) {
-						i->enemyTeamParameter.whoAttack = 0;
-						i->enemyTeamParameter.everyoneAttacked = true;
-					}
-
-					if (bmp.arrival && i->enemyTeamParameter.whoAttack == howManyPeople) {
-						SetBattleAction(&(*j), jScript, BATTLEACTION::ATTACKDOWNACTION);
-					}
-					else {
-						switch (rand() % 3) {
-						case 0:
-							SetBattleAction(&(*j), jScript, BATTLEACTION::APPROACHACTION);
-							break;
-						case 1:
-							SetBattleAction(&(*j), jScript, BATTLEACTION::GUARDACTION);
-							break;
-						case 2:
-							SetBattleAction(&(*j), jScript, BATTLEACTION::PROVOCATION);
-							break;
-						default:
-							break;
-						}
-					}
-				}
-
-				if (j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::APPROACHACTION &&
-					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::GUARDACTION &&
-					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::PROVOCATION &&
-					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::CONFRONTACTION &&
-					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::ATTACKDOWNACTION &&
-					j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::JUMPATTACKACTION) {
-					i->enemyTeamParameter.whoAttack++;
-				}
-			}
-			if (j->enemyParameter.child) {
-				//子分の処理
-
-			}
-			else {
-				//親分の処理
 			}
 		}
 		i++;

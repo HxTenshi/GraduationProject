@@ -158,24 +158,25 @@ void Enemy::Damage(float damage_)
 {
 	m_Damage = damage_;
 	if (m_ActionModeID == ACTIONMODE::BATTLEMODE && m_BattleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
-		if (rand() % 100 > (99 - m_AbsolutelyAvoidInHitAttackProbability) &&
-			m_BattleModeParam.battleActionID != BATTLEACTION::HITINGUARDACTION &&
-			m_BattleModeParam.battleActionID != BATTLEACTION::WINCEACTION	&&
-			m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION &&
-			m_BattleModeParam.battleActionID != BATTLEACTION::JUMPATTACKACTION) {
-			if (m_DrawLog) {
-				Hx::Debug()->Log("”ğ‚¯‚½");
-			}
-			ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
+		//if (rand() % 100 > (99 - m_AbsolutelyAvoidInHitAttackProbability) &&
+		//	m_BattleModeParam.battleActionID != BATTLEACTION::HITINGUARDACTION &&
+		//	m_BattleModeParam.battleActionID != BATTLEACTION::WINCEACTION	&&
+		//	m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION &&
+		//	m_BattleModeParam.battleActionID != BATTLEACTION::JUMPATTACKACTION) {
+		//	if (m_DrawLog) {
+		//		Hx::Debug()->Log("”ğ‚¯‚½");
+		//	}
+		//	ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
+		//}
+		//else 
+		//{
+		if (m_BattleModeParam.battleActionID == BATTLEACTION::GUARDACTION || m_BattleModeParam.battleActionID == BATTLEACTION::HITINGUARDACTION) {
+			ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
 		}
 		else {
-			if (m_BattleModeParam.battleActionID == BATTLEACTION::GUARDACTION || m_BattleModeParam.battleActionID == BATTLEACTION::HITINGUARDACTION) {
-				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
-			}
-			else {
-				ChangeBattleAction(BATTLEACTION::WINCEACTION);
-			}
+			ChangeBattleAction(BATTLEACTION::WINCEACTION);
 		}
+		//}
 	}
 }
 
@@ -355,40 +356,6 @@ void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
 		battleActionInitilize[m_BattleModeParam.battleActionID]();
 		//battleActionUpdate[m_BattleModeParam.battleActionID]();
 	}
-}
-
-void Enemy::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability) {
-	if (XMVector3Length(m_PlayerVec).x > m_OffBattleRange && m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION) {
-		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
-		return;
-	}
-
-	int randam = rand() % 100;
-
-	int guardProbability_, approachProbability_, backstepProbability_, attackProbability_, jumpAttackProbability_;
-
-	guardProbability_ = 100 - guardProbability;
-	approachProbability_ = guardProbability_ - approachProbability;
-	backstepProbability_ = approachProbability_ - backstepProbability;
-	attackProbability_ = backstepProbability_ - attackProbability;
-	jumpAttackProbability_ = attackProbability_ - jumpAttackProbability;
-
-	if (randam > guardProbability_) {
-		ChangeBattleAction(BATTLEACTION::GUARDACTION);
-	}
-	else if (randam > approachProbability_) {
-		ChangeBattleAction(BATTLEACTION::APPROACHACTION);
-	}
-	else if (randam > backstepProbability_) {
-		ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
-	}
-	else if (randam > attackProbability_) {
-		ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
-	}
-	else if (randam > jumpAttackProbability_) {
-		ChangeBattleAction(BATTLEACTION::JUMPATTACKACTION);
-	}
-
 }
 
 /****************************************************‘{õ‚Ìˆ—**********************************************************/

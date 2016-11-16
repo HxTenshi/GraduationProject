@@ -150,8 +150,7 @@ private:
 	void ChangeActionAndBattleAction(ACTIONMODE nextActionMode, BATTLEACTION::Enum nextBattleAction);
 	void ChangeTrackingAction(TRACKINGACTION::Enum nextTrackingAction);
 	void ChangeBattleAction(BATTLEACTION::Enum nextBattleAction);
-	void ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability);
-
+	
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
 	std::map<ACTIONMODE,std::function<void()>> actionModeFinalize;
