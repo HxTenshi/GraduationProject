@@ -158,8 +158,18 @@ void EnemyManager::Update(){
 					}
 				}
 				else{
+					//攻撃
+					if (j->enemyParameter.attack) {
+						if (bmp.actionFinish) {
+							j->enemyParameter.attack = false;
+							i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
+							i->enemyTeamParameter.nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
+							Hx::Debug()->Log("nextAttackTime" + std::to_string(i->enemyTeamParameter.nextAttackTime));
+							i->enemyTeamParameter.whoAttack++;
+						}
+					}
 					//同時攻撃
-					if (i->enemyTeamParameter.everyoneAttacked) {
+					else if (i->enemyTeamParameter.everyoneAttacked) {
 						//終わったら
 						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
 							i->enemyTeamParameter.everyoneAttacked = false;
@@ -179,11 +189,6 @@ void EnemyManager::Update(){
 					}
 					//アクションが終了したため次のを決める
 					else if (bmp.actionFinish) {
-						//攻撃が終わったら次の人を指定
-						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::ATTACKDOWNACTION) {
-							i->enemyTeamParameter.whoAttack++;
-						}
-
 						//自分の番だが攻撃できない場合
 						if (j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::APPROACHACTION &&
 							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::GUARDACTION &&
@@ -201,11 +206,15 @@ void EnemyManager::Update(){
 							i->enemyTeamParameter.everyoneAttacked = true;
 						}
 
-						//自分の番が来たら
-						if (bmp.arrival && i->enemyTeamParameter.whoAttack == howManyPeople) {
-							SetBattleAction(&(*j), jScript, BATTLEACTION::ATTACKDOWNACTION);
+						////自分の番が来たら
+						//if () {
+						//	
+						//}
+
+						if (!j->enemyParameter.attack && i->enemyTeamParameter.whoAttack == howManyPeople) {
+							j->enemyParameter.nextAttackTimeCountFlag = true;
 						}
-						else {
+						if (!j->enemyParameter.attack) {
 							//自分の番じゃなかったらランダムで指定
 							switch (rand() % 3) {
 							case 0:
@@ -220,6 +229,16 @@ void EnemyManager::Update(){
 							default:
 								break;
 							}
+						}
+					}
+
+					if (j->enemyParameter.nextAttackTimeCountFlag) {
+						i->enemyTeamParameter.nextAttackTimeCount += Hx::DeltaTime()->GetDeltaTime();
+						if (i->enemyTeamParameter.nextAttackTimeCount >= i->enemyTeamParameter.nextAttackTime && bmp.arrival) {
+							j->enemyParameter.attack = true;
+							j->enemyParameter.nextAttackTimeCountFlag = false;
+							Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(i->enemyTeamParameter.nextAttackTime));
+							SetBattleAction(&(*j), jScript, BATTLEACTION::ATTACKDOWNACTION);
 						}
 					}
 				}

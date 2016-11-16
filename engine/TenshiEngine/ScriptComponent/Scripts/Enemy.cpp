@@ -673,7 +673,7 @@ void Enemy::BattleModeUpdate()
 	m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x,-1.0f,1.0f));
 	if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
 
-	if (XMVector3Length(m_BattleModeParam.battlePosition - gameObject->mTransform->WorldPosition()).x < 0.3f) {
+	if (XMVector3Length(m_PlayerVec).x < m_OnBattleRange) {
 		m_BattleModeParam.arrival = true;
 	}
 
@@ -722,7 +722,7 @@ void Enemy::ApproachModeInitilize()
 	m_BattleModeParam.count = 0.0f;
 	m_BattleModeParam.rotateVecPlus = !m_BattleModeParam.rotateVecPlus;
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)(APROACHMAXTIME * 100)) / 100.0f) + APROACHMINTIME;
+	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)((APROACHMAXTIME - APROACHMINTIME) * 100)) / 100.0f) + APROACHMINTIME;
 }
 
 void Enemy::ApproachModeUpdate()
@@ -744,7 +744,7 @@ void Enemy::AttackDownModeInitilize()
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("ècêÿÇË");
-	AnimChange(ANIM_ID::ANIM_ATTACK_DOWN, 5.0f, false);
+	AnimChange(ANIM_ID::ANIM_ATTACK_DOWN, 5.0f, false,true);
 }
 
 void Enemy::AttackDownModeUpdate()
@@ -810,7 +810,7 @@ void Enemy::GuardModeInitilize()
 		m_BattleModeParam.rotateVecPlus = false;
 	}
 	AnimChange(ANIM_ID::ANIM_GUARD, 5.0f);
-	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)(APROACHMAXTIME * 100)) / 100.0f) + APROACHMINTIME;
+	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)((APROACHMAXTIME - APROACHMINTIME) * 100)) / 100.0f) + APROACHMINTIME;
 }
 
 void Enemy::GuardModeUpdate()
@@ -842,7 +842,7 @@ void Enemy::ProvocationModeInitilize()
 		m_BattleModeParam.rotateVecPlus = false;
 	}
 	AnimChange(ANIM_ID::ANIM_PROVOCATION, 5.0f,true);
-	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)(APROACHMAXTIME * 100)) / 100.0f) + APROACHMINTIME;
+	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)((APROACHMAXTIME - APROACHMINTIME) * 100)) / 100.0f) + APROACHMINTIME;
 }
 
 void Enemy::ProvocationModeUpdate()

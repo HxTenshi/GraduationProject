@@ -7,6 +7,12 @@ struct EnemyParameter {
 	//子分かどうか
 	bool child = true;
 
+	//攻撃するか
+	bool attack = false;
+
+	//次の攻撃までの時間をカウントするかどうか
+	bool nextAttackTimeCountFlag = false;
+
 	//今のアクションモード(TRACKING or BATTLE)のID
 	ACTIONMODE nowActionMode = ACTIONMODE::TRACKINGMODE;
 	
@@ -34,6 +40,12 @@ struct EnemyTeamParameter {
 
 	//誰が攻撃するか
 	int whoAttack = 0;
+
+	//次の攻撃までの時間
+	float nextAttackTime = 0;
+
+	//次の攻撃までの時間をカウントする
+	float nextAttackTimeCount = 0;
 
 	//攻撃が一週したか
 	bool everyoneAttacked = false;
@@ -74,6 +86,10 @@ private:
 	bool m_DrawFlag;
 	SERIALIZE
 	GameObject m_Player;
+	SERIALIZE
+	float m_NextAttackTimeMin;
+	SERIALIZE
+	float m_NextAttackTimeMax;
 
 	//Enemyの入れ物へGameObjectを入れる
 	void EnemysIntoEnemyContainer();
