@@ -186,6 +186,8 @@ private:
 	GameObject mMoveAvility;
 	SERIALIZE 
 	GameObject mAimController;
+	SERIALIZE
+	GameObject mWeaponControl;
 
 	SERIALIZE
 	PrefabAsset m_BloodParticle;

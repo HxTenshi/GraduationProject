@@ -152,6 +152,7 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 		character->mTransform->AddForce(targetVector * 30, ForceMode::eIMPULSE);
 		if (auto scr = mWeapon->GetScript<Weapon>()) {
 			mWeapon = NULL;
+			scr->gameObject->mTransform->DegreeRotate(XMVectorSet(90,angle,0,0));
 			scr->ThrowAway(targetVector * power);
 			m_ActionFree = false;
 		}
