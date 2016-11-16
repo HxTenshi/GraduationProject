@@ -106,6 +106,10 @@ private:
 	//武器のパラメータ
 	funifuni::WeaponParametor m_param;
 private:
+	//テスト用
+	SERIALIZE
+	GameObject mSwapTarget;
+private:
 	float m_weapon_rot;
 	bool is_hand;
 	bool is_ground_hit;

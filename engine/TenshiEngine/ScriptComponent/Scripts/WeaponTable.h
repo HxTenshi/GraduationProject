@@ -9,10 +9,6 @@
 
 class WeaponTable :public IDllScriptComponent{
 public:
-	static WeaponTable* get() {
-		static WeaponTable w;
-		return &w;
-	}
 	void Initialize()override;
 	void Start()override;
 	void Update()override;
