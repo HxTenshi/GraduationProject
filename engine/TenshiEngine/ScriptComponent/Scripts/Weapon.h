@@ -81,6 +81,10 @@ public:
 	///•Ší‚ÌŒğŠ·ˆ—
 	/// </summary>
 	void SwapWeapon(GameObject target);
+	/// <summary>
+	///•Ší‚ğæ“¾‚Å‚«‚é‚©
+	/// </summary>
+	bool isGetWeapon();
 private:
 	/// <summary>
 	///“Š‚°Ì‚Ä‚é‚ÌƒAƒNƒVƒ‡ƒ“
@@ -113,6 +117,8 @@ private:
 	float m_weapon_rot;
 	bool is_hand;
 	bool is_ground_hit;
+	//Ì‚Ä‚éˆ—‚ª•Ï‚í‚é‚É–³‚­‚È‚é
+	bool is_fly;
 
 	HitCollbackType m_HitCollback;
 };
