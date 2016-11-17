@@ -673,7 +673,7 @@ void Enemy::BattleModeUpdate()
 	m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x,-1.0f,1.0f));
 	if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
 
-	if (XMVector3Length(m_PlayerVec).x < m_OnBattleRange) {
+	if (XMVector3Length(m_PlayerVec).x < m_OffBattleRange) {
 		m_BattleModeParam.arrival = true;
 	}
 
@@ -695,6 +695,7 @@ void Enemy::ConfrontModeInitilize()
 
 void Enemy::ConfrontModeUpdate()
 {
+	m_BattleModeParam.canChangeAttackAction = true;
 	if (XMVector3Length(m_PlayerVec).x <= m_OnBattleRange) {
 		battleActionFinalize[BATTLEACTION::CONFRONTACTION]();
 	}
@@ -727,6 +728,7 @@ void Enemy::ApproachModeInitilize()
 
 void Enemy::ApproachModeUpdate()
 {
+	m_BattleModeParam.canChangeAttackAction = true;
 	Prowl();
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
@@ -749,6 +751,7 @@ void Enemy::AttackDownModeInitilize()
 
 void Enemy::AttackDownModeUpdate()
 {
+	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
@@ -780,6 +783,7 @@ void Enemy::JumpAttackModeInitilize()
 
 void Enemy::JumpAttackModeUpdate()
 {
+	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
@@ -815,9 +819,8 @@ void Enemy::GuardModeInitilize()
 
 void Enemy::GuardModeUpdate()
 {
+	m_BattleModeParam.canChangeAttackAction = true;
 	Prowl();
-
-
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
 		battleActionFinalize[m_BattleModeParam.battleActionID]();
@@ -847,8 +850,8 @@ void Enemy::ProvocationModeInitilize()
 
 void Enemy::ProvocationModeUpdate()
 {
+	m_BattleModeParam.canChangeAttackAction = true;
 	Prowl();
-
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
 		battleActionFinalize[m_BattleModeParam.battleActionID]();
@@ -869,6 +872,7 @@ void Enemy::BackStepModeInitilize()
 
 void Enemy::BackStepModeUpdate()
 {
+	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
@@ -906,6 +910,7 @@ void Enemy::WinceModeInitilize() {
 }
 
 void Enemy::WinceModeUpdate() {
+	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
@@ -931,6 +936,7 @@ void Enemy::HitInGuardModeInitilize() {
 }
 
 void Enemy::HitInGuardModeUpdate() {
+	m_BattleModeParam.canChangeAttackAction = false;
 	if (PatienceInThisTime > m_BattleModeParam.sameActionCount) {
 		auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
@@ -971,6 +977,7 @@ void Enemy::AttackMonckeyModeInitilize() {
 }
 
 void Enemy::AttackMonckeyModeUpdate() {
+	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
@@ -995,6 +1002,7 @@ void Enemy::DeadModeInitilize()
 
 void Enemy::DeadModeUpdate()
 {
+	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 

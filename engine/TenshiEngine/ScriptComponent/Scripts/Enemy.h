@@ -80,6 +80,9 @@ struct BattleModeParameter{
 	//ポジションについたか
 	bool arrival = false;
 
+	//攻撃に遷移できるアクションかどうか
+	bool canChangeAttackAction = false;
+
 	//戦いを行う場所
 	XMVECTOR battlePosition = XMVectorSet(0, 0, 0, 0);
 };

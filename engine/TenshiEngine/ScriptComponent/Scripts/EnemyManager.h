@@ -10,6 +10,9 @@ struct EnemyParameter {
 	//UŒ‚‚·‚é‚©
 	bool attack = false;
 
+	//UŒ‚‚ªˆêT‚µ‚½‚©
+	bool everyoneAttack = false;
+
 	//Ÿ‚ÌUŒ‚‚Ü‚Å‚ÌŠÔ‚ğƒJƒEƒ“ƒg‚·‚é‚©‚Ç‚¤‚©
 	bool nextAttackTimeCountFlag = false;
 
@@ -44,11 +47,14 @@ struct EnemyTeamParameter {
 	//Ÿ‚ÌUŒ‚‚Ü‚Å‚ÌŠÔ
 	float nextAttackTime = 0;
 
+	//UŒ‚‚ªˆêT‚µ‚½‚©
+	bool everyoneAttack = false;
+
 	//Ÿ‚ÌUŒ‚‚Ü‚Å‚ÌŠÔ‚ğƒJƒEƒ“ƒg‚·‚é
 	float nextAttackTimeCount = 0;
 
-	//UŒ‚‚ªˆêT‚µ‚½‚©
-	bool everyoneAttacked = false;
+	//ˆêÄUŒ‚‚Ü‚Å‚ÌŠÔ‚ğƒJƒEƒ“ƒg‚·‚é‚©‚Ç‚¤‚©
+	bool everyoneAttackCountFlag = false;
 
 	//Œ©‚Â‚¯‚Ä‚¢‚é‚©
 	bool discoveryPlayer = false;

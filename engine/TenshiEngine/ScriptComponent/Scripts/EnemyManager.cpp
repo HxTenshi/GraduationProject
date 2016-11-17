@@ -86,6 +86,8 @@ void EnemyManager::Update(){
 			//発見したら戦闘モードへ移行
 			if (i->enemyTeamParameter.discoveryPlayer && j->enemyParameter.nowActionMode != ACTIONMODE::BATTLEMODE) {
 				SetActionModeAndBattleAction(&(*j), jScript,ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+				i->enemyTeamParameter.nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
+				if(m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(i->enemyTeamParameter.nextAttackTime));
 			}
 			//見失ったら捜索モードへ移行
 			if (i->enemyTeamParameter.lostPlayer && j->enemyParameter.nowActionMode != ACTIONMODE::TRACKINGMODE) {
@@ -162,20 +164,26 @@ void EnemyManager::Update(){
 					if (j->enemyParameter.attack) {
 						if (bmp.actionFinish) {
 							j->enemyParameter.attack = false;
-							i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
 							i->enemyTeamParameter.nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
-							Hx::Debug()->Log("nextAttackTime" + std::to_string(i->enemyTeamParameter.nextAttackTime));
+							if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(i->enemyTeamParameter.nextAttackTime));
 							i->enemyTeamParameter.whoAttack++;
 						}
 					}
 					//同時攻撃
-					else if (i->enemyTeamParameter.everyoneAttacked) {
+					else if (j->enemyParameter.everyoneAttack) {
+						//誰か一人でもしていたらできていないやつをできなくする
+						if (i->enemyTeamParameter.everyoneAttack) {
+							i->enemyTeamParameter.everyoneAttackCountFlag = false;
+							i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
+						}
 						//終わったら
 						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
-							i->enemyTeamParameter.everyoneAttacked = false;
+							j->enemyParameter.everyoneAttack = false;
+							i->enemyTeamParameter.everyoneAttack = false;
+							i->enemyTeamParameter.nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
+							if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(i->enemyTeamParameter.nextAttackTime));
 						}
-
-						if (i->enemyTeamParameter.everyoneAttacked) {
+						else{
 							//バックステップが終わったら
 							if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::BACKSTEPACTION) {
 								if (bmp.actionFinish) {
@@ -183,6 +191,8 @@ void EnemyManager::Update(){
 								}
 							}
 							else {
+								i->enemyTeamParameter.everyoneAttackCountFlag = false;
+								i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
 								SetBattleAction(&(*j), jScript, BATTLEACTION::BACKSTEPACTION);
 							}
 						}
@@ -203,15 +213,10 @@ void EnemyManager::Update(){
 						//全員が攻撃したら
 						if (i->enemyTeamParameter.whoAttack >= i->enemyTeamParameter.teamCount) {
 							i->enemyTeamParameter.whoAttack = 0;
-							i->enemyTeamParameter.everyoneAttacked = true;
+							i->enemyTeamParameter.everyoneAttackCountFlag = true;
 						}
 
-						////自分の番が来たら
-						//if () {
-						//	
-						//}
-
-						if (!j->enemyParameter.attack && i->enemyTeamParameter.whoAttack == howManyPeople) {
+						if (!j->enemyParameter.attack && i->enemyTeamParameter.whoAttack == howManyPeople && !i->enemyTeamParameter.everyoneAttackCountFlag) {
 							j->enemyParameter.nextAttackTimeCountFlag = true;
 						}
 						if (!j->enemyParameter.attack) {
@@ -231,18 +236,38 @@ void EnemyManager::Update(){
 							}
 						}
 					}
-
-					if (j->enemyParameter.nextAttackTimeCountFlag) {
+					else if (j->enemyParameter.nextAttackTimeCountFlag) {
 						i->enemyTeamParameter.nextAttackTimeCount += Hx::DeltaTime()->GetDeltaTime();
-						if (i->enemyTeamParameter.nextAttackTimeCount >= i->enemyTeamParameter.nextAttackTime && bmp.arrival) {
-							j->enemyParameter.attack = true;
-							j->enemyParameter.nextAttackTimeCountFlag = false;
-							Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(i->enemyTeamParameter.nextAttackTime));
-							SetBattleAction(&(*j), jScript, BATTLEACTION::ATTACKDOWNACTION);
+						if (i->enemyTeamParameter.nextAttackTimeCount >= i->enemyTeamParameter.nextAttackTime) {
+							if(i->enemyTeamParameter.nextAttackTimeCount < 5 && bmp.arrival && bmp.canChangeAttackAction) {
+								j->enemyParameter.attack = true;
+								j->enemyParameter.nextAttackTimeCountFlag = false;
+								i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
+								SetBattleAction(&(*j), jScript, BATTLEACTION::ATTACKDOWNACTION);
+								if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(i->enemyTeamParameter.nextAttackTime));
+							}
+							else{
+								j->enemyParameter.nextAttackTimeCountFlag = false;
+								i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
+								i->enemyTeamParameter.whoAttack++;
+								if (m_DrawFlag)Hx::Debug()->Log("skip");
+							}
+						}
+					}
+					else if (i->enemyTeamParameter.everyoneAttackCountFlag) {
+						if (i->enemyTeamParameter.nextAttackTimeCount >= i->enemyTeamParameter.nextAttackTime) {
+							if (i->enemyTeamParameter.nextAttackTimeCount < 5 && bmp.canChangeAttackAction) {
+								j->enemyParameter.everyoneAttack = true;
+								i->enemyTeamParameter.everyoneAttack = true;
+								if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(i->enemyTeamParameter.nextAttackTime));
+							}
 						}
 					}
 				}
 			}
+		}
+		if (i->enemyTeamParameter.everyoneAttackCountFlag) {
+			i->enemyTeamParameter.nextAttackTimeCount += Hx::DeltaTime()->GetDeltaTime();
 		}
 		i++;
 	}
