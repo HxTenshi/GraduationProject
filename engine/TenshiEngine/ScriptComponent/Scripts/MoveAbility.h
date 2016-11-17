@@ -2,6 +2,7 @@
 #pragma once
 #include "main.h"
 # include "Game/Component/CharacterControllerComponent.h"
+# include "WeaponControl.h"
 
 class MoveAbility :public IDllScriptComponent{
 public:
@@ -18,6 +19,8 @@ public:
 
 	void KnockBack(std::function<void(void)> function,GameObject target);
 
+	bool OnTargetDistance(XMVECTOR target);
+
 private:
 	//ÉÅÉìÉoïœêî
 	weak_ptr<CharacterControllerComponent> mCC;
@@ -27,4 +30,6 @@ private:
 	float mTime;
 	SERIALIZE float mSpeed;
 	XMVECTOR mMoveStartPosition;
+
+	WeaponControl mWeaponControl;
 };

@@ -16,6 +16,16 @@ void WeaponControl::Start(){
 //毎フレーム呼ばれます
 void WeaponControl::Update(){
 
+	if (isHit)
+	{
+		mTime += Hx::DeltaTime()->GetDeltaTime();
+		if (mTime > mHitTime) {
+			mTime = 0;
+			isHit = false;
+			Hx::Debug()->Log("投げた後の移動可能な時間を超過しました。");
+		}
+	}
+
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -41,6 +51,8 @@ void WeaponControl::OnCollideExit(GameObject target){
 void WeaponControl::HitActor(GameObject target,GameObject weapon)
 {
 	Hx::Debug()->Log("当たっているはず");
+	Hx::Debug()->Log(" : "+std::to_string(target->GetLayer()));
+	Hx::Debug()->Log(" : " + target->Name());
 	if (target->GetLayer() == 3){
 		Hx::Debug()->Log("頭に");
 		SearchEnemyBone(target, weapon, "Head");
@@ -85,6 +97,7 @@ void WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::str
 
 		//追従する
 		mirrer->SetTargetBoneID(id);
+		isHit = true;
 }
 
 //頭に当たったか?
@@ -96,4 +109,15 @@ bool WeaponControl::IsHitHead(GameObject target)
 	//}
 	if (target->GetLayer() == 12)return true;
 	return false;
+}
+
+bool WeaponControl::IsHit()
+{
+	return isHit;
+}
+
+void WeaponControl::DeleteHitPoint()
+{
+	isHit = false;
+	mTime = 0;
 }

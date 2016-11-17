@@ -19,7 +19,13 @@ public:
 	void SearchEnemyBone(GameObject target, GameObject weapon,std::string name);
 
 	bool IsHitHead(GameObject target);
+	bool IsHit();
+	void DeleteHitPoint();
 
 private:
 	//ƒƒ“ƒo•Ï”
+	bool isHit;
+	float mTime;
+	SERIALIZE
+	float mHitTime;
 };

@@ -40,12 +40,9 @@ void MoveAbility::Update(){
 		float distance = 2.0f;
 		characterSize = targetPosition - mMoveStartPosition;
 		characterSize = XMVector3Normalize(characterSize);
-		resultPosition = resultPosition - characterSize * distance * mTime;// *mTime;
-		//resultPosition = XMVectorLerp(mMoveStartPosition, targetPosition, mTime);
-
-		//XMVECTOR rote = mCC->gameObject->mTransform->DegreeRotate() + XMVectorSet(65 - 65 * mTime, -45 + 45 * mTime, 0, 0);
-		//mCC->gameObject->mTransform->DegreeRotate(rote);
+		resultPosition = resultPosition - characterSize * distance * mTime;
 		
+		//mCC->Move(XMVector3Normalize(targetPosition - mMoveStartPosition));
 		mCC->Teleport(resultPosition);
 	}
 }
@@ -97,4 +94,12 @@ void MoveAbility::KnockBack(std::function<void(void)> function,GameObject target
 		mTime = 0;
 		onMove = false;
 	}
+}
+
+bool MoveAbility::OnTargetDistance(XMVECTOR target)
+{
+	//Distance‚ª‚È‚¢B
+	//if()
+	//length‚Ædot‚ğ‘g‚İ‡‚í‚¹‚é‚©‚à
+	return false;
 }

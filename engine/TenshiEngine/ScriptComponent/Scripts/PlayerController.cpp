@@ -10,7 +10,7 @@
 #include "TimeManager.h"
 #include "GetEnemy.h"
 # include "AimController.h"
-
+# include "WeaponControl.h"
 namespace Init {
 	static const float RotateLimit_default = 360.0f * 3.0f;
 	static const float RotateLimit_attack = 360.0f * 0.5f;
@@ -265,21 +265,32 @@ void PlayerController::Update(){
 			if (!m_Camera)return;
 			auto camera = m_Camera->GetScript<TPSCamera>();
 			if (camera) {
-				GameObject target = camera->GetLookTarget();
-				//ロックオンしている敵が居たら投げれる
+				GameObject target; /*= camera->GetLookTarget();*/
+								   //ロックオンしている敵が居たら投げれる
+				if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+					target = scr->GetHandWeapon();
+				}
 				if (target) {
-					throwAway(target);
 					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 						script->SetPoint(target, m_CharacterControllerComponent);
 					}
+					throwAway(camera->GetLookTarget());
 				}
 			}
+
 		}
 
 		if (Input::Down(KeyCode::Key_K)) {
-			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-				script->OnMove();
+			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+				if (weaponCtr->IsHit())
+				{
+					weaponCtr->DeleteHitPoint();
+					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+						script->OnMove();
+					}
+				}
 			}
+
 		}
 
 		auto camera = m_Camera->GetScript<TPSCamera>();

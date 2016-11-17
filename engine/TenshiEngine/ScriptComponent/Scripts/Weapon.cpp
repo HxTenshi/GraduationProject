@@ -22,6 +22,7 @@ void Weapon::Initialize(){
 	//	}
 	//}
 
+	mWeaponControl = Hx::FindActor("WeaponControl");
 	//m_ThrowHit = 
 }
 
