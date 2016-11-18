@@ -61,9 +61,12 @@ namespace funifuni {
 	{
 		return m_Type;
 	}
-	void WeaponParametor::Damage(float damage)
+	void WeaponParametor::Damage(DamageType type,float mag = 1.0f)
 	{
-		m_Durable -= damage;
+		if(type==DamageType::LowDamage)m_Durable -= m_LowDurableDamage*mag;
+		if (type == DamageType::HighDamage)m_Durable -= m_StrongDurableDamage*mag;
+		if (type == DamageType::DethBrowDamage)m_Durable = 0;
+
 	}
 	/// <summary>
 	///•Ší‚Ì‘Ï‹v’l‚ª‚È‚­‚È‚Á‚½‚©

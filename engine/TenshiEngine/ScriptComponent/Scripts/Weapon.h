@@ -32,7 +32,7 @@ public:
 	/// <summary>
 	///•Ší‚Ö‚Ìƒ_ƒ[ƒWˆ—
 	/// </summary>
-	void Damage(int damage);
+	void Damage(DamageType type,float mag);
 	/// <summary>
 	///‰ó‚ê‚½‚©
 	/// </summary>
@@ -61,10 +61,6 @@ public:
 	///•Ší‚Ìæ“¾
 	/// </summary>
 	void GetWeapon();
-	/// <summary>
-	///UŒ‚
-	/// </summary>
-	void Attack();
 	/// <summary>
 	///UŒ‚—Í‚Ìæ“¾
 	/// </summary>

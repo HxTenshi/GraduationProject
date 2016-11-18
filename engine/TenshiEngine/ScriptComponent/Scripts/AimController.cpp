@@ -4,7 +4,11 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void AimController::Initialize(){
-
+	if (mUIParent) {
+		for (auto i : mUIParent->mTransform->Children()){
+			if (i->Name() == "TargetUI")mTargetUI = i;
+		}
+	}
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -39,9 +43,6 @@ void AimController::OnCollideExit(GameObject target){
 
 void AimController::ChangeAimMode(TPSCamera* camera,GameObject player, bool isFree)
 {
-	//Hx::Debug()->Log("スプリング : "+std::to_string(camera->GetSpringDamping()));
-	//Hx::Debug()->Log("スプリングStiffness : " + std::to_string(camera->GetSpringStiffness()));
-
 	if (isFree)
 	{
 		camera->SetDistance(mAimPoint.z);//0.5f
@@ -49,6 +50,7 @@ void AimController::ChangeAimMode(TPSCamera* camera,GameObject player, bool isFr
 		camera->SetLeft(mAimPoint.x);//2.5f
 		camera->SetSpringDamping(mDamping);
 		camera->SetSpringStiffness(mStiffness);
+		if (mTargetUI)mTargetUI->Enable();
 	}
 	else
 	{
@@ -57,6 +59,7 @@ void AimController::ChangeAimMode(TPSCamera* camera,GameObject player, bool isFr
 		camera->SetLeft(mDefoultPoint.x);//2.5f
 		camera->SetSpringDamping(mDefoultDamping);
 		camera->SetSpringStiffness(mDefoultStiffness);
+		if (mTargetUI)mTargetUI->Disable();
 	}
 	PlayerRotate(camera, player);
 }

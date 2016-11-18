@@ -30,4 +30,7 @@ private:
 	GameObject mWeaponHand;
 	//UI
 	GameObject mAimUISet;
+	SERIALIZE
+	GameObject mUIParent;
+	GameObject mTargetUI;
 };
