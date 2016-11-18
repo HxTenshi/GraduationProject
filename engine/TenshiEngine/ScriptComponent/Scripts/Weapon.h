@@ -32,7 +32,7 @@ public:
 	/// <summary>
 	///•Ší‚Ö‚Ìƒ_ƒ[ƒWˆ—
 	/// </summary>
-	void Damage(int damage);
+	void Damage(DamageType type,float mag);
 	/// <summary>
 	///‰ó‚ê‚½‚©
 	/// </summary>

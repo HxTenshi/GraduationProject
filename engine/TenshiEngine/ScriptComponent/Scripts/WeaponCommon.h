@@ -6,12 +6,17 @@
 #include<string>
 
 
-
+enum DamageType {
+	LowDamage,
+	HighDamage,
+	DethBrowDamage
+};
 enum WeaponType {
 	Sword,
 	Rance,
 	Axe
 };
+
 class WeaponCommon :public IDllScriptComponent{
 	
 };
@@ -54,7 +59,7 @@ namespace funifuni {
 		//ウエポンのタイプを取得
 		WeaponType GetWeaponType();
 		//ダメージ関数
-		void Damage(float damage);
+		void Damage(DamageType type, float mag);
 
 
 	private:

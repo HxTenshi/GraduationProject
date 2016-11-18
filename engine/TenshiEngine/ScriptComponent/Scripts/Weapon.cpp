@@ -11,6 +11,7 @@ void Weapon::Initialize(){
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
 	m_param.SetAttack(5);
+	m_param.SetDurableDamage(1, 10);
 	m_param.SetDurable(10);
 	m_param.SetName("uhuuuu");
 	m_param.SetWeaponType(WeaponType::Sword);
@@ -87,9 +88,9 @@ void Weapon::OnCollideExit(GameObject target){
 /// <summary>
 ///•Ší‚Ö‚Ìƒ_ƒ[ƒW
 /// </summary>
-void Weapon::Damage(int damage)
+void Weapon::Damage(DamageType type,float mag=1.0f)
 {
-	m_param.Damage(damage);
+	m_param.Damage(type,mag);
 }
 /// <summary>
 ///•Ší‚ª‰ó‚ê‚½‚Ì”»’è
