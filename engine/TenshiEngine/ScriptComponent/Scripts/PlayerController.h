@@ -3,6 +3,7 @@
 #include "main.h"
 #include <functional>
 #include <vector>
+#include "WeaponCommon.h"
 
 enum NextAttack {
 	None,
@@ -23,6 +24,7 @@ struct AttackState {
 	float AddSpecial = 0.0f;
 	float AttackMove = 0.0f;
 	std::function<void(void)> AttackFunc = []() {};
+	DamageType DamageType = DamageType::LowDamage;
 };
 
 class CharacterControllerComponent;
@@ -180,6 +182,8 @@ private:
 	float m_MoveSpeed_ComboAdd;
 	float m_MoutionSpeed_ComboAdd;
 	float m_WeaponResist_ComboAdd;
+
+	float m_MoutionSpeed;
 
 	//11 / 04í«â¡çXêV
 	SERIALIZE

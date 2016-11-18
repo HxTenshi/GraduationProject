@@ -125,6 +125,8 @@ void PlayerController::Initialize(){
 	m_MoutionSpeed_ComboAdd = 0.0f;
 	m_WeaponResist_ComboAdd = 0.0f;
 
+	m_MoutionSpeed = 1.0f;
+
 	m_MoveVelo = XMVectorZero();
 
 	m_StateFunc.resize(PlayerState::Count);
@@ -168,6 +170,7 @@ void PlayerController::Initialize(){
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	attack.AttackMove = 0.0f;
 	attack.AttackFunc = [&](){};
+	attack.DamageType = DamageType::LowDamage;
 	m_AttackStateList[attack.ID] = attack;
 
 	attack.ID = AttackID::Low2;
@@ -191,6 +194,7 @@ void PlayerController::Initialize(){
 	attack.NextLowID = -1;
 	attack.NextHighID = AttackID::High2;
 	attack.MoutionID = AnimeID::AttackHigh1;
+	attack.DamageType = DamageType::HighDamage;
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	attack.DamageScale = 0.5f;
 	attack.AttackMove = 0.0f;
@@ -212,6 +216,7 @@ void PlayerController::Initialize(){
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	attack.DamageScale = 1.0f;
 	attack.AttackMove = 7.0f;
+	attack.DamageType = DamageType::LowDamage;
 	m_AttackStateList[attack.ID] = attack;
 
 	attack.ID = AttackID::Special;
@@ -222,6 +227,7 @@ void PlayerController::Initialize(){
 	attack.DamageScale = 2.0f;
 	attack.AttackMove = 10.0f;
 	attack.AddSpecial = 0.0f;
+	attack.DamageType = DamageType::DethBrowDamage;
 	m_AttackStateList[attack.ID] = attack;
 }
 
@@ -607,6 +613,10 @@ void PlayerController::GuardExcute()
 		else {
 			m_GuardParam.KnockBackTime = 0.5f;
 		}
+		if (m_WeaponHand) {
+			if(auto w = m_WeaponHand->GetScript<Weapon>())
+				w->Damage(DamageType::HighDamage, m_WeaponResist_ComboAdd);
+		}
 		m_GuardParam.AttackGuard = false;
 	}
 
@@ -653,6 +663,8 @@ void PlayerController::GuardExit()
 
 void PlayerController::AttackEnter()
 {
+	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
+
 	if(m_NextAttack >= 0 && m_NextAttack < AttackID::Count)
 		m_CurrentAttack = m_AttackStateList[m_NextAttack];
 
@@ -671,6 +683,7 @@ void PlayerController::AttackEnter()
 
 void PlayerController::AttackExcute()
 {
+	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
 	dontmove();
 
 	moveUpdate();
@@ -695,7 +708,7 @@ void PlayerController::AttackExcute()
 		}
 	}
 
-	float time = Hx::DeltaTime()->GetDeltaTime();
+	float time = Hx::DeltaTime()->GetDeltaTime() * m_MoutionSpeed;
 	m_CurrentAttack.AttackTime -= time;
 	if (m_CurrentAttack.AttackTime > 0.0f) {
 		m_MoveVelo = gameObject->mTransform->Forward() * m_CurrentAttack.AttackMove;
@@ -731,6 +744,7 @@ void PlayerController::AttackExcute()
 
 void PlayerController::AttackExit()
 {
+	m_MoutionSpeed = 1.0f;
 
 	m_CurrentAttack = AttackState();
 
@@ -743,13 +757,15 @@ void PlayerController::AttackExit()
 
 void PlayerController::DodgeEnter()
 {
+	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
+
 	auto v = mJump;
 	if (abs(v.x) == 0 && abs(v.z) == 0) {
 		v = gameObject->mTransform->Forward();
 	}
 	mJump = XMVectorZero();
 
-	m_DogdeParam.Timer = 0.2f;
+	m_DogdeParam.Timer = 0.4f;
 
 	m_MoveVelo = XMVector3Normalize(v) * GetMovementSpeed() * 1.3f;
 	mJump.y += m_JumpPower / 2.0f;
@@ -759,10 +775,23 @@ void PlayerController::DodgeEnter()
 
 void PlayerController::DodgeExcute()
 {
+
+	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
+
 	moveUpdate();
 	lockOn();
 
-	m_DogdeParam.Timer -= Hx::DeltaTime()->GetDeltaTime();
+	m_DogdeParam.Timer -= Hx::DeltaTime()->GetDeltaTime() * m_MoutionSpeed;
+
+	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+	if (weaponHand && weaponHand->ActionFree()) {
+		if (m_IsGround) {
+			if (BindInput(PlayerInput::ATK_L)) {
+				m_NextAttack = AttackID::Low2;
+			}
+		}
+	}
+	
 
 	if (m_DogdeParam.Timer <= 0.0f) {
 		SetPlayerState(PlayerState::Free);
@@ -773,6 +802,8 @@ void PlayerController::DodgeExcute()
 
 void PlayerController::DodgeExit()
 {
+	m_MoutionSpeed = 1.0f;
+
 	m_DogdeParam.Timer = 0.0f;
 	m_MoveVelo = XMVectorZero();
 	m_IsInvisible=false;
@@ -1172,6 +1203,7 @@ void PlayerController::lockOn()
 	
 		m_LockOnEnabled = !m_LockOnEnabled;
 	}
+	camera->SetLeft(0.0f);
 
 	if (!m_LockOnEnabled)return;
 	
@@ -1218,8 +1250,11 @@ void PlayerController::lockOn()
 	if (abs(dot) > 0.5f) {
 		float l = dot / abs(dot);
 		if (camera) {
-			camera->SetLeft(l * 2.0f);
+			camera->SetLeft(l * 4.0f);
 		}
+	}
+	else {
+		camera->SetLeft(2.0f);
 	}
 
 }
@@ -1296,7 +1331,7 @@ void PlayerController::GettingWeapon(){
 							AddSpecial(m_CurrentAttack.AddSpecial);
 							AddCombo();
 						}
-						w->Damage();
+						w->Damage(m_CurrentAttack.DamageType,m_WeaponResist_ComboAdd);
 						
 					}
 				}
@@ -1346,6 +1381,7 @@ void PlayerController::animeFlip()
 	auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Stack);
 	p.mTime = 0.0f;
 	p.mWeight = 1.0f;
+	p.mTimeScale = m_MoutionSpeed;
 	anime->SetAnimetionParam(m_CurrentAnimeID_Stack, p);
 	m_CurrentAnimeID = m_CurrentAnimeID_Stack;
 }
@@ -1365,6 +1401,12 @@ void PlayerController::stateFlip()
 
 void PlayerController::ComboAdvantage()
 {
+	m_ComboTimer -= Hx::DeltaTime()->GetDeltaTime();
+	if (m_ComboTimer <= 0) {
+		m_ComboTimer = 0.0f;
+		m_HitCount = 0;
+	}
+
 	if (m_HitCount >= 0) {
 		m_WeaponResist_ComboAdd = 1.0f;
 		m_MoveSpeed_ComboAdd = 1.0f;

@@ -12,7 +12,7 @@ void PlayerUI::Initialize(){
 
 	m_HP_Color = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 	m_HP_Color_Red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	m_SP_Color = XMFLOAT4(0.5f, 0.0f, 0.5f, 1.0f);
+	m_SP_Color = XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f);
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
