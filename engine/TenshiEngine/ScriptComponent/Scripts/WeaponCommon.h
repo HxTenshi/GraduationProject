@@ -60,7 +60,8 @@ namespace funifuni {
 		WeaponType GetWeaponType();
 		//ダメージ関数
 		void Damage(DamageType type, float mag);
-
+		//最大の耐久値の取得
+		float GetMaxDurable();
 
 	private:
 		//名前
@@ -69,6 +70,8 @@ namespace funifuni {
 		float m_AttackParam;
 		//耐久値
 		float m_Durable;
+		//最大の耐久値
+		float m_MaxDurable;
 		//弱攻撃の耐久ダメージ
 		float m_LowDurableDamage;
 		//強攻撃の耐久ダメージ

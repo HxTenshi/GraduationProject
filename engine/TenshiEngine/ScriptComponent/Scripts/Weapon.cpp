@@ -12,7 +12,7 @@ void Weapon::Initialize(){
 	mIsEnemyThrow = false;
 	m_param.SetAttack(5);
 	m_param.SetDurableDamage(1, 10);
-	m_param.SetDurable(10);
+	m_param.SetDurable(600);
 	m_param.SetName("uhuuuu");
 	m_param.SetWeaponType(WeaponType::Sword);
 
@@ -213,6 +213,11 @@ void Weapon::SwapWeapon(GameObject target)
 bool Weapon::isGetWeapon()
 {
 	return !is_fly;
+}
+
+float Weapon::GetMaxDurable()
+{
+	return m_param.GetMaxDurable();
 }
 
 void Weapon::ThrowAwayAction()

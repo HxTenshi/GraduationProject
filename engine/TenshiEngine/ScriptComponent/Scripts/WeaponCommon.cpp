@@ -38,6 +38,7 @@ namespace funifuni {
 	void WeaponParametor::SetDurable(float durable)
 	{
 		m_Durable = durable;
+		m_MaxDurable = durable;
 	}
 	/// <summary>
 	///耐久値のダメージの設定
@@ -67,6 +68,10 @@ namespace funifuni {
 		if (type == DamageType::HighDamage)m_Durable -= m_StrongDurableDamage*mag;
 		if (type == DamageType::DethBrowDamage)m_Durable = 0;
 
+	}
+	float WeaponParametor::GetMaxDurable()
+	{
+		return m_MaxDurable;
 	}
 	/// <summary>
 	///武器の耐久値がなくなったか
