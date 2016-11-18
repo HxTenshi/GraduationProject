@@ -62,10 +62,6 @@ public:
 	/// </summary>
 	void GetWeapon();
 	/// <summary>
-	///UŒ‚
-	/// </summary>
-	void Attack();
-	/// <summary>
 	///UŒ‚—Í‚Ìæ“¾
 	/// </summary>
 	float GetAttackPower();

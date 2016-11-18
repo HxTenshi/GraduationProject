@@ -10,7 +10,7 @@ void Weapon::Initialize(){
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
-	m_param.SetAttack(1);
+	m_param.SetAttack(5);
 	m_param.SetDurable(10);
 	m_param.SetName("uhuuuu");
 	m_param.SetWeaponType(WeaponType::Sword);
@@ -33,11 +33,6 @@ void Weapon::Start(){
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void Weapon::Update(){	
-	if (Input::Down(KeyCode::Key_2)) {
-		if (mSwapTarget) {
-			SwapWeapon(mSwapTarget);
-		}
-	}
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
@@ -173,7 +168,7 @@ void Weapon::GetWeapon()
 
 float Weapon::GetAttackPower()
 {
-	return m_param.AttackParam();
+	return (isBreak())?1.0f:m_param.AttackParam();
 }
 
 float Weapon::GetDurable()
@@ -238,4 +233,5 @@ void Weapon::PierceSupport(GameObject obj)
 
 void Weapon::Effect()
 {
+
 }
