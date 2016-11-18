@@ -120,6 +120,11 @@ void PlayerController::Initialize(){
 	m_IsGuard = false;
 	m_RotateLimit = Init::RotateLimit_default;
 
+	m_HitCount = 0;
+	m_MoveSpeed_ComboAdd = 0.0f;
+	m_MoutionSpeed_ComboAdd = 0.0f;
+	m_WeaponResist_ComboAdd = 0.0f;
+
 	m_MoveVelo = XMVectorZero();
 
 	m_StateFunc.resize(PlayerState::Count);
@@ -234,6 +239,8 @@ void PlayerController::Update(){
 		m_CharacterControllerComponent = gameObject->GetComponent<CharacterControllerComponent>();
 		if (!m_CharacterControllerComponent)return;
 	}
+
+	ComboAdvantage();
 
 	m_StateFunc[m_PlayerState].Excute();
 
@@ -392,7 +399,7 @@ void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBac
 	}
 	PlayKnockBack(attackVect,knockBackLevel);
 	AddHP(-damage);
-
+	ClearCombo();
 	
 	if(auto particle = Hx::Instance(m_BloodParticle)){
 		auto addpos = XMVectorSet(0,1,0,1);
@@ -493,6 +500,11 @@ void PlayerController::AddCoroutine(const std::function<bool(void)>& func)
 	m_UpdateCoroutine.push_back(func);
 }
 
+int PlayerController::GetHitComboCount()
+{
+	return m_HitCount;
+}
+
 void PlayerController::LockEnter()
 {
 }
@@ -532,6 +544,9 @@ void PlayerController::FreeExcute()
 
 	if (!m_WeaponHand)return;
 	if (BindInput(PlayerInput::Guard)) {
+		guard();
+	}
+	if (IsGuard()) {
 		SetPlayerState(PlayerState::Guard);
 	}
 
@@ -736,7 +751,7 @@ void PlayerController::DodgeEnter()
 
 	m_DogdeParam.Timer = 0.2f;
 
-	m_MoveVelo = XMVector3Normalize(v) * m_MoveSpeed * 1.3f;
+	m_MoveVelo = XMVector3Normalize(v) * GetMovementSpeed() * 1.3f;
 	mJump.y += m_JumpPower / 2.0f;
 	
 	m_IsInvisible=true;
@@ -876,7 +891,7 @@ void PlayerController::move()
 {
 
 	float time = Hx::DeltaTime()->GetDeltaTime();
-	float speed = m_MoveSpeed;
+	float speed = GetMovementSpeed();
 	float x = 0, y = 0;
 	if (BindInput(PlayerInput::Move_F)) {
 		y = 1.0f;
@@ -961,7 +976,7 @@ void PlayerController::dontmove()
 {
 
 	float time = Hx::DeltaTime()->GetDeltaTime();
-	float speed = m_MoveSpeed;
+	float speed = GetMovementSpeed();
 	float x = 0, y = 0;
 	if (BindInput(PlayerInput::Move_F)) {
 		y = 1.0f;
@@ -1279,7 +1294,9 @@ void PlayerController::GettingWeapon(){
 						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower());
 						if (t == Weapon::HitState::Damage) {
 							AddSpecial(m_CurrentAttack.AddSpecial);
+							AddCombo();
 						}
+						w->Damage();
 						
 					}
 				}
@@ -1294,6 +1311,11 @@ void PlayerController::GettingWeapon(){
 		//í‚Éˆê”Ô‹ß‚¢•Ší‚ðŽæ“¾
 		m_tempWeapon = getWeapon->GetMinWeapon();
 	}
+}
+
+float PlayerController::GetMovementSpeed()
+{
+	return m_MoveSpeed * m_MoveSpeed_ComboAdd;
 }
 
 #include <algorithm>
@@ -1339,4 +1361,65 @@ void PlayerController::stateFlip()
 	}
 	m_PlayerState = m_PlayerState_Stack;
 	m_StateFunc[m_PlayerState].Enter();
+}
+
+void PlayerController::ComboAdvantage()
+{
+	if (m_HitCount >= 0) {
+		m_WeaponResist_ComboAdd = 1.0f;
+		m_MoveSpeed_ComboAdd = 1.0f;
+		m_MoutionSpeed_ComboAdd = 1.0f;
+	}
+	if (m_HitCount >= 4) {
+		m_MoutionSpeed_ComboAdd = 1.1f;
+
+	}
+	if (m_HitCount >= 5) {
+		m_MoveSpeed_ComboAdd = 1.25f;
+
+	}
+	if (m_HitCount >= 8) {
+		m_MoutionSpeed_ComboAdd = 1.2f;
+
+	}
+	if (m_HitCount >= 10) {
+		m_WeaponResist_ComboAdd = 0.8f;
+		m_MoveSpeed_ComboAdd = 1.5f;
+	}
+	if (m_HitCount >= 12) {
+		m_MoutionSpeed_ComboAdd = 1.3f;
+
+	}
+	if (m_HitCount >= 15) {
+		m_MoveSpeed_ComboAdd = 1.75f;
+
+	}
+	if (m_HitCount >= 16) {
+		m_MoutionSpeed_ComboAdd = 1.4f;
+
+	}
+	if (m_HitCount >= 20) {
+		m_WeaponResist_ComboAdd = 0.4f;
+		m_MoveSpeed_ComboAdd = 2.0f;
+		m_MoutionSpeed_ComboAdd = 1.5f;
+	}
+}
+
+void PlayerController::AddCombo()
+{
+	m_HitCount++;
+	if (m_HitCount >= 20) {
+		m_ComboTimer = 10.0f;
+	}else if (m_HitCount >= 10) {
+		m_ComboTimer = 7.5f;
+	}
+	else if (m_HitCount >= 0) {
+		m_ComboTimer = 5.0f;
+	}
+}
+
+void PlayerController::ClearCombo()
+{
+	m_HitCount=0;
+	m_ComboTimer = 1.0f;
 }

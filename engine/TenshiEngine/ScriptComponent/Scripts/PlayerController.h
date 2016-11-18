@@ -82,6 +82,8 @@ public:
 
 	void Dead();
 	void AddCoroutine(const std::function<bool(void)>& func);
+
+	int GetHitComboCount();
 private:
 
 	void LockEnter();
@@ -131,12 +133,18 @@ private:
 	void lockOn();
 	void GettingWeapon();
 
+	float GetMovementSpeed();
+
 	void changeAnime(int id);
 	float getMoutionTime(int id);
 	void animeFlip();
 
 	void stateFlip();
 	//ÉÅÉìÉoïœêî
+
+	void ComboAdvantage();
+	void AddCombo();
+	void ClearCombo();
 
 	PlayerState::Enum m_PlayerState_Stack;
 	PlayerState::Enum m_PlayerState;
@@ -168,6 +176,11 @@ private:
 	SERIALIZE
 	float m_MoveSpeed;
 
+
+	float m_MoveSpeed_ComboAdd;
+	float m_MoutionSpeed_ComboAdd;
+	float m_WeaponResist_ComboAdd;
+
 	//11 / 04í«â¡çXêV
 	SERIALIZE
 	GameObject m_WeaponHand;
@@ -195,6 +208,9 @@ private:
 	PrefabAsset m_GuardParticle;
 
 	float m_FloatJumpTimer;
+
+	int m_HitCount;
+	float m_ComboTimer;
 
 	XMVECTOR m_MoveVelo;
 	XMVECTOR mJump;
