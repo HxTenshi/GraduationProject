@@ -135,9 +135,13 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	void Damage(float damage_);
-	void Attack(GameObject player);
-	bool GetChildFlag() { return m_Child; }
+	virtual void FunctionSet() = 0;
+	virtual bool GetChildFlag() = 0;
+	virtual float GetOnBattleRange() = 0;
+	virtual void Attack(GameObject player) = 0;
+	virtual void Damage(float damage_) = 0;
+	virtual bool DiscoveryPlayer() = 0;
+	virtual bool LostPlayer() = 0;
 	void SetParentAlive(bool flag) { m_TrackingModeParam.parentAlive = flag; }
 	EnemyAllParamter GetEnemyAllParameter(bool reset) {
 		EnemyAllParamter eap;
@@ -153,12 +157,11 @@ public:
 	}
 	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
 	void SetPlayer(GameObject player) { m_Player = player; }
-	float GetOnBattleRange() {return m_OnBattleRange;}
+	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
+	float GetNowAnimTime();
 
 private:
-	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
 	void AnimLerp();
-	float GetNowAnimTime();
 
 	void ChangeActionMode(ACTIONMODE nextActionMode);
 	void ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACTION::Enum nextTrackingAction);
@@ -166,103 +169,20 @@ private:
 	void ChangeTrackingAction(TRACKINGACTION::Enum nextTrackingAction);
 	void ChangeBattleAction(BATTLEACTION::Enum nextBattleAction);
 	
+protected:
+	GameObject ModelObject;
+protected:
+
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
 	std::map<ACTIONMODE,std::function<void()>> actionModeFinalize;
-
-	void TrackingModeInitilize();
-	void TrackingModeUpdate();
-	void TrackingModeFinalize();
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionInitilize;
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionUpdate;
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionFinalize;
-
-	void BattleModeInitilize();
-	void BattleModeUpdate();
-	void BattleModeFinalize();
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionInitilize;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
-
-	void ParentTrackingModeInitilize();
-	void ParentTrackingModeUpdate();
-	void ParentTrackingModeFinalize();
-
-	void ChildTrackingModeInitilize();
-	void ChildTrackingModeUpdate();
-	void ChildTrackingModeFinalize();
-
-	void ConfrontModeInitilize();
-	void ConfrontModeUpdate();
-	void ConfrontModeFinalize();
-
-	void ApproachModeInitilize();
-	void ApproachModeUpdate();
-	void ApproachModeFinalize();
-
-	void AttackDownModeInitilize();
-	void AttackDownModeUpdate();
-	void AttackDownModeFinalize();
-
-	void JumpAttackModeInitilize();
-	void JumpAttackModeUpdate();
-	void JumpAttackModeFinalize();
-
-	void GuardModeInitilize();
-	void GuardModeUpdate();
-	void GuardModeFinalize();
-
-	void ProvocationModeInitilize();
-	void ProvocationModeUpdate();
-	void ProvocationModeFinalize();
-
-	void BackStepModeInitilize();
-	void BackStepModeUpdate();
-	void BackStepModeFinalize();
-
-	void WinceModeInitilize();
-	void WinceModeUpdate();
-	void WinceModeFinalize();
-
-	void HitInGuardModeInitilize();
-	void HitInGuardModeUpdate();
-	void HitInGuardModeFinalize();
-
-	void Prowl();
-
-	//ç°âÒÇÕâΩâÒâ‰ñùÇ∑ÇÈÇ©(m_HitInGuardMinCountÅ`m_HitInGuardMaxCount)
-	int PatienceInThisTime;
-
-	void AttackMonckeyModeInitilize();
-	void AttackMonckeyModeUpdate();
-	void AttackMonckeyModeFinalize();
-
-	void DeadModeInitilize();
-	void DeadModeUpdate();
-	void DeadModeFinalize();
-
-	//ÉÅÉìÉoïœêî
-	SERIALIZE float m_TrackingSpeed;
-	SERIALIZE float m_TrackingRange;
-	SERIALIZE float m_LostRange;
-	SERIALIZE float m_OnBattleRange;
-	SERIALIZE float m_OffBattleRange;
-	SERIALIZE float m_TrackingAngle;
-	SERIALIZE float m_TrackingRotateSpeed;
-	SERIALIZE float m_Hp;
-	SERIALIZE int m_AttackDamage;
-	SERIALIZE GameObject m_MyWeapon;
-	SERIALIZE GameObject m_ModelObject;
-	SERIALIZE GameObject m_MovePoints;
-	SERIALIZE bool m_Child;
-	SERIALIZE float m_AproachRotateSpeed;
-	SERIALIZE float m_CorrectionRotateSpeed;
-	SERIALIZE bool m_DrawLog;
-	SERIALIZE int m_HitInGuardMinCount;
-	SERIALIZE int m_HitInGuardMaxCount;
-	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
-	SERIALIZE float APROACHMINTIME;
-	SERIALIZE float APROACHMAXTIME;
+	GameObject m_gameObject = gameObject;
 
 	GameObject m_Player;
 
@@ -330,6 +250,5 @@ public:
 		ChangeBattleAction(battleAction);
 	}
 
-	bool DiscoveryPlayer();
-	bool LostPlayer();
+
 };
