@@ -14,7 +14,7 @@ void Enemy::Initialize() {
 
 	m_ChildTranckingSpeed = 1.0f;
 	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
-	m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 
 	if (!m_Player) {
 		m_Player = Hx::FindActor("Player");
@@ -157,12 +157,12 @@ void Enemy::OnCollideExit(GameObject target) {
 void Enemy::Damage(float damage_)
 {
 	m_Damage = damage_;
-	if (m_ActionModeID == ACTIONMODE::BATTLEMODE && m_BattleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
+	if (m_ActionModeID == ACTIONMODE::BATTLEMODE && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
 		//if (rand() % 100 > (99 - m_AbsolutelyAvoidInHitAttackProbability) &&
-		//	m_BattleModeParam.battleActionID != BATTLEACTION::HITINGUARDACTION &&
-		//	m_BattleModeParam.battleActionID != BATTLEACTION::WINCEACTION	&&
-		//	m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION &&
-		//	m_BattleModeParam.battleActionID != BATTLEACTION::JUMPATTACKACTION) {
+		//	m_BattleModeParam.id != BATTLEACTION::HITINGUARDACTION &&
+		//	m_BattleModeParam.id != BATTLEACTION::WINCEACTION	&&
+		//	m_BattleModeParam.id != BATTLEACTION::BACKSTEPACTION &&
+		//	m_BattleModeParam.id != BATTLEACTION::JUMPATTACKACTION) {
 		//	if (m_DrawLog) {
 		//		Hx::Debug()->Log("”ð‚¯‚½");
 		//	}
@@ -170,7 +170,7 @@ void Enemy::Damage(float damage_)
 		//}
 		//else 
 		//{
-		if (m_BattleModeParam.battleActionID == BATTLEACTION::GUARDACTION || m_BattleModeParam.battleActionID == BATTLEACTION::HITINGUARDACTION) {
+		if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
 			ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
 		}
 		else {
@@ -184,20 +184,20 @@ void Enemy::Attack(GameObject player)
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("‰½‚©‚É•Ší‚ª“–‚½‚Á‚½");
-	if (m_BattleModeParam.battleActionID == BATTLEACTION::ATTACKDOWNACTION ||
-		m_BattleModeParam.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION ||
-		m_BattleModeParam.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
+	if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION ||
+		m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION ||
+		m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION) {
 		if (m_DrawLog)
 			Hx::Debug()->Log("m_Player‚ÉUŒ‚‚ªHit");
 		if (!player)return;
 		auto playerScript = player->GetScript<PlayerController>();
 		if (!playerScript)return;
 
-		if (m_BattleModeParam.battleActionID == BATTLEACTION::ATTACKDOWNACTION)
+		if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
-		else if (m_BattleModeParam.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION)
+		else if (m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-		else if (m_BattleModeParam.battleActionID == BATTLEACTION::JUMPATTACKACTION)
+		else if (m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 	}
 }
@@ -318,8 +318,8 @@ void Enemy::ChangeActionMode(ACTIONMODE nextActionMode) {
 void Enemy::ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACTION::Enum nextTrackingAction)
 {
 	m_ActionModeID = nextActionMode;
-	m_TrackingModeParam.beforetrackingActionID = m_TrackingModeParam.trackingActionID;
-	m_TrackingModeParam.trackingActionID = nextTrackingAction;
+	m_TrackingModeParam.beforeId = m_TrackingModeParam.id;
+	m_TrackingModeParam.id = nextTrackingAction;
 	actionModeInitilize[m_ActionModeID]();
 	//actionModeUpdate[m_ActionModeID]();
 }
@@ -327,23 +327,23 @@ void Enemy::ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACT
 void Enemy::ChangeActionAndBattleAction(ACTIONMODE nextActionMode, BATTLEACTION::Enum nextBattleAction)
 {
 	m_ActionModeID = nextActionMode;
-	m_BattleModeParam.beforeBattleActionID = m_BattleModeParam.battleActionID;
-	m_BattleModeParam.battleActionID = nextBattleAction;
+	m_BattleModeParam.beforeId = m_BattleModeParam.id;
+	m_BattleModeParam.id = nextBattleAction;
 	actionModeInitilize[m_ActionModeID]();
 	//actionModeUpdate[m_ActionModeID]();
 }
 
 void Enemy::ChangeTrackingAction(TRACKINGACTION::Enum nextTrackingAction)
 {
-	m_TrackingModeParam.beforetrackingActionID = m_TrackingModeParam.trackingActionID;
-	m_TrackingModeParam.trackingActionID = nextTrackingAction;
-	trackingActionInitilize[m_TrackingModeParam.trackingActionID]();
-	//trackingActionUpdate[m_TrackingModeParam.trackingActionID]();
+	m_TrackingModeParam.beforeId = m_TrackingModeParam.id;
+	m_TrackingModeParam.id = nextTrackingAction;
+	trackingActionInitilize[m_TrackingModeParam.id]();
+	//trackingActionUpdate[m_TrackingModeParam.id]();
 }
 
 void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
-	if (m_BattleModeParam.battleActionID != BATTLEACTION::DEADACTION) {
-		if (m_BattleModeParam.battleActionID == nextBattleAction) {
+	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
+		if (m_BattleModeParam.id == nextBattleAction) {
 			m_BattleModeParam.sameActionCount++;
 			m_BattleModeParam.firstInSameAction = false;
 		}
@@ -351,27 +351,27 @@ void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
 			m_BattleModeParam.sameActionCount = 0;
 			m_BattleModeParam.firstInSameAction = true;
 		}
-		m_BattleModeParam.beforeBattleActionID = m_BattleModeParam.battleActionID;
-		m_BattleModeParam.battleActionID = nextBattleAction;
-		battleActionInitilize[m_BattleModeParam.battleActionID]();
-		//battleActionUpdate[m_BattleModeParam.battleActionID]();
+		m_BattleModeParam.beforeId = m_BattleModeParam.id;
+		m_BattleModeParam.id = nextBattleAction;
+		battleActionInitilize[m_BattleModeParam.id]();
+		//battleActionUpdate[m_BattleModeParam.id]();
 	}
 }
 
 /****************************************************‘{õŽž‚Ìˆ—**********************************************************/
 void Enemy::TrackingModeInitilize()
 {
-	trackingActionInitilize[m_TrackingModeParam.trackingActionID]();
+	trackingActionInitilize[m_TrackingModeParam.id]();
 }
 
 void Enemy::TrackingModeUpdate()
 {
-	trackingActionUpdate[m_TrackingModeParam.trackingActionID]();
+	trackingActionUpdate[m_TrackingModeParam.id]();
 }
 
 void Enemy::TrackingModeFinalize()
 {
-	//m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	//m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 	//ChangeActionMode(ACTIONMODE::BATTLEMODE);
 }
 
@@ -547,7 +547,7 @@ void Enemy::ChildTrackingModeUpdate()
 				XMVector3Normalize(rayYourPos - rayMyPos),
 				XMVector3Length(rayYourPos - rayMyPos).x,
 				Layer::UserTag4)) {
-			//trackingActionFinalize[m_TrackingModeParam.trackingActionID]();
+			//trackingActionFinalize[m_TrackingModeParam.id]();
 			//return;
 		}
 
@@ -658,7 +658,7 @@ void Enemy::BattleModeInitilize()
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("í“¬ƒ‚[ƒh‚ÖˆÚs");
-	battleActionInitilize[m_BattleModeParam.battleActionID]();
+	battleActionInitilize[m_BattleModeParam.id]();
 }
 
 void Enemy::BattleModeUpdate()
@@ -677,12 +677,12 @@ void Enemy::BattleModeUpdate()
 		m_BattleModeParam.arrival = true;
 	}
 
-	battleActionUpdate[m_BattleModeParam.battleActionID]();
+	battleActionUpdate[m_BattleModeParam.id]();
 }
 
 void Enemy::BattleModeFinalize()
 {
-	m_BattleModeParam.battleActionID = BATTLEACTION::CONFRONTACTION;
+	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 	ChangeActionMode(ACTIONMODE::TRACKINGMODE);
 }
 
@@ -732,7 +732,7 @@ void Enemy::ApproachModeUpdate()
 	Prowl();
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
-		battleActionFinalize[m_BattleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.id]();
 	}
 }
 
@@ -764,7 +764,7 @@ void Enemy::AttackDownModeUpdate()
 	}
 
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
-		battleActionFinalize[m_BattleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.id]();
 	};
 }
 
@@ -791,7 +791,7 @@ void Enemy::JumpAttackModeUpdate()
 		m_Vec += m_Forward * 20.0f;
 	}
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
-		battleActionFinalize[m_BattleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.id]();
 	};
 }
 
@@ -823,7 +823,7 @@ void Enemy::GuardModeUpdate()
 	Prowl();
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
-		battleActionFinalize[m_BattleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.id]();
 	}
 }
 
@@ -854,7 +854,7 @@ void Enemy::ProvocationModeUpdate()
 	Prowl();
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
-		battleActionFinalize[m_BattleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.id]();
 	}
 }
 
@@ -888,7 +888,7 @@ void Enemy::BackStepModeUpdate()
 		m_Vec -= m_Forward * 20.0f;
 	}
 	else if (GetNowAnimTime() < 20.0f) {
-		battleActionFinalize[m_BattleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.id]();
 	}
 }
 
@@ -914,7 +914,7 @@ void Enemy::WinceModeUpdate() {
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
-		battleActionFinalize[m_BattleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.id]();
 	};
 }
 
@@ -941,7 +941,7 @@ void Enemy::HitInGuardModeUpdate() {
 		auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
 		if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
-			battleActionFinalize[m_BattleModeParam.battleActionID]();
+			battleActionFinalize[m_BattleModeParam.id]();
 		};
 	}
 	else {
@@ -982,7 +982,7 @@ void Enemy::AttackMonckeyModeUpdate() {
 	if (!anim)return;
 
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
-		battleActionFinalize[m_BattleModeParam.battleActionID]();
+		battleActionFinalize[m_BattleModeParam.id]();
 	};
 }
 

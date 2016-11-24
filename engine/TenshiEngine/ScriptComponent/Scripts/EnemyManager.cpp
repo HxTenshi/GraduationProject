@@ -16,11 +16,12 @@ void EnemyManager::Start(){
 		for (auto j : i.enemyOneVec) {
 			auto jScript = j.enemyGameObject->GetScript<Enemy>();
 			if (!jScript)return;
-			if (j.enemyParameter.nowActionMode == ACTIONMODE::TRACKINGMODE) {
-				SetActionModeAndTrackingAction(&j,jScript,j.enemyParameter.nowActionMode,j.enemyParameter.trackingModeParameter.trackingActionID);
+			auto eap = jScript->GetEnemyAllParameter(false);
+			if (eap.actionMode == ACTIONMODE::TRACKINGMODE) {
+				jScript->SetActionModeAndTrackingAction(eap.actionMode,eap.trackingModeParameter.id);
 			}
 			else {
-				SetActionModeAndBattleAction(&j,jScript,j.enemyParameter.nowActionMode,j.enemyParameter.battleModeParameter.battleActionID);
+				jScript->SetActionModeAndBattleAction(eap.actionMode,eap.battleModeParameter.id);
 			}
 		}
 	}
@@ -57,7 +58,8 @@ void EnemyManager::Update(){
 
 			auto jScript = j->enemyGameObject->GetScript<Enemy>();
 			if (!jScript)return;
-			if (j->enemyParameter.nowActionMode == ACTIONMODE::TRACKINGMODE) {
+			auto eap = jScript->GetEnemyAllParameter(false);
+			if (eap.actionMode == ACTIONMODE::TRACKINGMODE) {
 				//発見したかどうか
 				i->enemyTeamParameter.lostPlayer = false;
 				if (!i->enemyTeamParameter.discoveryPlayer) {
@@ -83,22 +85,22 @@ void EnemyManager::Update(){
 		for (auto j = i->enemyOneVec.begin(); j != i->enemyOneVec.end(); j++,howManyPeople++) {
 			auto jScript = j->enemyGameObject->GetScript<Enemy>();
 			if (!jScript)return;
+			auto eap = jScript->GetEnemyAllParameter(true);
 			//発見したら戦闘モードへ移行
-			if (i->enemyTeamParameter.discoveryPlayer && j->enemyParameter.nowActionMode != ACTIONMODE::BATTLEMODE) {
-				SetActionModeAndBattleAction(&(*j), jScript,ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+			if (i->enemyTeamParameter.discoveryPlayer && eap.actionMode != ACTIONMODE::BATTLEMODE) {
+				jScript->SetActionModeAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 				i->enemyTeamParameter.nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
 				if(m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(i->enemyTeamParameter.nextAttackTime));
 			}
 			//見失ったら捜索モードへ移行
-			if (i->enemyTeamParameter.lostPlayer && j->enemyParameter.nowActionMode != ACTIONMODE::TRACKINGMODE) {
-				SetActionMode(&(*j), jScript, ACTIONMODE::TRACKINGMODE);
+			if (i->enemyTeamParameter.lostPlayer && eap.actionMode != ACTIONMODE::TRACKINGMODE) {
+				jScript->SetActionMode(ACTIONMODE::TRACKINGMODE);
 			}
 			//親が生きているかのフラグセット
 			jScript->SetParentAlive(i->enemyTeamParameter.parentAlive);
 			if (!m_Player)return;
-
 			//戦闘時だったら
-			if (j->enemyParameter.nowActionMode == ACTIONMODE::BATTLEMODE) {
+			if (eap.actionMode == ACTIONMODE::BATTLEMODE) {
 				//移動先を検索
 				XMVECTOR battlePos;
 				if (howManyPeople == 0) {
@@ -116,53 +118,50 @@ void EnemyManager::Update(){
 				}
 				jScript->SetBattlePosition(battlePos);
 
-				//敵の戦闘時のパラメータを取得
-				auto bmp = jScript->GetBattleModeParameter();
-
 				if (i->enemyTeamParameter.teamCount == 1) {
 					//アクションが終了したため次のを決める
-					if (bmp.actionFinish) {
-						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::CONFRONTACTION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(30, 30, 20, 20, 0, 5));
+					if (eap.battleModeParameter.actionFinish) {
+						if (eap.battleModeParameter.id == BATTLEACTION::CONFRONTACTION) {
+							jScript->SetBattleAction(ChangeBattleAction(30, 30, 20, 20, 0, 5));
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::APPROACHACTION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(30, 0, 40, 30, 0, 5));
+						else if (eap.battleModeParameter.id == BATTLEACTION::APPROACHACTION) {
+							jScript->SetBattleAction(ChangeBattleAction(30, 0, 40, 30, 0, 5));
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::ATTACKDOWNACTION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 40, 20, 0, 0, 5));
+						else if (eap.battleModeParameter.id == BATTLEACTION::ATTACKDOWNACTION) {
+							jScript->SetBattleAction(ChangeBattleAction(40, 40, 20, 0, 0, 5));
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 20, 0, 30, 0, 5));
+						else if (eap.battleModeParameter.id == BATTLEACTION::JUMPATTACKACTION) {
+							jScript->SetBattleAction(ChangeBattleAction(40, 20, 0, 30, 0, 5));
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::GUARDACTION) {
-							if (j->enemyParameter.battleModeParameter.beforeBattleActionID == BATTLEACTION::BACKSTEPACTION) {
-								SetBattleAction(&(*j), jScript, ChangeBattleAction(20, 30, 0, 30, 0, 5));
+						else if (eap.battleModeParameter.id == BATTLEACTION::GUARDACTION) {
+							if (eap.battleModeParameter.beforeId == BATTLEACTION::BACKSTEPACTION) {
+								jScript->SetBattleAction(ChangeBattleAction(20, 30, 0, 30, 0, 5));
 							}
 							else {
-								SetBattleAction(&(*j), jScript, ChangeBattleAction(20, 30, 20, 30, 0, 5));
+								jScript->SetBattleAction(ChangeBattleAction(20, 30, 20, 30, 0, 5));
 							}
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::PROVOCATION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(30, 0, 40, 30, 0, 0));
+						else if (eap.battleModeParameter.id == BATTLEACTION::PROVOCATION) {
+							jScript->SetBattleAction(ChangeBattleAction(30, 0, 40, 30, 0, 0));
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::BACKSTEPACTION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(15, 0, 0, 0, 70, 15));
+						else if (eap.battleModeParameter.id == BATTLEACTION::BACKSTEPACTION) {
+							jScript->SetBattleAction(ChangeBattleAction(15, 0, 0, 0, 70, 15));
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::WINCEACTION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 0, 40, 20, 0, 5));
+						else if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION) {
+							jScript->SetBattleAction(ChangeBattleAction(40, 0, 40, 20, 0, 5));
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::HITINGUARDACTION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 0, 40, 20, 0, 5));
+						else if (eap.battleModeParameter.id == BATTLEACTION::HITINGUARDACTION) {
+							jScript->SetBattleAction(ChangeBattleAction(40, 0, 40, 20, 0, 5));
 						}
-						else if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::ATTACKMONCKEYACTION) {
-							SetBattleAction(&(*j), jScript, ChangeBattleAction(40, 40, 20, 0, 0, 5));
+						else if (eap.battleModeParameter.id == BATTLEACTION::ATTACKMONCKEYACTION) {
+							jScript->SetBattleAction(ChangeBattleAction(40, 40, 20, 0, 0, 5));
 						}
 					}
 				}
 				else{
 					//攻撃
 					if (j->enemyParameter.attack) {
-						if (bmp.actionFinish) {
+						if (eap.battleModeParameter.actionFinish) {
 							j->enemyParameter.attack = false;
 							i->enemyTeamParameter.nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
 							if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(i->enemyTeamParameter.nextAttackTime));
@@ -177,7 +176,7 @@ void EnemyManager::Update(){
 							i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
 						}
 						//終わったら
-						if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::JUMPATTACKACTION) {
+						if (eap.battleModeParameter.id == BATTLEACTION::JUMPATTACKACTION) {
 							j->enemyParameter.everyoneAttack = false;
 							i->enemyTeamParameter.everyoneAttack = false;
 							i->enemyTeamParameter.nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
@@ -185,37 +184,37 @@ void EnemyManager::Update(){
 						}
 						else{
 							//バックステップが終わったら
-							if (j->enemyParameter.battleModeParameter.battleActionID == BATTLEACTION::BACKSTEPACTION) {
-								if (bmp.actionFinish) {
-									SetBattleAction(&(*j), jScript, BATTLEACTION::JUMPATTACKACTION);
+							if (eap.battleModeParameter.id == BATTLEACTION::BACKSTEPACTION) {
+								if (eap.battleModeParameter.actionFinish) {
+									jScript->SetBattleAction(BATTLEACTION::JUMPATTACKACTION);
 								}
 							}
 							else {
 								i->enemyTeamParameter.everyoneAttackCountFlag = false;
 								i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
-								SetBattleAction(&(*j), jScript, BATTLEACTION::BACKSTEPACTION);
+								jScript->SetBattleAction(BATTLEACTION::BACKSTEPACTION);
 							}
 						}
 					}
 					//アクションが終了したため次のを決める
-					else if (bmp.actionFinish) {
+					else if (eap.battleModeParameter.actionFinish) {
 						//自分の番だが攻撃できない場合
-						if (j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::APPROACHACTION &&
-							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::GUARDACTION &&
-							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::PROVOCATION &&
-							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::CONFRONTACTION &&
-							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::ATTACKDOWNACTION &&
-							j->enemyParameter.battleModeParameter.battleActionID != BATTLEACTION::JUMPATTACKACTION &&
+						if (eap.battleModeParameter.id != BATTLEACTION::APPROACHACTION &&
+							eap.battleModeParameter.id != BATTLEACTION::GUARDACTION &&
+							eap.battleModeParameter.id != BATTLEACTION::PROVOCATION &&
+							eap.battleModeParameter.id != BATTLEACTION::CONFRONTACTION &&
+							eap.battleModeParameter.id != BATTLEACTION::ATTACKDOWNACTION &&
+							eap.battleModeParameter.id != BATTLEACTION::JUMPATTACKACTION &&
 							i->enemyTeamParameter.whoAttack == howManyPeople) {
 							i->enemyTeamParameter.whoAttack++;
 						}
-
+			
 						//全員が攻撃したら
 						if (i->enemyTeamParameter.whoAttack >= i->enemyTeamParameter.teamCount) {
 							i->enemyTeamParameter.whoAttack = 0;
 							i->enemyTeamParameter.everyoneAttackCountFlag = true;
 						}
-
+			
 						if (!j->enemyParameter.attack && i->enemyTeamParameter.whoAttack == howManyPeople && !i->enemyTeamParameter.everyoneAttackCountFlag) {
 							j->enemyParameter.nextAttackTimeCountFlag = true;
 						}
@@ -223,13 +222,13 @@ void EnemyManager::Update(){
 							//自分の番じゃなかったらランダムで指定
 							switch (rand() % 3) {
 							case 0:
-								SetBattleAction(&(*j), jScript, BATTLEACTION::APPROACHACTION);
+								jScript->SetBattleAction(BATTLEACTION::APPROACHACTION);
 								break;
 							case 1:
-								SetBattleAction(&(*j), jScript, BATTLEACTION::GUARDACTION);
+								jScript->SetBattleAction(BATTLEACTION::GUARDACTION);
 								break;
 							case 2:
-								SetBattleAction(&(*j), jScript, BATTLEACTION::PROVOCATION);
+								jScript->SetBattleAction(BATTLEACTION::PROVOCATION);
 								break;
 							default:
 								break;
@@ -239,11 +238,11 @@ void EnemyManager::Update(){
 					else if (j->enemyParameter.nextAttackTimeCountFlag) {
 						i->enemyTeamParameter.nextAttackTimeCount += Hx::DeltaTime()->GetDeltaTime();
 						if (i->enemyTeamParameter.nextAttackTimeCount >= i->enemyTeamParameter.nextAttackTime) {
-							if(i->enemyTeamParameter.nextAttackTimeCount < 5 && bmp.arrival && bmp.canChangeAttackAction) {
+							if(i->enemyTeamParameter.nextAttackTimeCount < 5 && eap.battleModeParameter.arrival && eap.battleModeParameter.canChangeAttackAction) {
 								j->enemyParameter.attack = true;
 								j->enemyParameter.nextAttackTimeCountFlag = false;
 								i->enemyTeamParameter.nextAttackTimeCount = 0.0f;
-								SetBattleAction(&(*j), jScript, BATTLEACTION::ATTACKDOWNACTION);
+								jScript->SetBattleAction(BATTLEACTION::ATTACKDOWNACTION);
 								if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(i->enemyTeamParameter.nextAttackTime));
 							}
 							else{
@@ -256,7 +255,7 @@ void EnemyManager::Update(){
 					}
 					else if (i->enemyTeamParameter.everyoneAttackCountFlag) {
 						if (i->enemyTeamParameter.nextAttackTimeCount >= i->enemyTeamParameter.nextAttackTime) {
-							if (i->enemyTeamParameter.nextAttackTimeCount < 5 && bmp.canChangeAttackAction) {
+							if (i->enemyTeamParameter.nextAttackTimeCount < 5 && eap.battleModeParameter.canChangeAttackAction) {
 								j->enemyParameter.everyoneAttack = true;
 								i->enemyTeamParameter.everyoneAttack = true;
 								if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(i->enemyTeamParameter.nextAttackTime));
@@ -305,10 +304,11 @@ void EnemyManager::EnemysIntoEnemyContainer(){
 		int count = 0;
 		if (newEnemyTeam->GetScript<Enemy>()) {
 			count++;
+			auto iScript = newEnemyTeam->GetScript<Enemy>();
 			eo.enemyGameObject = newEnemyTeam;
 			eo.enemyParameter.child = false;
-			eo.enemyParameter.nowActionMode = ACTIONMODE::TRACKINGMODE;
-			eo.enemyParameter.trackingModeParameter.trackingActionID = TRACKINGACTION::PARENTTRACKING;
+			iScript->SetActionID(ACTIONMODE::TRACKINGMODE);
+			iScript->SetTrackingID(TRACKINGACTION::PARENTTRACKING);
 			et.enemyOneVec.insert(et.enemyOneVec.begin(), eo);
 		}
 		else {
@@ -323,15 +323,15 @@ void EnemyManager::EnemysIntoEnemyContainer(){
 				eo.enemyGameObject = i;
 				iScript->SetPlayer(m_Player);
 				if (iScript->GetChildFlag()) {
-					eo.enemyParameter.child = true;
-					eo.enemyParameter.nowActionMode = ACTIONMODE::TRACKINGMODE;
-					eo.enemyParameter.trackingModeParameter.trackingActionID = TRACKINGACTION::CHILDTRACKING;
+					eo.enemyParameter.child = true; 
+					iScript->SetActionID(ACTIONMODE::TRACKINGMODE);
+					iScript->SetTrackingID(TRACKINGACTION::CHILDTRACKING);
 					et.enemyOneVec.push_back(eo);
 				}
 				else {
 					eo.enemyParameter.child = false;
-					eo.enemyParameter.nowActionMode = ACTIONMODE::TRACKINGMODE;
-					eo.enemyParameter.trackingModeParameter.trackingActionID = TRACKINGACTION::PARENTTRACKING;
+					iScript->SetActionID(ACTIONMODE::TRACKINGMODE);
+					iScript->SetTrackingID(TRACKINGACTION::PARENTTRACKING);
 					et.enemyOneVec.insert(et.enemyOneVec.begin(), eo);
 				}
 			}

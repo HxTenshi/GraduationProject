@@ -15,15 +15,6 @@ struct EnemyParameter {
 
 	//次の攻撃までの時間をカウントするかどうか
 	bool nextAttackTimeCountFlag = false;
-
-	//今のアクションモード(TRACKING or BATTLE)のID
-	ACTIONMODE nowActionMode = ACTIONMODE::TRACKINGMODE;
-	
-	//捜索中のパラメータ
-	TrackingModeParameter trackingModeParameter;
-
-	//戦闘中のパラメータ
-	BattleModeParameter battleModeParameter;
 };
 
 struct EnemyOne {
@@ -102,37 +93,6 @@ private:
 
 	//
 	std::vector<EnemyTeam> m_EnemyContainer;
-
-	void SetActionMode(EnemyOne* enemyOne, Enemy* jScript, ACTIONMODE actionMode) {
-		enemyOne->enemyParameter.nowActionMode = actionMode;
-		jScript->SetActionMode(actionMode);
-	}
-
-	void SetActionModeAndTrackingAction(EnemyOne* enemyOne,Enemy* jScript, ACTIONMODE actionMode, TRACKINGACTION::Enum trackingAction) {
-		enemyOne->enemyParameter.nowActionMode = actionMode;
-		enemyOne->enemyParameter.trackingModeParameter.beforetrackingActionID = enemyOne->enemyParameter.trackingModeParameter.trackingActionID;
-		enemyOne->enemyParameter.trackingModeParameter.trackingActionID = trackingAction;
-		jScript->SetActionModeAndTrackingAction(actionMode,trackingAction);
-	}
-
-	void SetActionModeAndBattleAction(EnemyOne* enemyOne, Enemy* jScript, ACTIONMODE actionMode, BATTLEACTION::Enum battleAction) {
-		enemyOne->enemyParameter.nowActionMode = actionMode;
-		enemyOne->enemyParameter.battleModeParameter.beforeBattleActionID = enemyOne->enemyParameter.battleModeParameter.battleActionID;
-		enemyOne->enemyParameter.battleModeParameter.battleActionID = battleAction;
-		jScript->SetActionModeAndBattleAction(actionMode, battleAction);
-	}
-
-	void SetTrackingAction(EnemyOne* enemyOne, Enemy* jScript, TRACKINGACTION::Enum trackingAction) {
-		enemyOne->enemyParameter.trackingModeParameter.beforetrackingActionID = enemyOne->enemyParameter.trackingModeParameter.beforetrackingActionID;
-		enemyOne->enemyParameter.trackingModeParameter.trackingActionID = trackingAction;
-		jScript->SetTrackingAction(trackingAction);
-	}
-
-	void SetBattleAction(EnemyOne* enemyOne, Enemy* jScript, BATTLEACTION::Enum battleAction) {
-		enemyOne->enemyParameter.battleModeParameter.beforeBattleActionID = enemyOne->enemyParameter.battleModeParameter.battleActionID;
-		enemyOne->enemyParameter.battleModeParameter.battleActionID = battleAction;
-		jScript->SetBattleAction(battleAction);
-	}
 
 	BATTLEACTION::Enum ChangeBattleAction(
 		int guardProbability, int approachProbability,

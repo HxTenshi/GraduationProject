@@ -23,10 +23,10 @@ struct TRACKINGACTION {
 
 struct TrackingModeParameter {
 	//今のアクションのID
-	TRACKINGACTION::Enum trackingActionID = TRACKINGACTION::NONE;
+	TRACKINGACTION::Enum id = TRACKINGACTION::NONE;
 
 	//前のアクションのID
-	TRACKINGACTION::Enum beforetrackingActionID = TRACKINGACTION::NONE;
+	TRACKINGACTION::Enum beforeId = TRACKINGACTION::NONE;
 	
 	//ナビメッシュを使うかどうか
 	bool naviMeshFlag = true;
@@ -54,10 +54,10 @@ struct BATTLEACTION {
 
 struct BattleModeParameter{	
 	//今のアクションのID
-	BATTLEACTION::Enum battleActionID = BATTLEACTION::NONE;
+	BATTLEACTION::Enum id = BATTLEACTION::NONE;
 
 	//前のアクションのID
-	BATTLEACTION::Enum beforeBattleActionID = BATTLEACTION::NONE;
+	BATTLEACTION::Enum beforeId = BATTLEACTION::NONE;
 	
 	//バトルモード中の思考時間を図るもの
 	float count = 0.0f;
@@ -112,6 +112,12 @@ enum ACTIONMODE{
 	BATTLEMODE
 };
 
+struct EnemyAllParamter{
+	TrackingModeParameter trackingModeParameter;
+	BattleModeParameter battleModeParameter;
+	ACTIONMODE actionMode;
+};
+
 template<class T>
 const T& clamp(const T& v, const T& min, const T& max) {
 	if (v <= min)return min;
@@ -133,11 +139,17 @@ public:
 	void Attack(GameObject player);
 	bool GetChildFlag() { return m_Child; }
 	void SetParentAlive(bool flag) { m_TrackingModeParam.parentAlive = flag; }
-	BattleModeParameter GetBattleModeParameter() {
+	EnemyAllParamter GetEnemyAllParameter(bool reset) {
+		EnemyAllParamter eap;
 		auto bmp = m_BattleModeParam;
-		m_BattleModeParam.actionFinish = false;
-		m_BattleModeParam.arrival = false;
-		return bmp;
+		if (reset) {
+			m_BattleModeParam.actionFinish = false;
+			m_BattleModeParam.arrival = false;
+		}
+		eap.trackingModeParameter = m_TrackingModeParam;
+		eap.battleModeParameter = bmp;
+		eap.actionMode = m_ActionModeID;
+		return eap;
 	}
 	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
 	void SetPlayer(GameObject player) { m_Player = player; }
@@ -161,10 +173,16 @@ private:
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();
 	void TrackingModeFinalize();
-
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionInitilize;
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionUpdate;
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionFinalize;
+
+	void BattleModeInitilize();
+	void BattleModeUpdate();
+	void BattleModeFinalize();
+	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionInitilize;
+	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
+	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
 
 	void ParentTrackingModeInitilize();
 	void ParentTrackingModeUpdate();
@@ -173,14 +191,6 @@ private:
 	void ChildTrackingModeInitilize();
 	void ChildTrackingModeUpdate();
 	void ChildTrackingModeFinalize();
-
-	void BattleModeInitilize();
-	void BattleModeUpdate();
-	void BattleModeFinalize();
-
-	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionInitilize;
-	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
-	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
 
 	void ConfrontModeInitilize();
 	void ConfrontModeUpdate();
@@ -290,6 +300,16 @@ private:
 	XMVECTOR m_Gravity;
 
 public:
+	void SetActionID(ACTIONMODE actionMode) {
+		m_ActionModeID = actionMode;
+	}
+	void SetTrackingID(TRACKINGACTION::Enum trackingAction) {
+		m_TrackingModeParam.id = trackingAction;
+	}
+	void SetBattleID(BATTLEACTION::Enum battleAction) {
+		m_BattleModeParam.id = battleAction;
+	}
+
 	void SetActionMode(ACTIONMODE actionMode) {
 		ChangeActionMode(actionMode);
 	}
