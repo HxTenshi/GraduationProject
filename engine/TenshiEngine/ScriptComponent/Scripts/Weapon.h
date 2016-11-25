@@ -81,6 +81,10 @@ public:
 	///武器を取得できるか
 	/// </summary>
 	bool isGetWeapon();
+	/// <summary>
+	///武器の最大の耐久値を取得
+	/// </summary>
+	float GetMaxDurable();
 private:
 	/// <summary>
 	///投げ捨てる時のアクション
