@@ -125,7 +125,6 @@ const T& clamp(const T& v, const T& min, const T& max) {
 	return v;
 }
 
-
 class Enemy :public IDllScriptComponent{
 public:
 	void Initialize()override;
@@ -135,13 +134,22 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	virtual void FunctionSet() = 0;
-	virtual bool GetChildFlag() = 0;
-	virtual float GetOnBattleRange() = 0;
-	virtual void Attack(GameObject player) = 0;
-	virtual void Damage(float damage_) = 0;
-	virtual bool DiscoveryPlayer() = 0;
-	virtual bool LostPlayer() = 0;
+	virtual void FunctionSet() {};
+	virtual bool GetChildFlag() { return false; };
+	virtual float GetOnBattleRange() { return 0.0f; };
+	virtual void Attack(GameObject player) {};
+	virtual void Damage(float damage_) {};
+	virtual bool DiscoveryPlayer() { return false; };
+	virtual bool LostPlayer() { return false;};
+
+
+	static Enemy* GetEnemy(GameObject target);
+	static BATTLEACTION::Enum ChangeBattleAction(
+		int guardProbability, int approachProbability,
+		int backstepProbability, int attackProbability,
+		int jumpAttackProbability, int provocationProbability
+		);
+
 	void SetParentAlive(bool flag) { m_TrackingModeParam.parentAlive = flag; }
 	EnemyAllParamter GetEnemyAllParameter(bool reset) {
 		EnemyAllParamter eap;
@@ -162,12 +170,6 @@ public:
 
 private:
 	void AnimLerp();
-
-	void ChangeActionMode(ACTIONMODE nextActionMode);
-	void ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACTION::Enum nextTrackingAction);
-	void ChangeActionAndBattleAction(ACTIONMODE nextActionMode, BATTLEACTION::Enum nextBattleAction);
-	void ChangeTrackingAction(TRACKINGACTION::Enum nextTrackingAction);
-	void ChangeBattleAction(BATTLEACTION::Enum nextBattleAction);
 	
 protected:
 	GameObject ModelObject;
@@ -182,7 +184,6 @@ protected:
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionInitilize;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
-	GameObject m_gameObject = gameObject;
 
 	GameObject m_Player;
 
@@ -201,7 +202,6 @@ protected:
 	int m_MoveCount;
 	//ë{çıéûÇÃà⁄ìÆÉ|ÉCÉìÉgÇÃï˚å¸
 	bool m_MoveCountUp;
-
 
 	std::vector<GameObject> m_MovePointsVec;
 
@@ -230,25 +230,9 @@ public:
 		m_BattleModeParam.id = battleAction;
 	}
 
-	void SetActionMode(ACTIONMODE actionMode) {
-		ChangeActionMode(actionMode);
-	}
-
-	void SetActionModeAndTrackingAction(ACTIONMODE actionMode, TRACKINGACTION::Enum trackingAction) {
-		ChangeActionAndTrackingAction(actionMode, trackingAction);
-	}
-
-	void SetActionModeAndBattleAction(ACTIONMODE actionMode, BATTLEACTION::Enum battleAction) {
-		ChangeActionAndBattleAction(actionMode, battleAction);
-	}
-
-	void SetTrackingAction(TRACKINGACTION::Enum trackingAction) {
-		ChangeTrackingAction(trackingAction);
-	}
-
-	void SetBattleAction(BATTLEACTION::Enum battleAction) {
-		ChangeBattleAction(battleAction);
-	}
-
-
+	void ChangeActionMode(ACTIONMODE nextActionMode);
+	void ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACTION::Enum nextTrackingAction);
+	void ChangeActionAndBattleAction(ACTIONMODE nextActionMode, BATTLEACTION::Enum nextBattleAction);
+	void ChangeTrackingAction(TRACKINGACTION::Enum nextTrackingAction);
+	void ChangeBattleAction(BATTLEACTION::Enum nextBattleAction);
 };

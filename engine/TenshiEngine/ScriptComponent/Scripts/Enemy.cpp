@@ -4,6 +4,7 @@
 #include "../h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
 #include "PlayerController.h"
+#include "EnemyRezardMan.h"
 
 
 //生成時に呼ばれます（エディター中も呼ばれます）
@@ -280,3 +281,55 @@ void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
 	}
 }
 
+Enemy * Enemy::GetEnemy(GameObject target)
+{
+	if (!target)return NULL;
+
+	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
+
+	return NULL;
+}
+
+BATTLEACTION::Enum Enemy::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability, int provocationProbability){
+	//if (XMVector3Length(m_PlayerVec).x > m_OffBattleRange && m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION) {
+	//	ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+	//	return;
+	//}
+	int totalProbability =
+		guardProbability + approachProbability +
+		backstepProbability + attackProbability +
+		jumpAttackProbability + provocationProbability;
+
+	int randam = rand() % totalProbability;
+
+	int guardProbability_, approachProbability_,
+		backstepProbability_, attackProbability_,
+		jumpAttackProbability_, provocationProbability_;
+
+	guardProbability_ = totalProbability - guardProbability;
+	approachProbability_ = guardProbability_ - approachProbability;
+	backstepProbability_ = approachProbability_ - backstepProbability;
+	attackProbability_ = backstepProbability_ - attackProbability;
+	jumpAttackProbability_ = attackProbability_ - jumpAttackProbability;
+	provocationProbability_ = jumpAttackProbability_ - provocationProbability;
+
+	if (randam > guardProbability_) {
+		return BATTLEACTION::GUARDACTION;
+	}
+	else if (randam > approachProbability_) {
+		return BATTLEACTION::APPROACHACTION;
+	}
+	else if (randam > backstepProbability_) {
+		return BATTLEACTION::BACKSTEPACTION;
+	}
+	else if (randam > attackProbability_) {
+		return BATTLEACTION::ATTACKDOWNACTION;
+	}
+	else if (randam > jumpAttackProbability_) {
+		return BATTLEACTION::JUMPATTACKACTION;
+	}
+	else if (randam > provocationProbability_) {
+		return BATTLEACTION::PROVOCATION;
+	}
+	return BATTLEACTION::CONFRONTACTION;
+}

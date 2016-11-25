@@ -24,7 +24,7 @@ void GetEnemy::Finish(){
 //コライダーとのヒット時に呼ばれます
 void GetEnemy::OnCollideBegin(GameObject target){
 	if (!target)return;
-	if (!target->GetScript<Enemy>())return;
+	if (!Enemy::GetEnemy(target))return;
 	m_EnemyList.push_back(target);
 }
 
@@ -36,7 +36,7 @@ void GetEnemy::OnCollideEnter(GameObject target){
 //コライダーとのロスト時に呼ばれます
 void GetEnemy::OnCollideExit(GameObject target){
 	if (!target)return;
-	if (!target->GetScript<Enemy>())return;
+	if (!Enemy::GetEnemy(target))return;
 	m_EnemyList.remove_if([&](auto o) {
 		return o == target || !o; });
 }
