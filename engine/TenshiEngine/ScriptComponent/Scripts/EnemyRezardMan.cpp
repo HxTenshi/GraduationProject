@@ -4,15 +4,8 @@
 #include "Game/Component/CharacterControllerComponent.h"
 #include "PlayerController.h"
 
-void EnemyRezardMan::FunctionSet()
+EnemyRezardMan::EnemyRezardMan()
 {
-	ModelObject = m_ModelObject;
-	if (!m_Child) {
-		if (!m_MovePoints)return;
-		for (auto i : m_MovePoints->mTransform->Children()) {
-			m_MovePointsVec.push_back(i);
-		}
-	}
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemyRezardMan::TrackingModeInitilize, this/*,std::placeholders::_1*/);
 	actionModeUpdate[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemyRezardMan::TrackingModeUpdate, this);
 	actionModeFinalize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemyRezardMan::TrackingModeFinalize, this);
@@ -72,6 +65,17 @@ void EnemyRezardMan::FunctionSet()
 	battleActionInitilize[BATTLEACTION::DEADACTION] = std::bind(&EnemyRezardMan::DeadModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&EnemyRezardMan::DeadModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&EnemyRezardMan::DeadModeFinalize, this);
+}
+
+void EnemyRezardMan::ChildInitialize()
+{
+	ModelObject = m_ModelObject;
+	if (!m_Child) {
+		if (!m_MovePoints)return;
+		for (auto i : m_MovePoints->mTransform->Children()) {
+			m_MovePointsVec.push_back(i);
+		}
+	}
 
 	if (m_DrawLog) {
 		Hx::Debug()->Log("捜索時の歩くスピード：" + std::to_string(m_TrackingSpeed));
@@ -135,7 +139,7 @@ void EnemyRezardMan::ParentTrackingModeInitilize()
 
 	int i = 0;
 	float movePointLenMin;
-	for (auto j : m_MovePointsVec) {
+	for (auto& j : m_MovePointsVec) {
 		auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - j->mTransform->WorldPosition()).x;
 		if (i == 0 || movePointLenMin > movePointLen) {
 			movePointLenMin = movePointLen;
@@ -147,7 +151,6 @@ void EnemyRezardMan::ParentTrackingModeInitilize()
 	navi->RootCreate(gameObject, movePoint);
 
 	m_MoveCountUp = true;
-	Hx::Debug()->Log("A");
 }
 
 void EnemyRezardMan::ParentTrackingModeUpdate()
@@ -709,6 +712,7 @@ void EnemyRezardMan::DeadModeUpdate()
 		if (!m_MyWeapon)return;
 		//gameObject->Enable();
 		gameObject->RemoveComponent<CharacterControllerComponent>();
+		m_Isend = true;
 		Hx::DestroyObject(m_MyWeapon);
 		Hx::DestroyObject(gameObject);
 	};
@@ -804,4 +808,48 @@ bool EnemyRezardMan::LostPlayer()
 		return true;
 	}
 	return false;
+}
+
+BATTLEACTION::Enum EnemyRezardMan::GetChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability, int provocationProbability) {
+	//if (XMVector3Length(m_PlayerVec).x > m_OffBattleRange && m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION) {
+	//	ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+	//	return;
+	//}
+	int totalProbability =
+		guardProbability + approachProbability +
+		backstepProbability + attackProbability +
+		jumpAttackProbability + provocationProbability;
+
+	int randam = rand() % totalProbability;
+
+	int guardProbability_, approachProbability_,
+		backstepProbability_, attackProbability_,
+		jumpAttackProbability_, provocationProbability_;
+
+	guardProbability_ = totalProbability - guardProbability;
+	approachProbability_ = guardProbability_ - approachProbability;
+	backstepProbability_ = approachProbability_ - backstepProbability;
+	attackProbability_ = backstepProbability_ - attackProbability;
+	jumpAttackProbability_ = attackProbability_ - jumpAttackProbability;
+	provocationProbability_ = jumpAttackProbability_ - provocationProbability;
+
+	if (randam > guardProbability_) {
+		return BATTLEACTION::GUARDACTION;
+	}
+	else if (randam > approachProbability_) {
+		return BATTLEACTION::APPROACHACTION;
+	}
+	else if (randam > backstepProbability_) {
+		return BATTLEACTION::BACKSTEPACTION;
+	}
+	else if (randam > attackProbability_) {
+		return BATTLEACTION::ATTACKDOWNACTION;
+	}
+	else if (randam > jumpAttackProbability_) {
+		return BATTLEACTION::JUMPATTACKACTION;
+	}
+	else if (randam > provocationProbability_) {
+		return BATTLEACTION::PROVOCATION;
+	}
+	return BATTLEACTION::CONFRONTACTION;
 }

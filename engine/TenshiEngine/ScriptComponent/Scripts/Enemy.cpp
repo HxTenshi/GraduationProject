@@ -6,7 +6,6 @@
 #include "PlayerController.h"
 #include "EnemyRezardMan.h"
 
-
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
 	m_Gravity = XMVectorSet(0, -9.81f, 0, 1);
@@ -20,61 +19,8 @@ void Enemy::Initialize() {
 	if (!m_Player) {
 		m_Player = Hx::FindActor("Player");
 	}
-	
-
-	//trackingActionInitilize[TRACKINGACTION::PARENTTRACKING] = std::bind(&Enemy::ParentTrackingModeInitilize, this);
-	//trackingActionUpdate[TRACKINGACTION::PARENTTRACKING] = std::bind(&Enemy::ParentTrackingModeUpdate, this);
-	//trackingActionFinalize[TRACKINGACTION::PARENTTRACKING] = std::bind(&Enemy::ParentTrackingModeFinalize, this);
-	//
-	//trackingActionInitilize[TRACKINGACTION::CHILDTRACKING] = std::bind(&Enemy::ChildTrackingModeInitilize, this);
-	//trackingActionUpdate[TRACKINGACTION::CHILDTRACKING] = std::bind(&Enemy::ChildTrackingModeUpdate, this);
-	//trackingActionFinalize[TRACKINGACTION::CHILDTRACKING] = std::bind(&Enemy::ChildTrackingModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::CONFRONTACTION] = std::bind(&Enemy::ConfrontModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::CONFRONTACTION] = std::bind(&Enemy::ConfrontModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::CONFRONTACTION] = std::bind(&Enemy::ConfrontModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::APPROACHACTION] = std::bind(&Enemy::ApproachModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::APPROACHACTION] = std::bind(&Enemy::ApproachModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::APPROACHACTION] = std::bind(&Enemy::ApproachModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Enemy::AttackDownModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Enemy::AttackDownModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&Enemy::AttackDownModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Enemy::JumpAttackModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Enemy::JumpAttackModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&Enemy::JumpAttackModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::GUARDACTION] = std::bind(&Enemy::GuardModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::GUARDACTION] = std::bind(&Enemy::GuardModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::GUARDACTION] = std::bind(&Enemy::GuardModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::PROVOCATION] = std::bind(&Enemy::ProvocationModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::PROVOCATION] = std::bind(&Enemy::ProvocationModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::PROVOCATION] = std::bind(&Enemy::ProvocationModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::BACKSTEPACTION] = std::bind(&Enemy::BackStepModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::BACKSTEPACTION] = std::bind(&Enemy::BackStepModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::BACKSTEPACTION] = std::bind(&Enemy::BackStepModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::WINCEACTION] = std::bind(&Enemy::WinceModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&Enemy::WinceModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&Enemy::WinceModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::HITINGUARDACTION] = std::bind(&Enemy::HitInGuardModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::HITINGUARDACTION] = std::bind(&Enemy::HitInGuardModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::HITINGUARDACTION] = std::bind(&Enemy::HitInGuardModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Enemy::AttackMonckeyModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Enemy::AttackMonckeyModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&Enemy::AttackMonckeyModeFinalize, this);
-	//
-	//battleActionInitilize[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeInitilize, this);
-	//battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeUpdate, this);
-	//battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&Enemy::DeadModeFinalize, this);
-
-	FunctionSet();
+	m_Isend = false;
+	ChildInitialize();
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
@@ -122,10 +68,6 @@ void Enemy::OnCollideEnter(GameObject target) {
 void Enemy::OnCollideExit(GameObject target) {
 	(void)target;
 }
-
-
-
-
 
 /**************************************************アニメーションの処理****************************************************/
 void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
@@ -288,48 +230,4 @@ Enemy * Enemy::GetEnemy(GameObject target)
 	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
 
 	return NULL;
-}
-
-BATTLEACTION::Enum Enemy::ChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability, int provocationProbability){
-	//if (XMVector3Length(m_PlayerVec).x > m_OffBattleRange && m_BattleModeParam.battleActionID != BATTLEACTION::BACKSTEPACTION) {
-	//	ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
-	//	return;
-	//}
-	int totalProbability =
-		guardProbability + approachProbability +
-		backstepProbability + attackProbability +
-		jumpAttackProbability + provocationProbability;
-
-	int randam = rand() % totalProbability;
-
-	int guardProbability_, approachProbability_,
-		backstepProbability_, attackProbability_,
-		jumpAttackProbability_, provocationProbability_;
-
-	guardProbability_ = totalProbability - guardProbability;
-	approachProbability_ = guardProbability_ - approachProbability;
-	backstepProbability_ = approachProbability_ - backstepProbability;
-	attackProbability_ = backstepProbability_ - attackProbability;
-	jumpAttackProbability_ = attackProbability_ - jumpAttackProbability;
-	provocationProbability_ = jumpAttackProbability_ - provocationProbability;
-
-	if (randam > guardProbability_) {
-		return BATTLEACTION::GUARDACTION;
-	}
-	else if (randam > approachProbability_) {
-		return BATTLEACTION::APPROACHACTION;
-	}
-	else if (randam > backstepProbability_) {
-		return BATTLEACTION::BACKSTEPACTION;
-	}
-	else if (randam > attackProbability_) {
-		return BATTLEACTION::ATTACKDOWNACTION;
-	}
-	else if (randam > jumpAttackProbability_) {
-		return BATTLEACTION::JUMPATTACKACTION;
-	}
-	else if (randam > provocationProbability_) {
-		return BATTLEACTION::PROVOCATION;
-	}
-	return BATTLEACTION::CONFRONTACTION;
 }

@@ -134,21 +134,16 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	virtual void FunctionSet() {};
+	virtual void ChildInitialize() {}
 	virtual bool GetChildFlag() { return false; };
 	virtual float GetOnBattleRange() { return 0.0f; };
 	virtual void Attack(GameObject player) {};
 	virtual void Damage(float damage_) {};
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};
-
+	bool IsEnd() { return m_Isend; }
 
 	static Enemy* GetEnemy(GameObject target);
-	static BATTLEACTION::Enum ChangeBattleAction(
-		int guardProbability, int approachProbability,
-		int backstepProbability, int attackProbability,
-		int jumpAttackProbability, int provocationProbability
-		);
 
 	void SetParentAlive(bool flag) { m_TrackingModeParam.parentAlive = flag; }
 	EnemyAllParamter GetEnemyAllParameter(bool reset) {
@@ -202,6 +197,8 @@ protected:
 	int m_MoveCount;
 	//‘{õ‚ÌˆÚ“®ƒ|ƒCƒ“ƒg‚Ì•ûŒü
 	bool m_MoveCountUp;
+
+	bool m_Isend;
 
 	std::vector<GameObject> m_MovePointsVec;
 

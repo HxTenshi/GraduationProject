@@ -46,7 +46,7 @@ GameObject GetEnemy::GetMinEnemy()
 	auto pos = gameObject->mTransform->WorldPosition();
 	float lowL = 9999999.0f;
 	GameObject lowObj = NULL;
-	for (auto enemy : m_EnemyList) {
+	for (auto& enemy : m_EnemyList) {
 		if (!enemy) continue;
 		auto l = XMVector3Length(pos - enemy->mTransform->WorldPosition()).x;
 		if (l < lowL) {
@@ -77,7 +77,7 @@ GameObject GetEnemy::GetPointMinEnemy(GameObject currentTarget, MinVect::Enum mi
 	auto temp = XMMatrixMultiply(XMMatrixTranslationFromVector(currentTarget->mTransform->WorldPosition()), mat);
 	auto CurrentTargetPos = temp.r[3];
 
-	for (auto enemy : m_EnemyList) {
+	for (auto& enemy : m_EnemyList) {
 		if (!enemy) continue;
 		auto posmat = XMMatrixMultiply(XMMatrixTranslationFromVector(enemy->mTransform->WorldPosition()), mat);
 		float l = abs(posmat.r[3].x - CurrentTargetPos.x);

@@ -5,13 +5,15 @@
 
 class EnemyRezardMan : public Enemy{
 public:
-	void FunctionSet() override;
+	EnemyRezardMan();
+	void ChildInitialize() override;
 	bool GetChildFlag() override;
 	float GetOnBattleRange() override;
 	void Attack(GameObject player) override;
 	void Damage(float damage_) override;
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
+
 private:
 	//ƒƒ“ƒo•Ï”
 	//ƒƒ“ƒo•Ï”
@@ -101,4 +103,11 @@ private:
 	void DeadModeInitilize();
 	void DeadModeUpdate();
 	void DeadModeFinalize();
+
+public:
+	static BATTLEACTION::Enum GetChangeBattleAction(
+		int guardProbability, int approachProbability,
+		int backstepProbability, int attackProbability,
+		int jumpAttackProbability, int provocationProbability
+		);
 };
