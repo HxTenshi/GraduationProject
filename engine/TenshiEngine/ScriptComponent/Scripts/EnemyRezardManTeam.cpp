@@ -40,9 +40,8 @@ bool EnemyRezardManTeam::Alive()
 		auto jScript = Enemy::GetEnemy(j->enemyGameObject);
 		if (!jScript)return true;
 		if (jScript->IsEnd()) {
-			Hx::Debug()->Log("fd");
 			//親なら親死んだフラグにセット
-			if (!jScript->GetChildFlag())jScript->SetParentAlive(false);
+			if (!jScript->GetChildFlag())parentAlive = false;
 			//vectorから削除
 			j = teamMember.erase(j);
 			if (m_DrawFlag)Hx::Debug()->Log("RezardManTeam : " + std::to_string(teamMember.size()) + "人");

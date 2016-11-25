@@ -17,6 +17,7 @@ void EnemyTeam::Initialize(){
 
 	//一斉攻撃までの時間をカウントするかどうか
 	everyoneAttackCountFlag = false;
+	
 	//親が生きているかどうか
 	parentAlive = true;
 
