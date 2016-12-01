@@ -4,8 +4,6 @@
 #include "Game/Component/CharacterControllerComponent.h"
 
 TPSCamera::TPSCamera(){
-	mDistance = 5.0f;
-	mUp = 1.0f;
 	mTarget = NULL;
 	mRotate = XMFLOAT2(0, 0);
 	m_SpringVelocity = XMVectorZero();
@@ -76,7 +74,9 @@ void TPSCamera::Update(){
 	}
 
 	if (mLookTarget) {
-		auto eye = mTarget->mTransform->WorldPosition();
+		auto eye = gameObject->mTransform->WorldPosition();
+		eye -= gameObject->mTransform->Up() * mUp;
+
 		auto at = mLookTarget->mTransform->WorldPosition();
 		auto rotate = XMMatrixTranspose(XMMatrixLookAtLH(eye, at, XMVectorSet(0, 1, 0, 1)));
 		auto q = XMQuaternionRotationMatrix(rotate);

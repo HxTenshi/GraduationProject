@@ -293,7 +293,7 @@ void PlayerController::Update(){
 
 		}
 
-		if (Input::Down(KeyCode::Key_K)) {
+		if (Input::Down(KeyCode::Key_K) && mWeaponControl) {
 			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
 				if (weaponCtr->IsHit())
 				{
@@ -967,9 +967,23 @@ void PlayerController::move()
 
 	auto xy = XMVector2Normalize(XMVectorSet(x, y, 0, 1));
 	auto v = XMVectorZero();
+
 	if (m_Camera) {
-		v += xy.y * m_Camera->mTransform->Forward();
-		v += xy.x * m_Camera->mTransform->Left();
+		bool end = false;
+		auto camera = m_Camera->GetScript<TPSCamera>();
+		if (camera) {
+			if (auto target = camera->GetLookTarget()) {
+				auto vect = target->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
+				vect = XMVector3Normalize(vect);
+				v += xy.y * vect;
+				v += xy.x * XMVector3Cross(XMVectorSet(0,1,0,1), vect);
+				end = true;
+			}
+		}
+		if (!end) {
+			v += xy.y * m_Camera->mTransform->Forward();
+			v += xy.x * m_Camera->mTransform->Left();
+		}
 
 		v.y = 0.0f;
 		if(XMVector3Length(v).x != 0)
@@ -1158,7 +1172,7 @@ void PlayerController::throwAway(GameObject target,bool isMove)
 	}
 }
 
-
+#include "TargetEnemy.h"
 void PlayerController::lockOn()
 {
 	if (!m_Camera)return;
