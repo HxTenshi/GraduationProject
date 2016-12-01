@@ -405,18 +405,11 @@ void EnemyRezardMan::ConfrontModeInitilize()
 void EnemyRezardMan::ConfrontModeUpdate()
 {
 	m_BattleModeParam.canChangeAttackAction = true;
-	if (XMVector3Length(m_PlayerVec).x <= m_OnBattleRange) {
+	Prowl();
+	auto battlePosVec = m_BattleModeParam.battlePosition - gameObject->mTransform->WorldPosition();
+	if (XMVector3Length(battlePosVec).x <= m_OnBattleRange) {
 		m_BattleModeParam.actionFinish = true;
 	}
-	else {
-		m_Vec += m_Forward * m_TrackingSpeed;
-	}
-
-	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
-	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
-	auto qua = gameObject->mTransform->Quaternion();
-	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
 }
 
 void EnemyRezardMan::ConfrontModeFinalize()
@@ -663,7 +656,11 @@ void EnemyRezardMan::Prowl()
 	//auto rot = XMMatrixRotationY(m_AproachRotateSpeed * Hx::DeltaTime()->GetDeltaTime() * (m_BattleModeParam.rotateVecPlus == true ? 1.0f : -1.0f));
 	//auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot), XMMatrixTranslationFromVector(playerPos));
 
-	m_Vec += XMVector3Normalize(m_BattleModeParam.battlePosition - gameObject->mTransform->WorldPosition()) * m_TrackingSpeed;
+	auto battlePosVec = m_BattleModeParam.battlePosition - gameObject->mTransform->WorldPosition();
+	if(XMVector3Length(battlePosVec).x >= 10)
+		m_Vec += XMVector3Normalize(battlePosVec) * m_TrackingSpeed * 2.0f;
+	else
+		m_Vec += XMVector3Normalize(battlePosVec) * m_TrackingSpeed;
 
 	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
 	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
@@ -750,26 +747,18 @@ void EnemyRezardMan::Attack(GameObject player)
 void EnemyRezardMan::Damage(float damage_)
 {
 	m_Damage = damage_;
-	if (m_ActionModeID == ACTIONMODE::BATTLEMODE && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
-		//if (rand() % 100 > (99 - m_AbsolutelyAvoidInHitAttackProbability) &&
-		//	m_BattleModeParam.id != BATTLEACTION::HITINGUARDACTION &&
-		//	m_BattleModeParam.id != BATTLEACTION::WINCEACTION	&&
-		//	m_BattleModeParam.id != BATTLEACTION::BACKSTEPACTION &&
-		//	m_BattleModeParam.id != BATTLEACTION::JUMPATTACKACTION) {
-		//	if (m_DrawLog) {
-		//		Hx::Debug()->Log("”ð‚¯‚½");
-		//	}
-		//	ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
-		//}
-		//else 
-		//{
-		if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
-			ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
+	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
+		if (m_ActionModeID == ACTIONMODE::BATTLEMODE) {
+			if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
+				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
+			}
+			else {
+				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::WINCEACTION);
+			}
 		}
 		else {
-			ChangeBattleAction(BATTLEACTION::WINCEACTION);
+			m_WasAttacked = true;
 		}
-		//}
 	}
 }
 

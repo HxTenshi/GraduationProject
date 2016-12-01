@@ -21,13 +21,10 @@ private:
 	bool m_DrawFlag;
 	SERIALIZE
 	GameObject m_Player;
-	SERIALIZE
-	float m_NextAttackTimeMin;
-	SERIALIZE
-	float m_NextAttackTimeMax;
 
 	//Enemy‚Ì“ü‚ê•¨‚ÖGameObject‚ð“ü‚ê‚é
 	void EnemysIntoEnemyContainer();
 
+	//Enemy‚Ì“ü‚ê•¨
 	std::vector<GameObject> m_EnemyTeamVector;
 };

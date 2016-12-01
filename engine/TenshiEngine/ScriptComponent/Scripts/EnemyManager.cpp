@@ -21,6 +21,7 @@ void EnemyManager::Update(){
 		auto jScript = EnemyTeam::GetEnemyTeam(*i);
 		if (!jScript->Alive()) {
 			i = m_EnemyTeamVector.erase(i);
+			Hx::DestroyObject((*i)->mTransform->gameObject);
 			continue;
 		}
 		jScript->DiscoveryOrLostPlayerSet();
@@ -55,5 +56,7 @@ void EnemyManager::EnemysIntoEnemyContainer(){
 	if (enemyTeams.size() == 0)return;
 	for (auto& newEnemyTeam : enemyTeams) {
 		m_EnemyTeamVector.push_back(newEnemyTeam);
+		EnemyTeam::GetEnemyTeam(newEnemyTeam)->SetPlayer(m_Player);
+		EnemyTeam::GetEnemyTeam(newEnemyTeam)->TeamInitialize();
 	}
 }

@@ -142,6 +142,11 @@ public:
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};
 	bool IsEnd() { return m_Isend; }
+	bool GetWasAttacked() {
+		auto ret = m_WasAttacked;
+		m_WasAttacked = false;
+		return ret;
+	}
 
 	static Enemy* GetEnemy(GameObject target);
 
@@ -169,7 +174,6 @@ private:
 protected:
 	GameObject ModelObject;
 protected:
-
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
 	std::map<ACTIONMODE,std::function<void()>> actionModeFinalize;
@@ -216,6 +220,7 @@ protected:
 	//èdóÕ
 	XMVECTOR m_Gravity;
 
+	bool m_WasAttacked;
 public:
 	void SetActionID(ACTIONMODE actionMode) {
 		m_ActionModeID = actionMode;

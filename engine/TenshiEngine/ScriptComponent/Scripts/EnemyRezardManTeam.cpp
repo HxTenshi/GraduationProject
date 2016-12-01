@@ -27,35 +27,32 @@ void EnemyRezardManTeam::TeamInitialize(){
 			teamMember.insert(teamMember.begin(),eo);
 		}
 	}
-	lostPlayer = false;
-	discoveryPlayer = false;
+	m_DiscoveryPlayer = false;
 }
 
 bool EnemyRezardManTeam::Alive()
 {
-	bool alive = true;
 	//チームごとに回している
 	for (auto j = teamMember.begin(); j != teamMember.end();) {
 		//死んだら
 		auto jScript = Enemy::GetEnemy(j->enemyGameObject);
-		if (!jScript)return true;
+		if (!jScript)return false;
 		if (jScript->IsEnd()) {
 			//親なら親死んだフラグにセット
 			if (!jScript->GetChildFlag())parentAlive = false;
 			//vectorから削除
 			j = teamMember.erase(j);
 			if (m_DrawFlag)Hx::Debug()->Log("RezardManTeam : " + std::to_string(teamMember.size()) + "人");
-			//もしチーム人数が０になったら
 			if (teamMember.size() == 0) {
 				if (m_DrawFlag)Hx::Debug()->Log("RezardManTeamが壊滅した");
-				alive = false;
-				break;
+				return false;
 			}
 			continue;
 		}
 		j++;
 	}
-	return alive;
+
+	return true;
 }
 
 void EnemyRezardManTeam::DiscoveryOrLostPlayerSet()
@@ -64,6 +61,8 @@ void EnemyRezardManTeam::DiscoveryOrLostPlayerSet()
 		auto jScript = Enemy::GetEnemy(j->enemyGameObject);
 		if (!jScript)return;
 		auto eap = jScript->GetEnemyAllParameter(false);
+		bool lostPlayer = true;
+		bool discoveryPlayer = false;
 		if (eap.actionMode == ACTIONMODE::TRACKINGMODE) {
 			//発見したかどうか
 			lostPlayer = false;
@@ -74,7 +73,22 @@ void EnemyRezardManTeam::DiscoveryOrLostPlayerSet()
 		else {
 			//見失ったかどうか
 			discoveryPlayer = false;
+			if(lostPlayer)
 			lostPlayer = jScript->LostPlayer();
+		}
+
+		if (m_DiscoveryPlayer && lostPlayer)
+			m_DiscoveryPlayer = false;
+		else if (!m_DiscoveryPlayer && discoveryPlayer)
+			m_DiscoveryPlayer = true;
+		if (jScript->GetWasAttacked()) {
+			//発見したかどうか
+			lostPlayer = false;
+			if(eap.battleModeParameter.id != BATTLEACTION::DEADACTION)
+			jScript->ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::WINCEACTION);
+			nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
+			if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
+			wasAttacked = true;
 		}
 	}
 }
@@ -83,7 +97,7 @@ void EnemyRezardManTeam::TeamUpdate()
 {
 	auto playerPos = m_Player->mTransform->WorldPosition();
 	//戦闘時の移動先を計算するのに使う(↓3つ全部)
-	XMMATRIX moveToBattlePos;
+	XMVECTOR parentMoveVec;
 	int howManyPeople = 0;
 	float battlePosAngle = 3.14f / (float)(teamMember.size());
 	for (auto& j : teamMember) {
@@ -91,15 +105,21 @@ void EnemyRezardManTeam::TeamUpdate()
 		if (!jScript)return;
 		auto eap = jScript->GetEnemyAllParameter(true);
 		//発見したら戦闘モードへ移行
-		if (discoveryPlayer && eap.actionMode != ACTIONMODE::BATTLEMODE) {
+		if (m_DiscoveryPlayer && eap.actionMode != ACTIONMODE::BATTLEMODE) {
 			jScript->ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 			nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
 			if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
 		}
 		//見失ったら捜索モードへ移行
-		if (lostPlayer && eap.actionMode != ACTIONMODE::TRACKINGMODE) {
+		if (!m_DiscoveryPlayer && 
+			eap.actionMode != ACTIONMODE::TRACKINGMODE &&
+			eap.battleModeParameter.id != BATTLEACTION::DEADACTION &&
+			eap.battleModeParameter.actionFinish &&
+			!wasAttacked) {
+			whoAttack = 0;
 			jScript->ChangeActionMode(ACTIONMODE::TRACKINGMODE);
 		}
+
 		//親が生きているかのフラグセット
 		jScript->SetParentAlive(parentAlive);
 		if (!m_Player)return;
@@ -108,10 +128,12 @@ void EnemyRezardManTeam::TeamUpdate()
 			//移動先を検索
 			XMVECTOR battlePos;
 			if (howManyPeople == 0) {
-				moveToBattlePos = XMMatrixTranslationFromVector(XMVector3Normalize(j.enemyGameObject->mTransform->WorldPosition() - playerPos) * jScript->GetOnBattleRange());
+				parentMoveVec = XMVector3Normalize(j.enemyGameObject->mTransform->WorldPosition() - playerPos);
+				auto moveToBattlePos = XMMatrixTranslationFromVector(parentMoveVec * jScript->GetOnBattleRange());
 				battlePos = XMMatrixMultiply(moveToBattlePos, XMMatrixTranslationFromVector(playerPos)).r[3];
 			}
 			else {
+				auto moveToBattlePos = XMMatrixTranslationFromVector(parentMoveVec * jScript->GetOnBattleRange());
 				battlePos = XMMatrixMultiply(XMMatrixMultiply(moveToBattlePos, XMMatrixRotationY(battlePosAngle)), XMMatrixTranslationFromVector(playerPos)).r[3];
 				if (howManyPeople % 2 == 0) {
 					battlePosAngle *= -2.0f;
@@ -121,7 +143,20 @@ void EnemyRezardManTeam::TeamUpdate()
 				}
 			}
 			jScript->SetBattlePosition(battlePos);
-			if (teamMember.size() == 1) {
+			if (wasAttacked) {
+				if (eap.battleModeParameter.actionFinish) {
+					if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION) {
+						jScript->ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+					}
+					else if (eap.battleModeParameter.id == BATTLEACTION::CONFRONTACTION) {
+						jScript->ChangeBattleAction(BATTLEACTION::APPROACHACTION);
+						wasAttacked = false;
+						nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
+						if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
+					}
+				}
+			}
+			else if (teamMember.size() == 1) {
 				//アクションが終了したため次のを決める
 				if (eap.battleModeParameter.actionFinish) {
 					if (eap.battleModeParameter.id == BATTLEACTION::CONFRONTACTION) {
@@ -211,7 +246,7 @@ void EnemyRezardManTeam::TeamUpdate()
 						whoAttack == howManyPeople) {
 						whoAttack++;
 					}
-
+		
 					//全員が攻撃したら
 					if (whoAttack >= teamMember.size()) {
 						whoAttack = 0;

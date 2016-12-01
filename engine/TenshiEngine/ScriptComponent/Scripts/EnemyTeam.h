@@ -37,15 +37,17 @@ public:
 	virtual void DiscoveryOrLostPlayerSet() {};
 	virtual void TeamUpdate() {};
 
-
 	static EnemyTeam* GetEnemyTeam(GameObject target);
+	void SetPlayer(GameObject gameObject) { m_Player = gameObject; };
 private:
 	//ƒƒ“ƒo•Ï”
 
 protected:
+	GameObject m_Player;
+	
 	std::vector<EnemyOne> teamMember;
-	bool lostPlayer;
-	bool discoveryPlayer;
+	bool m_DiscoveryPlayer;
+	bool wasAttacked;
 	//’N‚ªUŒ‚‚·‚é‚©
 	int whoAttack;
 

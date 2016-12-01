@@ -20,6 +20,7 @@ void Enemy::Initialize() {
 		m_Player = Hx::FindActor("Player");
 	}
 	m_Isend = false;
+	m_WasAttacked = false;
 	ChildInitialize();
 }
 

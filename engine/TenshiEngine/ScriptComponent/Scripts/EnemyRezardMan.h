@@ -16,7 +16,6 @@ public:
 
 private:
 	//ƒƒ“ƒo•Ï”
-	//ƒƒ“ƒo•Ï”
 	SERIALIZE float m_TrackingSpeed;
 	SERIALIZE float m_TrackingRange;
 	SERIALIZE float m_LostRange;

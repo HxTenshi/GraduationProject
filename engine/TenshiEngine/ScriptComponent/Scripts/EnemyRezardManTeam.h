@@ -1,8 +1,6 @@
-
 #pragma once
 #include "main.h"
 #include "EnemyTeam.h"
-
 
 class EnemyRezardManTeam :public EnemyTeam{
 public:
@@ -13,12 +11,9 @@ public:
 
 private:
 	SERIALIZE 
-		GameObject m_Player;
-	SERIALIZE 
 		bool m_DrawFlag;
 	SERIALIZE
 		float m_NextAttackTimeMin;
 	SERIALIZE
 		float m_NextAttackTimeMax;
-
 };
