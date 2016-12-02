@@ -712,6 +712,15 @@ void PlayerController::AttackExcute()
 	m_CurrentAttack.AttackTime -= time;
 	if (m_CurrentAttack.AttackTime > 0.0f) {
 		m_MoveVelo = gameObject->mTransform->Forward() * m_CurrentAttack.AttackMove;
+
+		if (m_Camera) {
+			auto camera = m_Camera->GetScript<TPSCamera>();
+			if (m_LockOnEnabled && camera && camera->GetLookTarget()) {
+				auto v = camera->GetLookTarget()->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
+				m_MoveVelo = XMVector3Normalize(v) * m_CurrentAttack.AttackMove;
+			}
+		}
+
 		return;
 	}
 	m_MoveVelo = XMVectorZero();

@@ -40,7 +40,14 @@ void TPSCamera::Update(){
 		auto pos = mTarget->mTransform->WorldPosition();
 		auto back = -gameObject->mTransform->Forward() * mDistance;
 		auto up = gameObject->mTransform->Up() * mUp;
-		auto left = gameObject->mTransform->Left() * mLeft;
+		float l = 1.0f;
+		if (mLookTarget) {
+			l = XMVector3Length(mTarget->mTransform->WorldPosition()-mLookTarget->mTransform->WorldPosition()).x;
+			l *= 0.1f;
+			l = min(l, 1.0f);
+
+		}
+		auto left = gameObject->mTransform->Left() * mLeft * l;
 		auto campos = pos + back + up + left;
 
 		if (m_CharacterControllerComponent) {

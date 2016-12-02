@@ -2,8 +2,7 @@
 
 #include "h_standard.h"
 #include "TPSCamera.h"
-
-class Enemy;
+#include "Enemy.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void TargetEnemy::Initialize(){
@@ -29,8 +28,9 @@ void TargetEnemy::Update(){
 	if (!m_Camera)return;
 	auto camera = m_Camera->GetScript<TPSCamera>();
 	if (!camera)return;
-	auto target = camera->GetLookTarget(); 
-	if (target && target->GetScript<Enemy>()) {
+	auto target = camera->GetLookTarget();
+	
+	if (target && Enemy::GetEnemy(target)) {
 		SetTargetEnemy(target);
 	}
 	else {
@@ -111,14 +111,15 @@ void TargetEnemy::BarUpdate()
 
 	Enemy* enemy = NULL;
 	if (m_TargetEnemy) {
-		enemy = m_TargetEnemy->GetScript<Enemy>();
+		
+		enemy = Enemy::GetEnemy(m_TargetEnemy);
 	}
 	if (enemy) {
 		m_EnemyHP_Bar->Enable();
 		m_EnemyHP_BarFrame->Enable();
 
-		auto param = enemy->GetBattleModeParameter();
-		float i = (float)param.count;
+		auto param = enemy->GetEnemyAllParameter(false);
+		float i = (float)param.battleModeParameter.battlePosition.x;
 		float hp = i / 10.0f;
 
 		auto s = m_EnemyHP_Bar->mTransform->Scale();
