@@ -64,7 +64,7 @@ void Weapon::OnCollideBegin(GameObject target){
 	}
 	if (target->GetLayer() == 3 && is_hand) {
 		//サンドバッグへのダメージの処理
-		if (auto scr = target->GetScript<Enemy>()) {
+		if (auto scr = Enemy::GetEnemy(target)) {
 			if (!is_ground_hit) {
 				m_Recast = 0.0f;
 				//scr->Damage(m_AttackForce);

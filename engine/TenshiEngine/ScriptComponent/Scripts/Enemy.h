@@ -23,10 +23,10 @@ struct TRACKINGACTION {
 
 struct TrackingModeParameter {
 	//今のアクションのID
-	TRACKINGACTION::Enum trackingActionID = TRACKINGACTION::NONE;
+	TRACKINGACTION::Enum id = TRACKINGACTION::NONE;
 
 	//前のアクションのID
-	TRACKINGACTION::Enum beforetrackingActionID = TRACKINGACTION::NONE;
+	TRACKINGACTION::Enum beforeId = TRACKINGACTION::NONE;
 	
 	//ナビメッシュを使うかどうか
 	bool naviMeshFlag = true;
@@ -54,10 +54,10 @@ struct BATTLEACTION {
 
 struct BattleModeParameter{	
 	//今のアクションのID
-	BATTLEACTION::Enum battleActionID = BATTLEACTION::NONE;
+	BATTLEACTION::Enum id = BATTLEACTION::NONE;
 
 	//前のアクションのID
-	BATTLEACTION::Enum beforeBattleActionID = BATTLEACTION::NONE;
+	BATTLEACTION::Enum beforeId = BATTLEACTION::NONE;
 	
 	//バトルモード中の思考時間を図るもの
 	float count = 0.0f;
@@ -79,6 +79,9 @@ struct BattleModeParameter{
 
 	//ポジションについたか
 	bool arrival = false;
+
+	//攻撃に遷移できるアクションかどうか
+	bool canChangeAttackAction = false;
 
 	//戦いを行う場所
 	XMVECTOR battlePosition = XMVectorSet(0, 0, 0, 0);
@@ -109,13 +112,18 @@ enum ACTIONMODE{
 	BATTLEMODE
 };
 
+struct EnemyAllParamter{
+	TrackingModeParameter trackingModeParameter;
+	BattleModeParameter battleModeParameter;
+	ACTIONMODE actionMode;
+};
+
 template<class T>
 const T& clamp(const T& v, const T& min, const T& max) {
 	if (v <= min)return min;
 	else if (v >= max)return max;
 	return v;
 }
-
 
 class Enemy :public IDllScriptComponent{
 public:
@@ -126,130 +134,55 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	void Damage(float damage_);
-	void Attack(GameObject player);
-	bool GetChildFlag() { return m_Child; }
+	virtual void ChildInitialize() {}
+	virtual bool GetChildFlag() { return false; };
+	virtual float GetOnBattleRange() { return 0.0f; };
+	virtual void Attack(GameObject player) {};
+	virtual void Damage(float damage_) {};
+	virtual bool DiscoveryPlayer() { return false; };
+	virtual bool LostPlayer() { return false;};
+	bool IsEnd() { return m_Isend; }
+	bool GetWasAttacked() {
+		auto ret = m_WasAttacked;
+		m_WasAttacked = false;
+		return ret;
+	}
+
+	static Enemy* GetEnemy(GameObject target);
+
 	void SetParentAlive(bool flag) { m_TrackingModeParam.parentAlive = flag; }
-	BattleModeParameter GetBattleModeParameter() {
+	EnemyAllParamter GetEnemyAllParameter(bool reset) {
+		EnemyAllParamter eap;
 		auto bmp = m_BattleModeParam;
-		m_BattleModeParam.actionFinish = false;
-		m_BattleModeParam.arrival = false;
-		return bmp;
+		if (reset) {
+			m_BattleModeParam.actionFinish = false;
+			m_BattleModeParam.arrival = false;
+		}
+		eap.trackingModeParameter = m_TrackingModeParam;
+		eap.battleModeParameter = bmp;
+		eap.actionMode = m_ActionModeID;
+		return eap;
 	}
 	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
 	void SetPlayer(GameObject player) { m_Player = player; }
-	float GetOnBattleRange() {return m_OnBattleRange;}
-
-private:
 	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
-	void AnimLerp();
 	float GetNowAnimTime();
 
-	void ChangeActionMode(ACTIONMODE nextActionMode);
-	void ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACTION::Enum nextTrackingAction);
-	void ChangeActionAndBattleAction(ACTIONMODE nextActionMode, BATTLEACTION::Enum nextBattleAction);
-	void ChangeTrackingAction(TRACKINGACTION::Enum nextTrackingAction);
-	void ChangeBattleAction(BATTLEACTION::Enum nextBattleAction);
+private:
+	void AnimLerp();
 	
+protected:
+	GameObject ModelObject;
+protected:
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
 	std::map<ACTIONMODE,std::function<void()>> actionModeFinalize;
-
-	void TrackingModeInitilize();
-	void TrackingModeUpdate();
-	void TrackingModeFinalize();
-
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionInitilize;
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionUpdate;
 	std::map<TRACKINGACTION::Enum, std::function<void()>> trackingActionFinalize;
-
-	void ParentTrackingModeInitilize();
-	void ParentTrackingModeUpdate();
-	void ParentTrackingModeFinalize();
-
-	void ChildTrackingModeInitilize();
-	void ChildTrackingModeUpdate();
-	void ChildTrackingModeFinalize();
-
-	void BattleModeInitilize();
-	void BattleModeUpdate();
-	void BattleModeFinalize();
-
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionInitilize;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
-
-	void ConfrontModeInitilize();
-	void ConfrontModeUpdate();
-	void ConfrontModeFinalize();
-
-	void ApproachModeInitilize();
-	void ApproachModeUpdate();
-	void ApproachModeFinalize();
-
-	void AttackDownModeInitilize();
-	void AttackDownModeUpdate();
-	void AttackDownModeFinalize();
-
-	void JumpAttackModeInitilize();
-	void JumpAttackModeUpdate();
-	void JumpAttackModeFinalize();
-
-	void GuardModeInitilize();
-	void GuardModeUpdate();
-	void GuardModeFinalize();
-
-	void ProvocationModeInitilize();
-	void ProvocationModeUpdate();
-	void ProvocationModeFinalize();
-
-	void BackStepModeInitilize();
-	void BackStepModeUpdate();
-	void BackStepModeFinalize();
-
-	void WinceModeInitilize();
-	void WinceModeUpdate();
-	void WinceModeFinalize();
-
-	void HitInGuardModeInitilize();
-	void HitInGuardModeUpdate();
-	void HitInGuardModeFinalize();
-
-	void Prowl();
-
-	//今回は何回我慢するか(m_HitInGuardMinCount～m_HitInGuardMaxCount)
-	int PatienceInThisTime;
-
-	void AttackMonckeyModeInitilize();
-	void AttackMonckeyModeUpdate();
-	void AttackMonckeyModeFinalize();
-
-	void DeadModeInitilize();
-	void DeadModeUpdate();
-	void DeadModeFinalize();
-
-	//メンバ変数
-	SERIALIZE float m_TrackingSpeed;
-	SERIALIZE float m_TrackingRange;
-	SERIALIZE float m_LostRange;
-	SERIALIZE float m_OnBattleRange;
-	SERIALIZE float m_OffBattleRange;
-	SERIALIZE float m_TrackingAngle;
-	SERIALIZE float m_TrackingRotateSpeed;
-	SERIALIZE float m_Hp;
-	SERIALIZE int m_AttackDamage;
-	SERIALIZE GameObject m_MyWeapon;
-	SERIALIZE GameObject m_ModelObject;
-	SERIALIZE GameObject m_MovePoints;
-	SERIALIZE bool m_Child;
-	SERIALIZE float m_AproachRotateSpeed;
-	SERIALIZE float m_CorrectionRotateSpeed;
-	SERIALIZE bool m_DrawLog;
-	SERIALIZE int m_HitInGuardMinCount;
-	SERIALIZE int m_HitInGuardMaxCount;
-	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
-	SERIALIZE float APROACHMINTIME;
-	SERIALIZE float APROACHMAXTIME;
 
 	GameObject m_Player;
 
@@ -269,6 +202,7 @@ private:
 	//捜索時の移動ポイントの方向
 	bool m_MoveCountUp;
 
+	bool m_Isend;
 
 	std::vector<GameObject> m_MovePointsVec;
 
@@ -286,27 +220,21 @@ private:
 	//重力
 	XMVECTOR m_Gravity;
 
+	bool m_WasAttacked;
 public:
-	void SetActionMode(ACTIONMODE actionMode) {
-		ChangeActionMode(actionMode);
+	void SetActionID(ACTIONMODE actionMode) {
+		m_ActionModeID = actionMode;
+	}
+	void SetTrackingID(TRACKINGACTION::Enum trackingAction) {
+		m_TrackingModeParam.id = trackingAction;
+	}
+	void SetBattleID(BATTLEACTION::Enum battleAction) {
+		m_BattleModeParam.id = battleAction;
 	}
 
-	void SetActionModeAndTrackingAction(ACTIONMODE actionMode, TRACKINGACTION::Enum trackingAction) {
-		ChangeActionAndTrackingAction(actionMode, trackingAction);
-	}
-
-	void SetActionModeAndBattleAction(ACTIONMODE actionMode, BATTLEACTION::Enum battleAction) {
-		ChangeActionAndBattleAction(actionMode, battleAction);
-	}
-
-	void SetTrackingAction(TRACKINGACTION::Enum trackingAction) {
-		ChangeTrackingAction(trackingAction);
-	}
-
-	void SetBattleAction(BATTLEACTION::Enum battleAction) {
-		ChangeBattleAction(battleAction);
-	}
-
-	bool DiscoveryPlayer();
-	bool LostPlayer();
+	void ChangeActionMode(ACTIONMODE nextActionMode);
+	void ChangeActionAndTrackingAction(ACTIONMODE nextActionMode, TRACKINGACTION::Enum nextTrackingAction);
+	void ChangeActionAndBattleAction(ACTIONMODE nextActionMode, BATTLEACTION::Enum nextBattleAction);
+	void ChangeTrackingAction(TRACKINGACTION::Enum nextTrackingAction);
+	void ChangeBattleAction(BATTLEACTION::Enum nextBattleAction);
 };
