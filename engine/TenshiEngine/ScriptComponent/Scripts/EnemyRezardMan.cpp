@@ -70,6 +70,8 @@ EnemyRezardMan::EnemyRezardMan()
 void EnemyRezardMan::ChildInitialize()
 {
 	ModelObject = m_ModelObject;
+	m_MaxHp = hp;
+	m_Hp = hp;
 	if (!m_Child) {
 		if (!m_MovePoints)return;
 		for (auto i : m_MovePoints->mTransform->Children()) {
@@ -407,7 +409,7 @@ void EnemyRezardMan::ConfrontModeUpdate()
 	m_BattleModeParam.canChangeAttackAction = true;
 	Prowl();
 	auto battlePosVec = m_BattleModeParam.battlePosition - gameObject->mTransform->WorldPosition();
-	if (XMVector3Length(battlePosVec).x <= m_OnBattleRange) {
+	if (XMVector3Length(m_PlayerVec).x <= m_OnBattleRange) {
 		m_BattleModeParam.actionFinish = true;
 	}
 }
@@ -482,7 +484,7 @@ void EnemyRezardMan::JumpAttackModeInitilize()
 
 void EnemyRezardMan::JumpAttackModeUpdate()
 {
-	m_BattleModeParam.canChangeAttackAction = false;
+	m_BattleModeParam.canChangeAttackAction = true;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
@@ -744,22 +746,26 @@ void EnemyRezardMan::Attack(GameObject player)
 }
 
 /****************************************************É_ÉÅÅ[ÉWÇÃèàóù********************************************************/
-void EnemyRezardMan::Damage(float damage_)
+bool EnemyRezardMan::Damage(float damage_)
 {
 	m_Damage = damage_;
 	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
 		if (m_ActionModeID == ACTIONMODE::BATTLEMODE) {
 			if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
 				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
+				return false;
 			}
 			else {
 				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::WINCEACTION);
+				return true;
 			}
 		}
 		else {
 			m_WasAttacked = true;
+			return true;
 		}
 	}
+	return false;
 }
 
 //ìGÇî≠å©ÇµÇΩÇ©

@@ -10,7 +10,7 @@ public:
 	bool GetChildFlag() override;
 	float GetOnBattleRange() override;
 	void Attack(GameObject player) override;
-	void Damage(float damage_) override;
+	bool Damage(float damage_) override;
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
 
@@ -23,7 +23,7 @@ private:
 	SERIALIZE float m_OffBattleRange;
 	SERIALIZE float m_TrackingAngle;
 	SERIALIZE float m_TrackingRotateSpeed;
-	SERIALIZE float m_Hp;
+	SERIALIZE float hp;
 	SERIALIZE int m_AttackDamage;
 	SERIALIZE GameObject m_MyWeapon;
 	SERIALIZE GameObject m_ModelObject;

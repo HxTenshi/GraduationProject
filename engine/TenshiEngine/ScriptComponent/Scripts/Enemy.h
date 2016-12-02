@@ -116,6 +116,8 @@ struct EnemyAllParamter{
 	TrackingModeParameter trackingModeParameter;
 	BattleModeParameter battleModeParameter;
 	ACTIONMODE actionMode;
+	float maxHp;
+	float hp;
 };
 
 template<class T>
@@ -138,7 +140,7 @@ public:
 	virtual bool GetChildFlag() { return false; };
 	virtual float GetOnBattleRange() { return 0.0f; };
 	virtual void Attack(GameObject player) {};
-	virtual void Damage(float damage_) {};
+	virtual bool Damage(float damage_) { return false; };
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};
 	bool IsEnd() { return m_Isend; }
@@ -161,6 +163,8 @@ public:
 		eap.trackingModeParameter = m_TrackingModeParam;
 		eap.battleModeParameter = bmp;
 		eap.actionMode = m_ActionModeID;
+		eap.hp = m_Hp;
+		eap.maxHp = m_MaxHp;
 		return eap;
 	}
 	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
@@ -203,6 +207,9 @@ protected:
 	bool m_MoveCountUp;
 
 	bool m_Isend;
+
+	float m_Hp;
+	float m_MaxHp;
 
 	std::vector<GameObject> m_MovePointsVec;
 
