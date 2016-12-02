@@ -54,6 +54,14 @@ EnemyRezardMan::EnemyRezardMan()
 	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&EnemyRezardMan::WinceModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&EnemyRezardMan::WinceModeFinalize, this);
 
+	battleActionInitilize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyRezardMan::UpperDownInitilize, this);
+	battleActionUpdate[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyRezardMan::UpperDownUpdate, this);
+	battleActionFinalize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyRezardMan::UpperDownFinalize, this);
+
+	battleActionInitilize[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyRezardMan::BeatDownInitilize, this);
+	battleActionUpdate[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyRezardMan::BeatDownUpdate, this);
+	battleActionFinalize[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyRezardMan::BeatDownFinalize, this);
+
 	battleActionInitilize[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeFinalize, this);
@@ -620,6 +628,65 @@ void EnemyRezardMan::WinceModeFinalize() {
 	//ChangeBattleAction(40, 0, 40, 20, 0);
 }
 
+void EnemyRezardMan::UpperDownInitilize()
+{
+	m_Hp -= m_Damage;
+	if (m_DrawLog)
+		Hx::Debug()->Log(std::to_string(m_Damage) + "ダメージ喰らった。残りの体力は" + std::to_string(m_Hp));
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
+	m_BattleModeParam.count = 0.0f;
+	AnimChange(ANIM_ID::ANIM_UPPERDOWN, 5.0f, false, true);
+}
+
+void EnemyRezardMan::UpperDownUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+	
+	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
+	if (m_BattleModeParam.count < 0.3f) {
+		m_Vec.y += 20.0f;
+	}
+	else if (m_BattleModeParam.count >= 8.0f) {
+		m_BattleModeParam.actionFinish = true;
+	}
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+
+	//if (cc->IsGround()) {
+	//	m_BattleModeParam.actionFinish = true;
+	//	Hx::Debug()->Log("FDSAFDA");
+	//}
+}
+
+void EnemyRezardMan::UpperDownFinalize()
+{
+	//うんこ
+}
+
+void EnemyRezardMan::BeatDownInitilize()
+{
+	m_Hp -= m_Damage;
+	if (m_DrawLog)
+		Hx::Debug()->Log(std::to_string(m_Damage) + "ダメージ喰らった。残りの体力は" + std::to_string(m_Hp));
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
+	AnimChange(ANIM_ID::ANIM_BEATDOWN, 5.0f, false, true);
+}
+
+void EnemyRezardMan::BeatDownUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+}
+
+void EnemyRezardMan::BeatDownFinalize()
+{
+}
+
 void EnemyRezardMan::HitInGuardModeInitilize() {
 	if (m_DrawLog)
 		Hx::Debug()->Log("防いだ");
@@ -756,7 +823,7 @@ bool EnemyRezardMan::Damage(float damage_)
 				return false;
 			}
 			else {
-				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::WINCEACTION);
+				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::UPPERDOWNACTION);
 				return true;
 			}
 		}

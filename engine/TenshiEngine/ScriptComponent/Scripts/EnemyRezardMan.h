@@ -1,4 +1,3 @@
-
 #pragma once
 #include "main.h"
 #include "Enemy.h"
@@ -85,6 +84,14 @@ private:
 	void WinceModeInitilize();
 	void WinceModeUpdate();
 	void WinceModeFinalize();
+
+	void UpperDownInitilize();
+	void UpperDownUpdate();
+	void UpperDownFinalize();
+
+	void BeatDownInitilize();
+	void BeatDownUpdate();
+	void BeatDownFinalize();
 
 	void HitInGuardModeInitilize();
 	void HitInGuardModeUpdate();
