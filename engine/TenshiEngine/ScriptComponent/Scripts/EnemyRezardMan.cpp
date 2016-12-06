@@ -639,6 +639,7 @@ void EnemyRezardMan::UpperDownInitilize()
 	}
 	m_BattleModeParam.count = 0.0f;
 	AnimChange(ANIM_ID::ANIM_UPPERDOWN, 5.0f, false, true);
+	m_AccelVec += m_Accel;
 }
 
 void EnemyRezardMan::UpperDownUpdate()
@@ -646,10 +647,7 @@ void EnemyRezardMan::UpperDownUpdate()
 	m_BattleModeParam.canChangeAttackAction = false;
 	
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
-	if (m_BattleModeParam.count < 0.3f) {
-		m_Vec.y += 20.0f;
-	}
-	else if (m_BattleModeParam.count >= 8.0f) {
+	if(m_BattleModeParam.count >= 1.0f) {
 		m_BattleModeParam.actionFinish = true;
 	}
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();

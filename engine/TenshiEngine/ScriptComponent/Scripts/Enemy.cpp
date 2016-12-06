@@ -11,7 +11,7 @@ void Enemy::Initialize() {
 	m_Gravity = XMVectorSet(0, -9.81f, 0, 1);
 	m_MoveCount = 0;
 	m_MoveCountUp = true;
-
+	m_AccelVec = XMVectorZero();
 	m_ChildTranckingSpeed = 1.0f;
 	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
 	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
@@ -44,8 +44,12 @@ void Enemy::Update() {
 
 	//d—Í
 	if (!cc->IsGround()) {
-		m_Vec += m_Gravity;
+		m_AccelVec += m_Gravity * Hx::DeltaTime()->GetDeltaTime();
 	}
+	else {
+		m_AccelVec = XMVectorZero();
+	}
+	m_Vec += m_AccelVec;
 
 	cc->Move(m_Vec  * Hx::DeltaTime()->GetDeltaTime());
 }

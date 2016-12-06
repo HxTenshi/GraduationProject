@@ -202,6 +202,8 @@ protected:
 	float m_View;
 	//ˆÚ“®—Ê
 	XMVECTOR m_Vec;
+
+	XMVECTOR m_AccelVec;
 	//ó‚¯‚éƒ_ƒ[ƒW‚ğ•Û‘¶‚·‚é‚à‚Ì
 	float m_Damage;
 

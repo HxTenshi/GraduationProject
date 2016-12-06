@@ -36,6 +36,7 @@ private:
 	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
 	SERIALIZE float APROACHMINTIME;
 	SERIALIZE float APROACHMAXTIME;
+	SERIALIZE XMVECTOR m_Accel;
 
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();
