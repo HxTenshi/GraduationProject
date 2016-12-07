@@ -9,7 +9,7 @@ public:
 	bool GetChildFlag() override;
 	float GetOnBattleRange() override;
 	void Attack(GameObject player) override;
-	bool Damage(float damage_) override;
+	bool Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_) override;
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
 
@@ -36,8 +36,7 @@ private:
 	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
 	SERIALIZE float APROACHMINTIME;
 	SERIALIZE float APROACHMAXTIME;
-	SERIALIZE XMVECTOR m_Accel;
-
+	
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();
 	void TrackingModeFinalize();
@@ -93,6 +92,10 @@ private:
 	void BeatDownInitilize();
 	void BeatDownUpdate();
 	void BeatDownFinalize();
+
+	void DownInitilize();
+	void DownUpdate();
+	void DownFinalize();
 
 	void HitInGuardModeInitilize();
 	void HitInGuardModeUpdate();

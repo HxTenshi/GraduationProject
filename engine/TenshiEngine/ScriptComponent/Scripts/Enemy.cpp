@@ -32,7 +32,13 @@ void Enemy::Start() {
 void Enemy::Update() {
 	m_Vec = XMVectorZero();
 	if (Input::Trigger(KeyCode::Key_1)) {
-		Damage(1.0f);
+		Damage(1.0f,BATTLEACTION::WINCEACTION, XMVectorSet(0, 2, 0, 1));
+	}
+	else if (Input::Trigger(KeyCode::Key_2)) {
+		Damage(1.0f, BATTLEACTION::UPPERDOWNACTION,XMVectorSet(0,10,0,1));
+	}
+	else if (Input::Trigger(KeyCode::Key_3)) {
+		Damage(1.0f, BATTLEACTION::BEATDOWNACTION,XMVectorSet(0, -20, 0, 1));
 	}
 
 	AnimLerp();
@@ -47,7 +53,8 @@ void Enemy::Update() {
 		m_AccelVec += m_Gravity * Hx::DeltaTime()->GetDeltaTime();
 	}
 	else {
-		m_AccelVec = XMVectorZero();
+		if (m_AccelVec.y <= 0)
+		m_AccelVec = m_Gravity;
 	}
 	m_Vec += m_AccelVec;
 

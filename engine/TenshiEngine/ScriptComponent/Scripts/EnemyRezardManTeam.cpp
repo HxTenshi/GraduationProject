@@ -86,8 +86,6 @@ void EnemyRezardManTeam::DiscoveryOrLostPlayerSet()
 		if (jScript->GetWasAttacked()) {
 			//発見したかどうか
 			lostPlayer = false;
-			if(eap.battleModeParameter.id != BATTLEACTION::DEADACTION)
-			jScript->ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::WINCEACTION);
 			nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
 			if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
 			wasAttacked = true;
@@ -103,6 +101,37 @@ void EnemyRezardManTeam::TeamUpdate()
 	XMVECTOR parentMoveVec;
 	int howManyPeople = 0;
 	float battlePosAngle = 3.14f / (float)(teamMember.size());
+
+	XMVECTOR firstBattlePos;
+	auto firstScript = Enemy::GetEnemy(teamMember[battlePosFirst].enemyGameObject);
+	if (!firstScript)return;
+	parentMoveVec = XMVector3Normalize(teamMember[battlePosFirst].enemyGameObject->mTransform->WorldPosition() - playerPos);
+	auto moveToBattlePos = XMMatrixTranslationFromVector(parentMoveVec * firstScript->GetOnBattleRange());
+	firstBattlePos = XMMatrixMultiply(moveToBattlePos, XMMatrixTranslationFromVector(playerPos)).r[3];
+
+	std::vector<XMVECTOR> battlePos;
+	int firstSearch = 0;
+	int aftersCount = 0;
+	for (auto& j : teamMember) {
+		auto jScript = Enemy::GetEnemy(j.enemyGameObject);
+		if (!jScript)return;
+		if (firstSearch == battlePosFirst) {
+			battlePos.push_back(firstBattlePos);
+		}
+		else {
+			auto moveToBattlePos = XMMatrixTranslationFromVector(parentMoveVec * jScript->GetOnBattleRange());
+			battlePos.push_back(XMMatrixMultiply(XMMatrixMultiply(moveToBattlePos, XMMatrixRotationY(battlePosAngle)), XMMatrixTranslationFromVector(playerPos)).r[3]);
+			aftersCount++;
+			if (aftersCount % 2 == 0) {
+				battlePosAngle *= -2.0f;
+			}
+			else {
+				battlePosAngle *= -1.0f;
+			}
+		}
+		firstSearch++;
+	}
+	
 	for (auto& j : teamMember) {
 		auto jScript = Enemy::GetEnemy(j.enemyGameObject);
 		if (!jScript)return;
@@ -138,25 +167,8 @@ void EnemyRezardManTeam::TeamUpdate()
 			}
 		}
 		//戦闘時だったら
-		else if (eap.actionMode == ACTIONMODE::BATTLEMODE) {
-			//移動先を検索
-			XMVECTOR battlePos;
-			if (howManyPeople == 0) {
-				parentMoveVec = XMVector3Normalize(j.enemyGameObject->mTransform->WorldPosition() - playerPos);
-				auto moveToBattlePos = XMMatrixTranslationFromVector(parentMoveVec * jScript->GetOnBattleRange());
-				battlePos = XMMatrixMultiply(moveToBattlePos, XMMatrixTranslationFromVector(playerPos)).r[3];
-			}
-			else {
-				auto moveToBattlePos = XMMatrixTranslationFromVector(parentMoveVec * jScript->GetOnBattleRange());
-				battlePos = XMMatrixMultiply(XMMatrixMultiply(moveToBattlePos, XMMatrixRotationY(battlePosAngle)), XMMatrixTranslationFromVector(playerPos)).r[3];
-				if (howManyPeople % 2 == 0) {
-					battlePosAngle *= -2.0f;
-				}
-				else {
-					battlePosAngle *= -1.0f;
-				}
-			}
-			jScript->SetBattlePosition(battlePos);
+		else if (eap.actionMode == ACTIONMODE::BATTLEMODE) {			
+			jScript->SetBattlePosition(battlePos[howManyPeople]);
 			if (teamMember.size() == 1) {
 				//アクションが終了したため次のを決める
 				if (eap.battleModeParameter.actionFinish) {
@@ -189,6 +201,9 @@ void EnemyRezardManTeam::TeamUpdate()
 					else if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION) {
 						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
 					}
+					else if (eap.battleModeParameter.id == BATTLEACTION::DOWNACTION) {
+						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
+					}
 					else if (eap.battleModeParameter.id == BATTLEACTION::HITINGUARDACTION) {
 						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
 					}
@@ -198,10 +213,16 @@ void EnemyRezardManTeam::TeamUpdate()
 				}
 			}
 			else {
+		
 				//攻撃
 				if (j.enemyParameter.attack) {
-					if (eap.battleModeParameter.actionFinish) {
+					if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION ||
+						eap.battleModeParameter.id == BATTLEACTION::UPPERDOWNACTION ||
+						eap.battleModeParameter.id == BATTLEACTION::BEATDOWNACTION ||
+						eap.battleModeParameter.id == BATTLEACTION::DOWNACTION ||
+						eap.battleModeParameter.actionFinish) {
 						j.enemyParameter.attack = false;
+						whoAttack++;
 						nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
 						if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
 					}
@@ -212,9 +233,17 @@ void EnemyRezardManTeam::TeamUpdate()
 					if (everyoneAttack) {
 						everyoneAttackCountFlag = false;
 						nextAttackTimeCount = 0.0f;
+						battlePosFirst++;
+						if (battlePosFirst >= teamMember.size()) {
+							battlePosFirst = 0;
+						}
 					}
 					//終わったら
-					if (eap.battleModeParameter.id == BATTLEACTION::JUMPATTACKACTION) {
+					if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION ||
+						eap.battleModeParameter.id == BATTLEACTION::UPPERDOWNACTION ||
+						eap.battleModeParameter.id == BATTLEACTION::BEATDOWNACTION ||
+						eap.battleModeParameter.id == BATTLEACTION::DOWNACTION ||
+						eap.battleModeParameter.id == BATTLEACTION::JUMPATTACKACTION) {
 						j.enemyParameter.everyoneAttack = false;
 						everyoneAttack = false;
 						nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
@@ -236,11 +265,11 @@ void EnemyRezardManTeam::TeamUpdate()
 				}
 				//アクションが終了したため次のを決める
 				else if (eap.battleModeParameter.actionFinish) {
-					//自分の番だが攻撃できない場合
-					if (!eap.battleModeParameter.canChangeAttackAction &&
-						whoAttack == howManyPeople) {
-						whoAttack++;
-					}
+					////自分の番だが攻撃できない場合
+					//if (!eap.battleModeParameter.canChangeAttackAction &&
+					//	whoAttack == howManyPeople) {
+					//	whoAttack++;
+					//}
 		
 					//全員が攻撃したら
 					if (whoAttack >= teamMember.size()) {
@@ -280,6 +309,7 @@ void EnemyRezardManTeam::TeamUpdate()
 						else {
 							j.enemyParameter.nextAttackTimeCountFlag = false;
 							nextAttackTimeCount = 0.0f;
+							nextAttackTime = 0.0f;
 							whoAttack++;
 							if (m_DrawFlag)Hx::Debug()->Log("skip");
 						}

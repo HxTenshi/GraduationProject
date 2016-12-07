@@ -48,6 +48,7 @@ struct BATTLEACTION {
 	WINCEACTION,
 	UPPERDOWNACTION,
 	BEATDOWNACTION,
+	DOWNACTION,
 	HITINGUARDACTION,
 	ATTACKMONCKEYACTION,
 	DEADACTION
@@ -103,6 +104,8 @@ enum ANIM_ID{
 	ANIM_PROVOCATION,
 	ANIM_UPPERDOWN,
 	ANIM_BEATDOWN,
+	ANIM_UPPERDOWNAFTER,
+	ANIM_BEATDOWNAFTER,
 	ANIM_ATTACK_SIDE,
 	ANIM_RUSH,
 	ANIM_SIDESTEPLEFT,
@@ -122,6 +125,7 @@ struct EnemyAllParamter{
 	ACTIONMODE actionMode;
 	float maxHp;
 	float hp;
+	float damage;
 };
 
 template<class T>
@@ -144,7 +148,7 @@ public:
 	virtual bool GetChildFlag() { return false; };
 	virtual float GetOnBattleRange() { return 0.0f; };
 	virtual void Attack(GameObject player) {};
-	virtual bool Damage(float damage_) { return false; };
+	virtual bool Damage(float damage_, BATTLEACTION::Enum winceType_,XMVECTOR accelPower_) { return false; };
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};
 	bool IsEnd() { return m_Isend; }
@@ -169,6 +173,7 @@ public:
 		eap.actionMode = m_ActionModeID;
 		eap.hp = m_Hp;
 		eap.maxHp = m_MaxHp;
+		eap.damage = m_Damage;
 		return eap;
 	}
 	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
@@ -203,7 +208,8 @@ protected:
 	//à⁄ìÆó 
 	XMVECTOR m_Vec;
 
-	XMVECTOR m_AccelVec;
+	XMVECTOR m_AccelVec; 
+	XMVECTOR m_Accel;
 	//éÛÇØÇÈÉ_ÉÅÅ[ÉWÇï€ë∂Ç∑ÇÈÇ‡ÇÃ
 	float m_Damage;
 
