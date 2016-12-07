@@ -1273,7 +1273,7 @@ void PlayerController::GettingWeapon(){
 		if (m_tempWeapon) { 
 		//選択した武器をセット
 			weaponHand->SetWeapon(m_tempWeapon, [&](auto o,Weapon* w, auto t) {
-				if (Enemy* scr = o->GetScript<Enemy>()) {
+				if (Enemy* scr = Enemy::GetEnemy(o)) {
 					if (m_CurrentAttack.AttackTime > 0.0f) {
 
 						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower());
