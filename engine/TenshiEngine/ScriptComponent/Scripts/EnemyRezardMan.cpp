@@ -54,6 +54,18 @@ EnemyRezardMan::EnemyRezardMan()
 	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&EnemyRezardMan::WinceModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&EnemyRezardMan::WinceModeFinalize, this);
 
+	battleActionInitilize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyRezardMan::UpperDownInitilize, this);
+	battleActionUpdate[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyRezardMan::UpperDownUpdate, this);
+	battleActionFinalize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyRezardMan::UpperDownFinalize, this);
+
+	battleActionInitilize[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyRezardMan::BeatDownInitilize, this);
+	battleActionUpdate[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyRezardMan::BeatDownUpdate, this);
+	battleActionFinalize[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyRezardMan::BeatDownFinalize, this);
+
+	battleActionInitilize[BATTLEACTION::DOWNACTION] = std::bind(&EnemyRezardMan::DownInitilize, this);
+	battleActionUpdate[BATTLEACTION::DOWNACTION] = std::bind(&EnemyRezardMan::DownUpdate, this);
+	battleActionFinalize[BATTLEACTION::DOWNACTION] = std::bind(&EnemyRezardMan::DownFinalize, this);
+
 	battleActionInitilize[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeFinalize, this);
@@ -70,6 +82,8 @@ EnemyRezardMan::EnemyRezardMan()
 void EnemyRezardMan::ChildInitialize()
 {
 	ModelObject = m_ModelObject;
+	m_MaxHp = hp;
+	m_Hp = hp;
 	if (!m_Child) {
 		if (!m_MovePoints)return;
 		for (auto i : m_MovePoints->mTransform->Children()) {
@@ -407,7 +421,7 @@ void EnemyRezardMan::ConfrontModeUpdate()
 	m_BattleModeParam.canChangeAttackAction = true;
 	Prowl();
 	auto battlePosVec = m_BattleModeParam.battlePosition - gameObject->mTransform->WorldPosition();
-	if (XMVector3Length(battlePosVec).x <= m_OnBattleRange) {
+	if (XMVector3Length(m_PlayerVec).x <= m_OnBattleRange) {
 		m_BattleModeParam.actionFinish = true;
 	}
 }
@@ -482,7 +496,7 @@ void EnemyRezardMan::JumpAttackModeInitilize()
 
 void EnemyRezardMan::JumpAttackModeUpdate()
 {
-	m_BattleModeParam.canChangeAttackAction = false;
+	m_BattleModeParam.canChangeAttackAction = true;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
@@ -602,6 +616,12 @@ void EnemyRezardMan::WinceModeInitilize() {
 		return;
 	}
 	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
+
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+	if (!cc->IsGround()){
+		m_AccelVec = m_Accel;
+	}
 }
 
 void EnemyRezardMan::WinceModeUpdate() {
@@ -616,6 +636,93 @@ void EnemyRezardMan::WinceModeUpdate() {
 void EnemyRezardMan::WinceModeFinalize() {
 	m_BattleModeParam.actionFinish = true;
 	//ChangeBattleAction(40, 0, 40, 20, 0);
+}
+
+void EnemyRezardMan::UpperDownInitilize()
+{
+	m_Hp -= m_Damage;
+	if (m_DrawLog)
+		Hx::Debug()->Log(std::to_string(m_Damage) + "ダメージ喰らった。残りの体力は" + std::to_string(m_Hp));
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
+	m_BattleModeParam.count = 0.0f;
+	AnimChange(ANIM_ID::ANIM_UPPERDOWN, 5.0f, false, true);
+	m_AccelVec = m_Accel;
+}
+
+void EnemyRezardMan::UpperDownUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+	
+	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+	if(cc->IsGround() && m_AccelVec.y <= 0) {
+		ChangeBattleAction(BATTLEACTION::DOWNACTION);
+	}
+}
+
+void EnemyRezardMan::UpperDownFinalize()
+{
+	
+}
+
+void EnemyRezardMan::BeatDownInitilize()
+{
+	m_Hp -= m_Damage;
+	if (m_DrawLog)
+		Hx::Debug()->Log(std::to_string(m_Damage) + "ダメージ喰らった。残りの体力は" + std::to_string(m_Hp));
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
+	m_BattleModeParam.count = 0.0f;
+	m_AccelVec += m_Accel;
+	AnimChange(ANIM_ID::ANIM_BEATDOWN, 5.0f, false, true);
+}
+
+void EnemyRezardMan::BeatDownUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+	
+	if (cc->IsGround()) {
+		ChangeBattleAction(BATTLEACTION::DOWNACTION);
+	}
+	
+}
+
+void EnemyRezardMan::BeatDownFinalize()
+{
+}
+
+void EnemyRezardMan::DownInitilize()
+{
+	if (m_BattleModeParam.beforeId == BATTLEACTION::UPPERDOWNACTION) {
+		AnimChange(ANIM_ID::ANIM_UPPERDOWNAFTER, 5.0f, false, true);
+	}
+	else {
+		AnimChange(ANIM_ID::ANIM_BEATDOWNAFTER, 5.0f, false, true);
+	}
+}
+
+void EnemyRezardMan::DownUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		m_BattleModeParam.actionFinish = true;
+	};
+}
+
+void EnemyRezardMan::DownFinalize()
+{
 }
 
 void EnemyRezardMan::HitInGuardModeInitilize() {
@@ -744,22 +851,28 @@ void EnemyRezardMan::Attack(GameObject player)
 }
 
 /****************************************************ダメージの処理********************************************************/
-void EnemyRezardMan::Damage(float damage_)
+bool EnemyRezardMan::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
 	m_Damage = damage_;
-	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
+	m_Accel = accelPower_;
+	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION) {
 		if (m_ActionModeID == ACTIONMODE::BATTLEMODE) {
 			if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
 				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
+				return false;
 			}
 			else {
-				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::WINCEACTION);
+				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE,winceType_);
+				return true;
 			}
 		}
 		else {
+			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
 			m_WasAttacked = true;
+			return true;
 		}
 	}
+	return false;
 }
 
 //敵を発見したか

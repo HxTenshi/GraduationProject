@@ -3,17 +3,8 @@
 #include<iostream>
 #include<sstream>
 #include <vector>
-//生成時に呼ばれます（エディター中も呼ばれます）
-void WeaponTable::Initialize() {
-	int a;
-	int b;
-	float c;
-	std::string d = "guriruchang";
-	//LoadWeaponParametor("Assets/data/type.csv");
-	//LoadCommon<int,int,float,std::string>("Assets/data/type.csv", a, b, c, d, 
-	//[&](int a,int b,float c,std::string d) {
-	//	Hx::Debug()->Log(d);
-	//});
+WeaponTable::WeaponTable()
+{
 	std::vector<std::string> type;
 	std::vector<std::string> name;
 	std::vector<int> durable;
@@ -38,6 +29,15 @@ void WeaponTable::Initialize() {
 	}
 
 	DebugLog();
+}
+//生成時に呼ばれます（エディター中も呼ばれます）
+void WeaponTable::Initialize() {
+	//LoadWeaponParametor("Assets/data/type.csv");
+	//LoadCommon<int,int,float,std::string>("Assets/data/type.csv", a, b, c, d, 
+	//[&](int a,int b,float c,std::string d) {
+	//	Hx::Debug()->Log(d);
+	//});
+
 }
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void WeaponTable::Start(){
@@ -112,10 +112,14 @@ void WeaponTable::DebugLog()
 			"攻撃力:" + attack.str() + "\n" +
 			"耐久値:" + durable.str());
 	}
+	Hx::Debug()->Log(std::to_string(m_Param["メイス"].AttackParam()));
+
 }
 
-funifuni::WeaponParametor & WeaponTable::GetWeaponParametor(std::string name)
+funifuni::WeaponParametor& WeaponTable::GetWeaponParametor(std::string name)
 {
+
+	Hx::Debug()->Log(std::to_string(m_Param[name].AttackParam()));
 	return m_Param[name];
 }
 

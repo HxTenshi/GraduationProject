@@ -20,6 +20,8 @@ void EnemyTeam::Initialize(){
 	
 	//親が生きているかどうか
 	parentAlive = true;
+
+	battlePosFirst = 0;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）

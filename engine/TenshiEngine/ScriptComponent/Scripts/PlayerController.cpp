@@ -1357,7 +1357,7 @@ void PlayerController::GettingWeapon(){
 				if (Enemy* scr = Enemy::GetEnemy(o)) {
 					if (m_CurrentAttack.AttackTime > 0.0f) {
 
-						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower());
+						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(),BATTLEACTION::WINCEACTION,XMVectorSet(0,5,0,1));
 						if (t == Weapon::HitState::Damage) {
 							AddSpecial(m_CurrentAttack.AddSpecial);
 							AddCombo();
