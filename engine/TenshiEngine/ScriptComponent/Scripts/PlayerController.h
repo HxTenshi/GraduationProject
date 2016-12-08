@@ -4,6 +4,7 @@
 #include <functional>
 #include <vector>
 #include "WeaponCommon.h"
+#include "Enemy.h"
 
 enum NextAttack {
 	None,
@@ -23,8 +24,11 @@ struct AttackState {
 	float DamageScale = 0.0f;
 	float AddSpecial = 0.0f;
 	float AttackMove = 0.0f;
+	float FloatMove = 0.0f;
 	std::function<void(void)> AttackFunc = []() {};
 	DamageType DamageType = DamageType::LowDamage;
+	BATTLEACTION::Enum KnockbackEffect = BATTLEACTION::WINCEACTION;
+	float KnockbackEffectPower = 0.0f;
 };
 
 class CharacterControllerComponent;
@@ -247,7 +251,8 @@ private:
 	bool m_AttackMode;
 	int m_NextAttack;
 	AttackState m_CurrentAttack;
-	std::vector<AttackState> m_AttackStateList;
+	int m_CurrentWeaponType;
+	std::vector<std::vector<AttackState>> m_AttackStateList;
 
 
 	std::list<std::function<bool(void)>> m_UpdateCoroutine;
