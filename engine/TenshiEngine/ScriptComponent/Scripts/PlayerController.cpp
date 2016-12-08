@@ -26,6 +26,7 @@ struct AttackID {
 		High2,
 		FloatLow1,
 		Special,
+		DogdeAttack,
 		Count,
 	};
 };
@@ -188,6 +189,13 @@ void PlayerController::Initialize(){
 	attack.MoutionID = AnimeID::AttackLow3;
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	attack.AttackMove = 7.0f;
+	m_AttackStateList[attack.ID] = attack;
+
+	attack.ID = AttackID::DogdeAttack;
+	attack.NextLowID = AttackID::Low2;
+	attack.NextHighID = AttackID::High2;
+	attack.MoutionID = AnimeID::AttackLow3;
+	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	m_AttackStateList[attack.ID] = attack;
 
 	attack.ID = AttackID::High1;
@@ -796,7 +804,7 @@ void PlayerController::DodgeExcute()
 	if (weaponHand && weaponHand->ActionFree()) {
 		if (m_IsGround) {
 			if (BindInput(PlayerInput::ATK_L)) {
-				m_NextAttack = AttackID::Low2;
+				m_NextAttack = AttackID::DogdeAttack;
 			}
 		}
 	}

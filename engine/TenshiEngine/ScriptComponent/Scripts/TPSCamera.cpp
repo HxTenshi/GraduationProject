@@ -51,9 +51,10 @@ void TPSCamera::Update(){
 		auto campos = pos + back + up + left;
 
 		if (m_CharacterControllerComponent) {
-			pos += -gameObject->mTransform->Forward()* 1.0f;
-			m_CharacterControllerComponent->Teleport(pos);
+			//pos += gameObject->mTransform->Forward()* 1.0f;
 			campos -= pos;
+			pos.y += 1.0f;
+			m_CharacterControllerComponent->Teleport(pos);
 			m_CharacterControllerComponent->Move(campos);
 
 			campos = gameObject->mTransform->WorldPosition();
