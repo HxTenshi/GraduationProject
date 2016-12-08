@@ -4,14 +4,19 @@
 #include <vector>
 #include <functional>
 #include<string>
+#include "h_standard.h"
 
-
-
+enum DamageType {
+	LowDamage,
+	HighDamage,
+	DethBrowDamage
+};
 enum WeaponType {
 	Sword,
 	Rance,
 	Axe
 };
+
 class WeaponCommon :public IDllScriptComponent{
 	
 };
@@ -54,8 +59,11 @@ namespace funifuni {
 		//ウエポンのタイプを取得
 		WeaponType GetWeaponType();
 		//ダメージ関数
-		void Damage(float damage);
-
+		void Damage(DamageType type, float mag);
+		//最大の耐久値の取得
+		float GetMaxDurable();
+		void DebugLog();
+		
 
 	private:
 		//名前
@@ -64,12 +72,26 @@ namespace funifuni {
 		float m_AttackParam;
 		//耐久値
 		float m_Durable;
+		//最大の耐久値
+		float m_MaxDurable;
 		//弱攻撃の耐久ダメージ
 		float m_LowDurableDamage;
 		//強攻撃の耐久ダメージ
 		float m_StrongDurableDamage;
 		//武器の種類
 		WeaponType m_Type;
+	};
+	class Tween {
+	public:
+		void SetTween(float& v, float end, float d);
+		bool Update();
+	private:
+		float& value;
+		float start, end;
+		float time;
+		float step;
+		float duration;
+		float frame;
 	};
 	//class CSVLoader {
 	//public:

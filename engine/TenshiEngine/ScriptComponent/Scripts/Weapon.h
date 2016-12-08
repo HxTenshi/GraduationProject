@@ -3,6 +3,7 @@
 #include "main.h"
 # include "WeaponControl.h"
 #include "WeaponCommon.h"
+#include "WeaponTable.h"
 #include <functional>
 enum AttackType {
 	WEAK,
@@ -32,7 +33,7 @@ public:
 	/// <summary>
 	///武器へのダメージ処理
 	/// </summary>
-	void Damage(int damage);
+	void Damage(DamageType type,float mag);
 	/// <summary>
 	///壊れたか
 	/// </summary>
@@ -62,10 +63,6 @@ public:
 	/// </summary>
 	void GetWeapon();
 	/// <summary>
-	///攻撃
-	/// </summary>
-	void Attack();
-	/// <summary>
 	///攻撃力の取得
 	/// </summary>
 	float GetAttackPower();
@@ -81,6 +78,14 @@ public:
 	///武器の交換処理
 	/// </summary>
 	void SwapWeapon(GameObject target);
+	/// <summary>
+	///武器を取得できるか
+	/// </summary>
+	bool isGetWeapon();
+	/// <summary>
+	///武器の最大の耐久値を取得
+	/// </summary>
+	float GetMaxDurable();
 private:
 	/// <summary>
 	///投げ捨てる時のアクション
@@ -93,6 +98,10 @@ private:
 	void Effect();
 private:
 	//メンバ変数
+	SERIALIZE
+	std::string m_name;
+	SERIALIZE
+	GameObject m_table;
 	SERIALIZE
 	float m_Recast;
 	SERIALIZE
@@ -113,6 +122,8 @@ private:
 	float m_weapon_rot;
 	bool is_hand;
 	bool is_ground_hit;
+	//捨てる処理が変わる時に無くなる
+	bool is_fly;
 
 	HitCollbackType m_HitCollback;
 };

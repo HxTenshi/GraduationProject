@@ -6,14 +6,22 @@
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Weapon::Initialize(){
 	is_hand = false;
+	is_fly = false;
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
-	m_param.SetAttack(1);
-	m_param.SetDurable(10);
-	m_param.SetName("uhuuuu");
-	m_param.SetWeaponType(WeaponType::Sword);
+	if (m_table) {
+		m_param=m_table->GetScript<WeaponTable>()->GetWeaponParametor(m_name);
+	}else{
+		m_param.SetAttack(5);
+		m_param.SetDurableDamage(1, 10);
+		m_param.SetDurable(400);
+		m_param.SetName("DebugWeapon");
+		m_param.SetWeaponType(WeaponType::Sword);
 
+	}
+	m_param.DebugLog();
+	
 	SetHitCollback([](auto o,auto w, auto t) {});
 	//auto child = gameObject->mTransform->Children();
 	//for (auto it = child.begin(); it != child.end(); ++it) {
@@ -32,11 +40,6 @@ void Weapon::Start(){
 
 //毎フレーム呼ばれます
 void Weapon::Update(){	
-	if (Input::Down(KeyCode::Key_2)) {
-		if (mSwapTarget) {
-			SwapWeapon(mSwapTarget);
-		}
-	}
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
@@ -91,9 +94,9 @@ void Weapon::OnCollideExit(GameObject target){
 /// <summary>
 ///武器へのダメージ
 /// </summary>
-void Weapon::Damage(int damage)
+void Weapon::Damage(DamageType type,float mag=1.0f)
 {
-	m_param.Damage(damage);
+	m_param.Damage(type,mag);
 }
 /// <summary>
 ///武器が壊れた時の判定
@@ -108,7 +111,7 @@ bool Weapon::isBreak()
 void Weapon::ThrowAway()
 {
 	SetHitCollback([](auto o,auto w,auto t) {});
-
+	is_fly = true;
 	is_hand = false;
 	is_ground_hit = false;
 	m_weapon_rot = 0.0f;
@@ -138,10 +141,12 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 void Weapon::WeaponUsePhysX()
 {
 	if (!is_hand) {
+
 		gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 		gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 		is_hand = false;
 		is_ground_hit = true;
+		is_fly = false;
 		Hx::Debug()->Log("Hit");
 	}
 }
@@ -160,6 +165,7 @@ void Weapon::GetWeapon()
 {
 	is_ground_hit = false;
 	is_hand = true;
+	is_fly = false;
 	//gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
@@ -169,7 +175,7 @@ void Weapon::GetWeapon()
 
 float Weapon::GetAttackPower()
 {
-	return m_param.AttackParam();
+	return (isBreak())?1.0f:m_param.AttackParam();
 }
 
 float Weapon::GetDurable()
@@ -198,6 +204,7 @@ void Weapon::SwapWeapon(GameObject target)
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 	is_hand = false;
+	is_fly = false;
 	is_ground_hit = true;
 	gameObject->mTransform->SetParent(NULL);
 
@@ -207,6 +214,16 @@ void Weapon::SwapWeapon(GameObject target)
 	target->mTransform->SetParent(parent);
 	//effect
 
+}
+
+bool Weapon::isGetWeapon()
+{
+	return !is_fly;
+}
+
+float Weapon::GetMaxDurable()
+{
+	return m_param.GetMaxDurable();
 }
 
 void Weapon::ThrowAwayAction()
@@ -228,4 +245,5 @@ void Weapon::PierceSupport(GameObject obj)
 
 void Weapon::Effect()
 {
+
 }

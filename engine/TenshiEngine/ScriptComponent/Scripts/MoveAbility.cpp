@@ -20,30 +20,35 @@ void MoveAbility::Update(){
 	{
 		XMVECTOR targetPosition = mMovePoint->mTransform->WorldPosition();
 		//ここの1はキャラのYのサイズにしないと・・・。
-		XMVECTOR characterSize = XMVectorSet(0, 3, 0, 0);
-		targetPosition += characterSize;
+		//XMVECTOR characterSize = XMVectorSet(0, 3, 0, 0);
+		//targetPosition += characterSize;
 
-		mTime += Hx::DeltaTime()->GetDeltaTime() * mSpeed;
-		if (mTime < 0.0f) {
-			mTime = 0.0f;
-		}
-		else if (mTime > 1.0f) {
-			mTime = 1.0f;
+		////mTime += Hx::DeltaTime()->GetDeltaTime() * mSpeed;
+		//if (mTime < 0.0f) {
+		//	mTime = 0.0f;
+		//}
+		//else if (mTime > 1.0f) {
+		//	mTime = 1.0f;
+		//	onMove = false;
+		//	Hx::Debug()->Log("移動完了しているはず。");
+		//	Hx::Debug()->Log("ちょっと回転しながら飛んでいきます");
+		//}
+		//
+		//XMVECTOR resultPosition = mMoveStartPosition * (1.0f - mTime) + targetPosition * mTime;
+		//
+		////対象との距離を少し離す
+		//float distance = 2.0f;
+		//characterSize = targetPosition - mMoveStartPosition;
+		//characterSize = XMVector3Normalize(characterSize);
+		//resultPosition = resultPosition - characterSize * distance * mTime;
+
+
+		if (OnTargetDistance(targetPosition)) {
 			onMove = false;
-			Hx::Debug()->Log("移動完了しているはず。");
-			Hx::Debug()->Log("ちょっと回転しながら飛んでいきます");
 		}
-		
-		XMVECTOR resultPosition = mMoveStartPosition * (1.0f - mTime) + targetPosition * mTime;
-		
-		//対象との距離を少し離す
-		float distance = 2.0f;
-		characterSize = targetPosition - mMoveStartPosition;
-		characterSize = XMVector3Normalize(characterSize);
-		resultPosition = resultPosition - characterSize * distance * mTime;
-		
-		//mCC->Move(XMVector3Normalize(targetPosition - mMoveStartPosition));
-		mCC->Teleport(resultPosition);
+		else {
+			mCC->Move(XMVector3Normalize(targetPosition - mMoveActor->mTransform->WorldPosition()));
+		}
 	}
 }
 
@@ -98,8 +103,7 @@ void MoveAbility::KnockBack(std::function<void(void)> function,GameObject target
 
 bool MoveAbility::OnTargetDistance(XMVECTOR target)
 {
-	//Distanceがない。
-	//if()
-	//lengthとdotを組み合わせるかも
+	float distance = XMVector3Length(mMoveActor->mTransform->WorldPosition() - target).x;
+	if (distance < 2)return true;
 	return false;
 }

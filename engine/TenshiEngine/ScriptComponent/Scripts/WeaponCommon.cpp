@@ -1,5 +1,5 @@
 #include "WeaponCommon.h"
-
+#include <sstream>
 
 namespace funifuni {
 	//*****************************************************//
@@ -38,6 +38,7 @@ namespace funifuni {
 	void WeaponParametor::SetDurable(float durable)
 	{
 		m_Durable = durable;
+		m_MaxDurable = durable;
 	}
 	/// <summary>
 	///耐久値のダメージの設定
@@ -53,7 +54,7 @@ namespace funifuni {
 	}
 	void WeaponParametor::SetWeaponType(std::string type)
 	{
-		if (type == "Ssord")m_Type = WeaponType::Sword;
+		if (type == "Sword")m_Type = WeaponType::Sword;
 		if (type == "Rance")m_Type = WeaponType::Rance;
 		if (type == "Axe")m_Type = WeaponType::Axe;
 	}
@@ -61,10 +62,29 @@ namespace funifuni {
 	{
 		return m_Type;
 	}
-	void WeaponParametor::Damage(float damage)
+	void WeaponParametor::Damage(DamageType type,float mag = 1.0f)
 	{
-		m_Durable -= damage;
+		if(type==DamageType::LowDamage)m_Durable -= m_LowDurableDamage*mag;
+		if (type == DamageType::HighDamage)m_Durable -= m_StrongDurableDamage*mag;
+		if (type == DamageType::DethBrowDamage)m_Durable = 0;
+
 	}
+	float WeaponParametor::GetMaxDurable()
+	{
+		return m_MaxDurable;
+	}
+
+	void WeaponParametor::DebugLog()
+	{
+		std::ostringstream atk;
+		atk << m_AttackParam;
+		std::ostringstream durable;
+		durable << m_Durable;
+		Hx::Debug()->Log("\n名前："+m_Name+"\n"+
+			"攻撃力:"+atk.str()+"\n"+
+			"耐久値:"+durable.str());
+	}
+
 	/// <summary>
 	///武器の耐久値がなくなったか
 	/// </summary>
@@ -171,6 +191,23 @@ namespace funifuni {
 	//	if (!ifs) {
 	//		return;
 	//	}
+
+	void Tween::SetTween(float & v, float end, float d)
+	{
+		value = v;
+		start = v;
+		end = end;
+		duration = d;
+		frame = 0.0f;
+	}
+
+	bool Tween::Update()
+	{
+		frame += step;
+		float t = (frame / duration);
+		value = start*(1.0f - t) + end*t;
+		return frame <= duration;
+	}
 
 	//	//csvファイルを1行ずつ読み込む
 	//	std::string str;
