@@ -9,6 +9,7 @@
 
 class WeaponTable :public IDllScriptComponent{
 public:
+	WeaponTable();
 	void Initialize()override;
 	void Start()override;
 	void Update()override;
@@ -20,6 +21,7 @@ public:
 	void LoadWeaponParametor(std::string paramname);
 	void DebugLog();
 	funifuni::WeaponParametor& GetWeaponParametor(std::string name);
+
 	template<class... Args>
 	void LoadCommon(std::string fname, Args&... arg,std::function<void(Args&... arg)> func);
 
@@ -112,6 +114,7 @@ inline void WeaponTable::LoadCommon(std::string fname, Args & ...arg, std::funct
 		wp.SetName(data[1]);
 		wp.SetDurable(std::stoi(data[2]));
 		wp.SetAttack(std::stof(data[3]));
+		wp.SetWeaponType(data[0]);
 		AddParametor(data[1], wp);
 		std::cout << std::endl;
 		p.clear();
