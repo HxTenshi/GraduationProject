@@ -119,8 +119,11 @@ void TargetEnemy::BarUpdate()
 		m_EnemyHP_BarFrame->Enable();
 
 		auto param = enemy->GetEnemyAllParameter(false);
-		float i = (float)param.battleModeParameter.battlePosition.x;
-		float hp = i / 10.0f;
+		float i = (float)param.maxHp;
+		if (param.maxHp == 0.0f) {
+			param.maxHp = 1.0f;
+		}
+		float hp = param.hp / param.maxHp;
 
 		auto s = m_EnemyHP_Bar->mTransform->Scale();
 		s.x = hp * 512.0f;
