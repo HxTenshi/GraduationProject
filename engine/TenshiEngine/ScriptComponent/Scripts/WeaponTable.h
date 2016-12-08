@@ -19,6 +19,7 @@ public:
 	void TableInit();
 	void LoadWeaponParametor(std::string paramname);
 	void DebugLog();
+	funifuni::WeaponParametor& GetWeaponParametor(std::string name);
 	template<class... Args>
 	void LoadCommon(std::string fname, Args&... arg,std::function<void(Args&... arg)> func);
 
@@ -37,8 +38,9 @@ public:
 	}
 
 private:
-	//UŒ‚—Í
+	//•Ší‚Ìƒpƒ‰ƒ[ƒ^
 	std::map<std::string, funifuni::WeaponParametor> m_Param;
+
 	//‚ƒ‚“‚–
 	std::vector<std::vector<std::string>> m_data;
 	int m_maxcount;
@@ -78,6 +80,12 @@ template<>
 struct LoaderValueType<bool> {
 	static bool convert(std::string data) {
 		return (bool)std::stoi(data);
+	}
+};
+template<>
+struct LoaderValueType<std::string> {
+	static std::string convert(std::string data) {
+		return data;
 	}
 };
 template<class... Args>

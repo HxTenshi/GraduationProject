@@ -14,15 +14,30 @@ void WeaponTable::Initialize() {
 	//[&](int a,int b,float c,std::string d) {
 	//	Hx::Debug()->Log(d);
 	//});
-	std::vector<int> testparam;
+	std::vector<std::string> type;
+	std::vector<std::string> name;
+	std::vector<int> durable;
+	std::vector<int> atk;
 	Load("Assets/data/type.csv");
-	testparam = GetArrayParams<int>(3);
-	for (auto i : testparam) {
-		std::stringstream ss;
-		ss << i;
-		Hx::Debug()->Log(ss.str());
+	type = GetArrayParams<std::string>(0);
+	name = GetArrayParams<std::string>(1);
+	durable = GetArrayParams<int>(2);
+	atk = GetArrayParams<int>(3);
+
+	int weaponcount = name.size();
+	int count = 0;
+	for (auto i : name) {
+		funifuni::WeaponParametor p;
+		p.SetWeaponType(type.data()[count]);
+		p.SetName(name.data()[count]);
+		p.SetDurable(durable.data()[count]);
+		p.SetAttack(atk.data()[count]);
+		p.SetDurableDamage(1, 10);
+		m_Param.insert(std::pair < std::string, funifuni::WeaponParametor>(i, p));
+		count++;
 	}
-	//DebugLog();
+
+	DebugLog();
 }
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void WeaponTable::Start(){
@@ -97,6 +112,11 @@ void WeaponTable::DebugLog()
 			"攻撃力:" + attack.str() + "\n" +
 			"耐久値:" + durable.str());
 	}
+}
+
+funifuni::WeaponParametor & WeaponTable::GetWeaponParametor(std::string name)
+{
+	return m_Param[name];
 }
 
 void WeaponTable::Load(std::string fname)

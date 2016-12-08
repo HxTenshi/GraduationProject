@@ -10,12 +10,18 @@ void Weapon::Initialize(){
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
-	m_param.SetAttack(5);
-	m_param.SetDurableDamage(1, 10);
-	m_param.SetDurable(600);
-	m_param.SetName("uhuuuu");
-	m_param.SetWeaponType(WeaponType::Sword);
+	if (m_table) {
+		m_param=m_table->GetScript<WeaponTable>()->GetWeaponParametor(m_name);
+	}else{
+		m_param.SetAttack(5);
+		m_param.SetDurableDamage(1, 10);
+		m_param.SetDurable(400);
+		m_param.SetName("DebugWeapon");
+		m_param.SetWeaponType(WeaponType::Sword);
 
+	}
+	m_param.DebugLog();
+	
 	SetHitCollback([](auto o,auto w, auto t) {});
 	//auto child = gameObject->mTransform->Children();
 	//for (auto it = child.begin(); it != child.end(); ++it) {
