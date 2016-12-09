@@ -884,6 +884,11 @@ bool EnemyRezardMan::DiscoveryPlayer()
 	}
 	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
 
+	auto rayMyPos = gameObject->mTransform->WorldPosition();
+	rayMyPos.y = rayMyPos.y + 3;
+	auto rayBossPos = m_Player->mTransform->WorldPosition();
+	rayBossPos.y = rayMyPos.y;
+
 	m_Forward = XMVector3Normalize(gameObject->mTransform->Forward());
 	m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
 	m_Forward.y = 0.0f;
@@ -891,9 +896,16 @@ bool EnemyRezardMan::DiscoveryPlayer()
 	m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x, -1.0f, 1.0f));
 	if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
 	if ((XMVector3Length(m_PlayerVec).x < m_TrackingRange && m_View / 3.14f * 180.0f < m_TrackingAngle)) {
-		return true;
+		if (!Hx::PhysX()->Raycast(rayMyPos,
+			XMVector3Normalize(rayBossPos - rayMyPos),
+			XMVector3Length(rayBossPos - rayMyPos).x,
+			Layer::UserTag4)) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
-
 	return false;
 }
 
