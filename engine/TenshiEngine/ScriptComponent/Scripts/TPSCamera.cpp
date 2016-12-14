@@ -5,6 +5,7 @@
 
 TPSCamera::TPSCamera(){
 	mTarget = NULL;
+	mSaveEnemy = NULL;
 	mRotate = XMFLOAT2(0, 0);
 	m_SpringVelocity = XMVectorZero();
 }
@@ -91,7 +92,6 @@ void TPSCamera::Update(){
 		gameObject->mTransform->WorldQuaternion(q);
 	}
 	else {
-
 		int mx, my;
 		Input::MousePosition(&mx, &my);
 		auto p = Hx::System()->GetLockCursorPosition();
@@ -112,13 +112,11 @@ void TPSCamera::Update(){
 		qx = XMQuaternionNormalize(qx);
 
 		gameObject->mTransform->WorldQuaternion(qx);
-
 	}
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void TPSCamera::Finish(){
-
 }
 
 //コライダーとのヒット時に呼ばれます
@@ -138,7 +136,7 @@ void TPSCamera::OnCollideExit(GameObject target){
 
 XMVECTOR TPSCamera::spring(XMVECTOR position, const XMVECTOR& desiredPosition)
 {
-	float time = Hx::DeltaTime()->GetDeltaTime();
+	float time = Hx::DeltaTime()->GetNoScaleDeltaTime();
 	// バネの力を計算
 	auto stretch = position - desiredPosition;
 	auto force = -m_SpringStiffness * stretch - m_SpringDamping * m_SpringVelocity;
