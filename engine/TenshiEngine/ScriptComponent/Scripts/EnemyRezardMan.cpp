@@ -62,6 +62,10 @@ EnemyRezardMan::EnemyRezardMan()
 	battleActionUpdate[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyRezardMan::BeatDownUpdate, this);
 	battleActionFinalize[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyRezardMan::BeatDownFinalize, this);
 
+	battleActionInitilize[BATTLEACTION::DOWNACTION] = std::bind(&EnemyRezardMan::DownInitilize, this);
+	battleActionUpdate[BATTLEACTION::DOWNACTION] = std::bind(&EnemyRezardMan::DownUpdate, this);
+	battleActionFinalize[BATTLEACTION::DOWNACTION] = std::bind(&EnemyRezardMan::DownFinalize, this);
+
 	battleActionInitilize[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeFinalize, this);
@@ -612,6 +616,12 @@ void EnemyRezardMan::WinceModeInitilize() {
 		return;
 	}
 	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
+
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+	if (!cc->IsGround()){
+		m_AccelVec = m_Accel;
+	}
 }
 
 void EnemyRezardMan::WinceModeUpdate() {
@@ -639,7 +649,7 @@ void EnemyRezardMan::UpperDownInitilize()
 	}
 	m_BattleModeParam.count = 0.0f;
 	AnimChange(ANIM_ID::ANIM_UPPERDOWN, 5.0f, false, true);
-	m_AccelVec += m_Accel;
+	m_AccelVec = m_Accel;
 }
 
 void EnemyRezardMan::UpperDownUpdate()
@@ -647,21 +657,16 @@ void EnemyRezardMan::UpperDownUpdate()
 	m_BattleModeParam.canChangeAttackAction = false;
 	
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
-	if(m_BattleModeParam.count >= 1.0f) {
-		m_BattleModeParam.actionFinish = true;
-	}
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;
-
-	//if (cc->IsGround()) {
-	//	m_BattleModeParam.actionFinish = true;
-	//	Hx::Debug()->Log("FDSAFDA");
-	//}
+	if(cc->IsGround() && m_AccelVec.y <= 0) {
+		ChangeBattleAction(BATTLEACTION::DOWNACTION);
+	}
 }
 
 void EnemyRezardMan::UpperDownFinalize()
 {
-	//Ç§ÇÒÇ±
+	
 }
 
 void EnemyRezardMan::BeatDownInitilize()
@@ -673,15 +678,50 @@ void EnemyRezardMan::BeatDownInitilize()
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
+	m_BattleModeParam.count = 0.0f;
+	m_AccelVec += m_Accel;
 	AnimChange(ANIM_ID::ANIM_BEATDOWN, 5.0f, false, true);
 }
 
 void EnemyRezardMan::BeatDownUpdate()
 {
 	m_BattleModeParam.canChangeAttackAction = false;
+
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+	
+	if (cc->IsGround()) {
+		ChangeBattleAction(BATTLEACTION::DOWNACTION);
+	}
+	
 }
 
 void EnemyRezardMan::BeatDownFinalize()
+{
+}
+
+void EnemyRezardMan::DownInitilize()
+{
+	if (m_BattleModeParam.beforeId == BATTLEACTION::UPPERDOWNACTION) {
+		AnimChange(ANIM_ID::ANIM_UPPERDOWNAFTER, 5.0f, false, true);
+	}
+	else {
+		AnimChange(ANIM_ID::ANIM_BEATDOWNAFTER, 5.0f, false, true);
+	}
+}
+
+void EnemyRezardMan::DownUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		m_BattleModeParam.actionFinish = true;
+	};
+}
+
+void EnemyRezardMan::DownFinalize()
 {
 }
 
@@ -811,21 +851,23 @@ void EnemyRezardMan::Attack(GameObject player)
 }
 
 /****************************************************É_ÉÅÅ[ÉWÇÃèàóù********************************************************/
-bool EnemyRezardMan::Damage(float damage_)
+bool EnemyRezardMan::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
 	m_Damage = damage_;
-	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
+	m_Accel = accelPower_;
+	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION) {
 		if (m_ActionModeID == ACTIONMODE::BATTLEMODE) {
 			if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
 				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
 				return false;
 			}
 			else {
-				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::UPPERDOWNACTION);
+				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE,winceType_);
 				return true;
 			}
 		}
 		else {
+			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
 			m_WasAttacked = true;
 			return true;
 		}

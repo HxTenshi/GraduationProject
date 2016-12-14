@@ -3,6 +3,7 @@
 #include "main.h"
 # include "WeaponControl.h"
 #include "WeaponCommon.h"
+#include "WeaponTable.h"
 #include <functional>
 enum AttackType {
 	WEAK,
@@ -97,6 +98,10 @@ private:
 	void Effect();
 private:
 	//ƒƒ“ƒo•Ï”
+	SERIALIZE
+	std::string m_name;
+	SERIALIZE
+	GameObject m_table;
 	SERIALIZE
 	float m_Recast;
 	SERIALIZE

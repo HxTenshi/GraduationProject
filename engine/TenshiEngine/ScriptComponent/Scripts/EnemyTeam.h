@@ -64,4 +64,6 @@ protected:
 	bool everyoneAttackCountFlag;
 	//e‚ª¶‚«‚Ä‚¢‚é‚©‚Ç‚¤‚©
 	bool parentAlive;
+
+	int battlePosFirst;
 };

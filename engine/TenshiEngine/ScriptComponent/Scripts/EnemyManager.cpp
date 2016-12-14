@@ -20,8 +20,8 @@ void EnemyManager::Update(){
 	for (auto i = m_EnemyTeamVector.begin(); i != m_EnemyTeamVector.end();) {
 		auto jScript = EnemyTeam::GetEnemyTeam(*i);
 		if (!jScript->Alive()) {
-			i = m_EnemyTeamVector.erase(i);
 			Hx::DestroyObject((*i)->mTransform->gameObject);
+			i = m_EnemyTeamVector.erase(i);
 			continue;
 		}
 		jScript->DiscoveryOrLostPlayerSet();

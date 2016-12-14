@@ -4,7 +4,7 @@
 #include <vector>
 #include <functional>
 #include<string>
-
+#include "h_standard.h"
 
 enum DamageType {
 	LowDamage,
@@ -14,7 +14,8 @@ enum DamageType {
 enum WeaponType {
 	Sword,
 	Rance,
-	Axe
+	Axe,
+	Count
 };
 
 class WeaponCommon :public IDllScriptComponent{
@@ -62,6 +63,8 @@ namespace funifuni {
 		void Damage(DamageType type, float mag);
 		//Å‘å‚Ì‘Ï‹v’l‚Ìæ“¾
 		float GetMaxDurable();
+		void DebugLog();
+		
 
 	private:
 		//–¼‘O
@@ -78,6 +81,18 @@ namespace funifuni {
 		float m_StrongDurableDamage;
 		//•Ší‚Ìí—Ş
 		WeaponType m_Type;
+	};
+	class Tween {
+	public:
+		void SetTween(float& v, float end, float d);
+		bool Update();
+	private:
+		float& value;
+		float start, end;
+		float time;
+		float step;
+		float duration;
+		float frame;
 	};
 	//class CSVLoader {
 	//public:

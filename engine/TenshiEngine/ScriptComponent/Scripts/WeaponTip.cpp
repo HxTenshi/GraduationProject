@@ -29,7 +29,6 @@ void WeaponTip::OnCollideBegin(GameObject target){
 	if (target->GetLayer() == 4) {
 		if (m_weapon->GetScript<Weapon>()) {
 			m_weapon->GetScript<Weapon>()->WeaponUsePhysX();
-			Hx::Debug()->Log("放り投げ：地面に当たり");
 		}
 	}
 }
@@ -40,7 +39,6 @@ void WeaponTip::OnCollideEnter(GameObject target){
 	if (target->GetLayer() == 4) {
 		if (m_weapon->GetScript<Weapon>()) {
 			m_weapon->GetScript<Weapon>()->WeaponUsePhysX();
-			Hx::Debug()->Log("放り投げ：地面に当たり");
 		}
 	}
 }

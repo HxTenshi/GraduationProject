@@ -1,5 +1,5 @@
 #include "WeaponCommon.h"
-
+#include <sstream>
 
 namespace funifuni {
 	//*****************************************************//
@@ -54,7 +54,7 @@ namespace funifuni {
 	}
 	void WeaponParametor::SetWeaponType(std::string type)
 	{
-		if (type == "Ssord")m_Type = WeaponType::Sword;
+		if (type == "Sword")m_Type = WeaponType::Sword;
 		if (type == "Rance")m_Type = WeaponType::Rance;
 		if (type == "Axe")m_Type = WeaponType::Axe;
 	}
@@ -73,6 +73,18 @@ namespace funifuni {
 	{
 		return m_MaxDurable;
 	}
+
+	void WeaponParametor::DebugLog()
+	{
+		std::ostringstream atk;
+		atk << m_AttackParam;
+		std::ostringstream durable;
+		durable << m_Durable;
+		Hx::Debug()->Log("\n名前："+m_Name+"\n"+
+			"攻撃力:"+atk.str()+"\n"+
+			"耐久値:"+durable.str());
+	}
+
 	/// <summary>
 	///武器の耐久値がなくなったか
 	/// </summary>
@@ -179,6 +191,23 @@ namespace funifuni {
 	//	if (!ifs) {
 	//		return;
 	//	}
+
+	void Tween::SetTween(float & v, float end, float d)
+	{
+		value = v;
+		start = v;
+		end = end;
+		duration = d;
+		frame = 0.0f;
+	}
+
+	bool Tween::Update()
+	{
+		frame += step;
+		float t = (frame / duration);
+		value = start*(1.0f - t) + end*t;
+		return frame <= duration;
+	}
 
 	//	//csvファイルを1行ずつ読み込む
 	//	std::string str;
