@@ -10,6 +10,7 @@
 #include "GetEnemy.h"
 #include "AimController.h"
 #include "SoundManager.h"
+# include "WeaponControl.h"
 
 namespace Init {
 	static const float RotateLimit_default = 360.0f * 3.0f;
@@ -265,21 +266,32 @@ void PlayerController::Update(){
 			if (!m_Camera)return;
 			auto camera = m_Camera->GetScript<TPSCamera>();
 			if (camera) {
-				GameObject target = camera->GetLookTarget();
-				//ロックオンしている敵が居たら投げれる
+				GameObject target; /*= camera->GetLookTarget();*/
+								   //ロックオンしている敵が居たら投げれる
+				if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+					target = scr->GetHandWeapon();
+				}
 				if (target) {
-					throwAway(target);
 					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 						script->SetPoint(target, m_CharacterControllerComponent);
 					}
+					throwAway(camera->GetLookTarget());
 				}
 			}
+
 		}
 
 		if (Input::Down(KeyCode::Key_K)) {
-			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-				script->OnMove();
+			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+				if (weaponCtr->IsHit())
+				{
+					weaponCtr->DeleteHitPoint();
+					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+						script->OnMove();
+					}
+				}
 			}
+
 		}
 
 		auto camera = m_Camera->GetScript<TPSCamera>();
@@ -1208,7 +1220,7 @@ void PlayerController::lockOn()
 	}
 
 }
-#include "Sandbag.h"
+#include "Enemy.h"
 void PlayerController::GettingWeapon(){
 
 	//早期リターン
@@ -1300,10 +1312,10 @@ void PlayerController::GettingWeapon(){
 		if (m_tempWeapon) { 
 		//選択した武器をセット
 			weaponHand->SetWeapon(m_tempWeapon, [&](auto o,Weapon* w, auto t) {
-				if (Sandbag* scr = o->GetScript<Sandbag>()) {
+				if (Enemy* scr = Enemy::GetEnemy(o)) {
 					if (m_CurrentAttack.AttackTime > 0.0f) {
 
-						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower());
+						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(),BATTLEACTION::WINCEACTION,XMVectorSet(0,5,0,1));
 						if (t == Weapon::HitState::Damage) {
 							AddSpecial(m_CurrentAttack.AddSpecial);
 						}

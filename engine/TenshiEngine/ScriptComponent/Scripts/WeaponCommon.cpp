@@ -1,5 +1,5 @@
 #include "WeaponCommon.h"
-
+#include <sstream>
 
 namespace funifuni {
 	//*****************************************************//
@@ -35,25 +35,56 @@ namespace funifuni {
 	/// <summary>
 	///耐久値のセット
 	/// </summary>
-	void WeaponParametor::SetDurable(int durable)
+	void WeaponParametor::SetDurable(float durable)
 	{
 		m_Durable = durable;
+		m_MaxDurable = durable;
 	}
 	/// <summary>
 	///耐久値のダメージの設定
 	/// </summary>
-	void WeaponParametor::SetDurableDamage(int low, int strong)
+	void WeaponParametor::SetDurableDamage(float low, float strong)
 	{
 		m_LowDurableDamage = low;
 		m_StrongDurableDamage = strong;
 	}
-	void WeaponParametor::SetAllParam(std::string name, float attack, int durable, int low, int strong)
+	void WeaponParametor::SetWeaponType(WeaponType type)
 	{
-		SetName(name);
-		SetAttack(attack);
-		SetDurable(durable);
-		SetDurableDamage(low, strong);
+		m_Type = type;
 	}
+	void WeaponParametor::SetWeaponType(std::string type)
+	{
+		if (type == "Sword")m_Type = WeaponType::Sword;
+		if (type == "Rance")m_Type = WeaponType::Rance;
+		if (type == "Axe")m_Type = WeaponType::Axe;
+	}
+	WeaponType WeaponParametor::GetWeaponType()
+	{
+		return m_Type;
+	}
+	void WeaponParametor::Damage(DamageType type,float mag = 1.0f)
+	{
+		if(type==DamageType::LowDamage)m_Durable -= m_LowDurableDamage*mag;
+		if (type == DamageType::HighDamage)m_Durable -= m_StrongDurableDamage*mag;
+		if (type == DamageType::DethBrowDamage)m_Durable = 0;
+
+	}
+	float WeaponParametor::GetMaxDurable()
+	{
+		return m_MaxDurable;
+	}
+
+	void WeaponParametor::DebugLog()
+	{
+		std::ostringstream atk;
+		atk << m_AttackParam;
+		std::ostringstream durable;
+		durable << m_Durable;
+		Hx::Debug()->Log("\n名前："+m_Name+"\n"+
+			"攻撃力:"+atk.str()+"\n"+
+			"耐久値:"+durable.str());
+	}
+
 	/// <summary>
 	///武器の耐久値がなくなったか
 	/// </summary>
@@ -64,7 +95,7 @@ namespace funifuni {
 	/// <summary>
 	///耐久値の取得
 	/// </summary>
-	int WeaponParametor::GetDurable()
+	float WeaponParametor::GetDurable()
 	{
 		return m_Durable;
 	}
@@ -160,6 +191,23 @@ namespace funifuni {
 	//	if (!ifs) {
 	//		return;
 	//	}
+
+	void Tween::SetTween(float & v, float end, float d)
+	{
+		value = v;
+		start = v;
+		end = end;
+		duration = d;
+		frame = 0.0f;
+	}
+
+	bool Tween::Update()
+	{
+		frame += step;
+		float t = (frame / duration);
+		value = start*(1.0f - t) + end*t;
+		return frame <= duration;
+	}
 
 	//	//csvファイルを1行ずつ読み込む
 	//	std::string str;

@@ -1,5 +1,5 @@
 #include "EnemyWeapon.h"
-#include "Sandbag.h"
+#include "Enemy.h"
 
 
 //生成時に呼ばれます（エディター中も呼ばれます）
@@ -25,7 +25,7 @@ void EnemyWeapon::Finish(){
 //コライダーとのヒット時に呼ばれます
 void EnemyWeapon::OnCollideBegin(GameObject target){
 	if (!enemy)return;
-	auto enemyScript = enemy->GetScript<Sandbag>();
+	auto enemyScript = Enemy::GetEnemy(enemy);
 	if (!enemyScript)return;
 	enemyScript->Attack(target);
 }

@@ -4,25 +4,20 @@
 #include <vector>
 #include <functional>
 #include<string>
+#include "h_standard.h"
 
-
-
-//*****************************************************//
-//				WeaponMagnificationType
-//*****************************************************//
-
-enum class WeaponMagnificationType {
-	Mag_One_Weak = 0,
-	Mag_Two_Weak,
-	Mag_Three_Weak,
-	Mag_Fly_Weak,
-	Mag_Strong,
-	Mag_Fly_Strong,
-	Mag_Attracted,
-	Mag_Jumped,
-	Mag_Deathblow,
-	Mag_Throw
+enum DamageType {
+	LowDamage,
+	HighDamage,
+	DethBrowDamage
 };
+enum WeaponType {
+	Sword,
+	Rance,
+	Axe,
+	Count
+};
+
 class WeaponCommon :public IDllScriptComponent{
 	
 };
@@ -38,12 +33,10 @@ namespace funifuni {
 		~WeaponParametor();
 
 
-		//耐久値へのダメージ
-		void DurableDamage(WeaponMagnificationType type);
 		//耐久値が無くなったか
 		bool isBreak();
 		//耐久値の取得
-		int GetDurable();
+		float GetDurable();
 
 		//攻撃力の取得
 		float AttackParam();
@@ -57,11 +50,21 @@ namespace funifuni {
 		//攻撃力のセット
 		void SetAttack(float attack);
 		//耐久値のセット
-		void SetDurable(int durable);
+		void SetDurable(float durable);
 		//耐久値のダメージの設定
-		void SetDurableDamage(int low, int strong);
-
-		void SetAllParam(std::string name, float attack, int durable, int low, int strong);
+		void SetDurableDamage(float low, float strong);
+		//ウエポンのタイプをセット
+		void SetWeaponType(WeaponType type);
+		//ウエポンのタイプをセット
+		void SetWeaponType(std::string type);
+		//ウエポンのタイプを取得
+		WeaponType GetWeaponType();
+		//ダメージ関数
+		void Damage(DamageType type, float mag);
+		//最大の耐久値の取得
+		float GetMaxDurable();
+		void DebugLog();
+		
 
 	private:
 		//名前
@@ -69,12 +72,27 @@ namespace funifuni {
 		//攻撃力
 		float m_AttackParam;
 		//耐久値
-		int m_Durable;
+		float m_Durable;
+		//最大の耐久値
+		float m_MaxDurable;
 		//弱攻撃の耐久ダメージ
-		int m_LowDurableDamage;
+		float m_LowDurableDamage;
 		//強攻撃の耐久ダメージ
-		int m_StrongDurableDamage;
-
+		float m_StrongDurableDamage;
+		//武器の種類
+		WeaponType m_Type;
+	};
+	class Tween {
+	public:
+		void SetTween(float& v, float end, float d);
+		bool Update();
+	private:
+		float& value;
+		float start, end;
+		float time;
+		float step;
+		float duration;
+		float frame;
 	};
 	//class CSVLoader {
 	//public:

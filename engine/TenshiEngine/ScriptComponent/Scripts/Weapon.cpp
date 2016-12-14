@@ -2,14 +2,26 @@
 #include "Input/Input.h"
 #include "h_component.h"
 #include "h_standard.h"
-#include "Sandbag.h"
+#include "Enemy.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Weapon::Initialize(){
 	is_hand = false;
+	is_fly = false;
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+	if (m_table) {
+		m_param=m_table->GetScript<WeaponTable>()->GetWeaponParametor(m_name);
+	}else{
+		m_param.SetAttack(5);
+		m_param.SetDurableDamage(1, 10);
+		m_param.SetDurable(400);
+		m_param.SetName("DebugWeapon");
+		m_param.SetWeaponType(WeaponType::Sword);
 
+	}
+	m_param.DebugLog();
+	
 	SetHitCollback([](auto o,auto w, auto t) {});
 	//auto child = gameObject->mTransform->Children();
 	//for (auto it = child.begin(); it != child.end(); ++it) {
@@ -18,6 +30,7 @@ void Weapon::Initialize(){
 	//	}
 	//}
 
+	mWeaponControl = Hx::FindActor("WeaponControl");
 	//m_ThrowHit = 
 }
 
@@ -29,7 +42,7 @@ void Weapon::Start(){
 void Weapon::Update(){	
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
-	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime();
+	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
 	//PierceSupport(gameObject);
 	//Hx::Debug()->Log(std::to_string(gameObject->mTransform->DegreeRotate().x));
 }
@@ -57,7 +70,7 @@ void Weapon::OnCollideBegin(GameObject target){
 	}
 	if (target->GetLayer() == 3 && is_hand) {
 		//サンドバッグへのダメージの処理
-		if (auto scr = target->GetScript<Sandbag>()) {
+		if (auto scr = Enemy::GetEnemy(target)) {
 			if (!is_ground_hit) {
 				m_Recast = 0.0f;
 				//scr->Damage(m_AttackForce);
@@ -81,16 +94,16 @@ void Weapon::OnCollideExit(GameObject target){
 /// <summary>
 ///武器へのダメージ
 /// </summary>
-void Weapon::Damage(int damage)
+void Weapon::Damage(DamageType type,float mag=1.0f)
 {
-	m_Endurance -= damage;
+	m_param.Damage(type,mag);
 }
 /// <summary>
 ///武器が壊れた時の判定
 /// </summary>
 bool Weapon::isBreak()
 {
-	return (m_Endurance <= 0) ? true : false;
+	return m_param.isBreak();
 }
 /// <summary>
 ///武器を捨てる処理
@@ -98,7 +111,7 @@ bool Weapon::isBreak()
 void Weapon::ThrowAway()
 {
 	SetHitCollback([](auto o,auto w,auto t) {});
-
+	is_fly = true;
 	is_hand = false;
 	is_ground_hit = false;
 	m_weapon_rot = 0.0f;
@@ -123,15 +136,17 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 	mIsEnemyThrow = true;
 	ThrowAway();
 	is_ground_hit = true;
-	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir*30.0f, ForceMode::eIMPULSE);
+	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir*50.0f, ForceMode::eIMPULSE);
 }
 void Weapon::WeaponUsePhysX()
 {
 	if (!is_hand) {
+
 		gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 		gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 		is_hand = false;
 		is_ground_hit = true;
+		is_fly = false;
 		Hx::Debug()->Log("Hit");
 	}
 }
@@ -150,6 +165,7 @@ void Weapon::GetWeapon()
 {
 	is_ground_hit = false;
 	is_hand = true;
+	is_fly = false;
 	//gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
@@ -157,12 +173,65 @@ void Weapon::GetWeapon()
 	Hx::Debug()->Log("get");
 }
 
+float Weapon::GetAttackPower()
+{
+	return (isBreak())?1.0f:m_param.AttackParam();
+}
+
+float Weapon::GetDurable()
+{
+	return m_param.GetDurable();
+}
+
+WeaponType Weapon::GetWeaponType()
+{
+	return m_param.GetWeaponType();
+}
+//予期せぬバグがあります
+void Weapon::SwapWeapon(GameObject target)
+{
+	if (!is_hand)return;
+	if (true)return;
+	XMVECTOR pos = gameObject->mTransform->WorldPosition();
+	XMVECTOR localpos = gameObject->mTransform->Position();
+	XMVECTOR rot = gameObject->mTransform->Rotate();
+	GameObject parent = gameObject->mTransform->GetParent();
+
+
+	gameObject->mTransform->WorldPosition(target->mTransform->WorldPosition());
+	gameObject->mTransform->Rotate(target->mTransform->Rotate());
+	
+	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
+	gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
+	is_hand = false;
+	is_fly = false;
+	is_ground_hit = true;
+	gameObject->mTransform->SetParent(NULL);
+
+
+	target->mTransform->Position(localpos);
+	target->mTransform->Rotate(rot);
+	target->mTransform->SetParent(parent);
+	//effect
+
+}
+
+bool Weapon::isGetWeapon()
+{
+	return !is_fly;
+}
+
+float Weapon::GetMaxDurable()
+{
+	return m_param.GetMaxDurable();
+}
+
 void Weapon::ThrowAwayAction()
 {
 	if (is_ground_hit || is_hand)return;
 	m_weapon_rot = max(m_weapon_rot, 0);
 	auto rot = gameObject->mTransform->WorldQuaternion();
-	gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*450 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
+	gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*900 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
 }
 
 void Weapon::PierceSupport(GameObject obj)
@@ -176,4 +245,5 @@ void Weapon::PierceSupport(GameObject obj)
 
 void Weapon::Effect()
 {
+
 }
