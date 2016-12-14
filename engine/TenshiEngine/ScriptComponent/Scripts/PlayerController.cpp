@@ -1,15 +1,15 @@
 #include "PlayerController.h"
-
 #include "../h_standard.h"
 #include "../h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
 #include "WeaponHand.h"
-# include "MoveAbility.h"
+#include "MoveAbility.h"
 #include "TPSCamera.h"
 #include "GetWeapon.h"
 #include "TimeManager.h"
 #include "GetEnemy.h"
-# include "AimController.h"
+#include "AimController.h"
+#include "SoundManager.h"
 
 namespace Init {
 	static const float RotateLimit_default = 360.0f * 3.0f;
@@ -789,6 +789,7 @@ void PlayerController::KnockBackExit()
 	m_IsInvisible = false;
 }
 
+
 void PlayerController::DownEnter()
 {
 	m_IsInvisible = true;
@@ -1093,6 +1094,7 @@ bool PlayerController::attack()
 void PlayerController::throwAway(GameObject target,bool isMove)
 {
 	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+
 	if (target && weaponHand) {
 		weaponHand->ThrowAway(target,isMove);
 	}
@@ -1110,24 +1112,29 @@ void PlayerController::lockOn()
 	if (camera) {
 		camera->SetLeft(0.0f);
 
-
+		//ロックオンしている(敵)
 		if (m_LockOnEnabled) {
+			//ロックオンしている敵が存在する
 			if (auto target = camera->GetLookTarget()) {
 				auto pos = gameObject->mTransform->WorldPosition();
 				auto tarpos = target->mTransform->WorldPosition();
+
+				//対象との距離が遠くなったら
 				if (XMVector3Length(pos - tarpos).x > 50.0f) {
 					m_LockOnEnabled = false;
 					camera->SetLookTarget(NULL);
 				}
 			}
 			else {
+				//ロックオンを解除
 				m_LockOnEnabled = false;
 			}
 		}
 	}
 
+	//Tキー押したら
 	if (BindInput(PlayerInput::LockOn)) {
-
+		//ロックオンされていない
 		if (!m_LockOnEnabled) {
 			if (!m_GetEnemy)return;
 			auto getenemy = m_GetEnemy->GetScript<GetEnemy>();
@@ -1140,15 +1147,14 @@ void PlayerController::lockOn()
 				camera->SetLookTarget(enemy);
 			}
 		}
-		else {
-			camera->SetLookTarget(NULL);
-		}
 	
 		m_LockOnEnabled = !m_LockOnEnabled;
 	}
 
 	if (!m_LockOnEnabled)return;
 	
+	/*↓ロックオンされていた場合の処理↓*/
+
 	if (BindInput(PlayerInput::LockOn_L)) {
 
 		if (!m_GetEnemy)return;
@@ -1175,7 +1181,12 @@ void PlayerController::lockOn()
 			if (!enemy)return;
 			camera->SetLookTarget(enemy);
 		}
+	}
 
+	//LookTargetのレイヤーが"Layer3"(敵)だったなら
+	if (camera->GetLookTarget()->GetLayer() == 3) {
+		//敵を保存
+		camera->SetSaveEnemy(camera->GetLookTarget());
 	}
 
 	auto f = m_Camera->mTransform->Forward();
@@ -1204,6 +1215,7 @@ void PlayerController::GettingWeapon(){
 	if (!m_WeaponHand) return;
 	if (!m_GetWeapon) return;
 	if (!m_TimeManager) return;
+	if (!m_Camera) return;
 
 	//GetWeaponのスクリプトの取得
 	auto getWeapon = m_GetWeapon->GetScript<GetWeapon>();
@@ -1217,11 +1229,15 @@ void PlayerController::GettingWeapon(){
 	auto timeMgr = m_TimeManager->GetScript<TimeManager>();
 	if (!timeMgr) return;
 
+	//TPSCameraのスクリプトの取得
+	auto camera = m_Camera->GetScript<TPSCamera>();
+	if (!camera) return;
 	if (!m_marker) return;
 
+	//武器を持っていたら
 	if (weaponHand->GetHandWeapon()) {
+		//オフ
 		m_marker->Disable();
-		return;
 	}
 
 	if (m_tempWeapon) {
@@ -1233,11 +1249,11 @@ void PlayerController::GettingWeapon(){
 		m_marker->Disable();
 	}
 
-	//一定時間長押ししたら
+	//Fキーを一定時間長押ししたら
 	if (m_InputF_Time > 0.5f) {
 		//スローモードにする
 		timeMgr->OnSlow();
-
+		
 		if (Input::Trigger(KeyCode::Key_G)) {
 			//選択対象から左に一番近いものを取得
 			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::left);
@@ -1251,6 +1267,25 @@ void PlayerController::GettingWeapon(){
 			if (t)
 				m_tempWeapon = t;
 		}
+		//武器を見る
+		camera->SetLookTarget(m_tempWeapon);
+	}
+	else {
+		//ターゲット情報を保存していなかったら
+		if (!camera->GetSaveEnemy()) {
+			//フリールック
+			camera->SetLookTarget(NULL);
+		}
+		else{
+			//ロックオンしていた
+			if (m_LockOnEnabled) {
+				camera->SetLookTarget(camera->GetSaveEnemy());
+			}
+			else {
+				camera->SetLookTarget(NULL);
+			}
+
+		}
 	}
 
 	//Fキーを押している時間をカウント
@@ -1259,6 +1294,9 @@ void PlayerController::GettingWeapon(){
 	}
 	//Fキーを話したら
 	else if (Input::Up(KeyCode::Key_F)) {
+		auto sound = m_soundManager->GetScript<SoundManager>();
+		sound->GetSound(SoundManager::SoundID::Enum::kiru, gameObject->mTransform->WorldPosition());
+		throwAway();
 		if (m_tempWeapon) { 
 		//選択した武器をセット
 			weaponHand->SetWeapon(m_tempWeapon, [&](auto o,Weapon* w, auto t) {
@@ -1269,7 +1307,6 @@ void PlayerController::GettingWeapon(){
 						if (t == Weapon::HitState::Damage) {
 							AddSpecial(m_CurrentAttack.AddSpecial);
 						}
-						
 					}
 				}
 			});
@@ -1280,8 +1317,14 @@ void PlayerController::GettingWeapon(){
 		timeMgr->OffSlow();
 	}
 	else {
+		if (weaponHand->GetHandWeapon()) {
+			getWeapon->SetExClusionWeapon(weaponHand->GetHandWeapon());
+		}
+		else {
+			getWeapon->SetExClusionWeapon(NULL);
+		}
 		//常に一番近い武器を取得
-		m_tempWeapon = getWeapon->GetMinWeapon();
+		m_tempWeapon = getWeapon->GetMinWeapon();	
 	}
 }
 

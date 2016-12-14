@@ -48,7 +48,7 @@ public:
 			Down,
 			Movie,
 			Dead,
-			Count,
+			Count
 		};
 	};
 	struct KnockBack {
@@ -191,6 +191,8 @@ private:
 	PrefabAsset m_BloodParticle;
 	SERIALIZE
 	PrefabAsset m_GuardParticle;
+	SERIALIZE
+	GameObject m_soundManager;
 
 	float m_FloatJumpTimer;
 

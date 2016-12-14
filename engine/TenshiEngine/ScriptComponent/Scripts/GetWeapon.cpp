@@ -6,6 +6,7 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void GetWeapon::Initialize(){
+	m_ExClusionWeapon = NULL;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -46,13 +47,17 @@ GameObject GetWeapon::GetMinWeapon(){
 	auto pos = gameObject->mTransform->WorldPosition();
 	float lowL = 9999999.0f;
 	GameObject lowObj = NULL;
-	for (auto enemy : m_WeaponList) {
-		if (!enemy) continue;
-		auto l = XMVector3Length(pos - enemy->mTransform->WorldPosition()).x;
+	for (auto weapon : m_WeaponList) {
+		if (!weapon) continue;
+		if (weapon == m_ExClusionWeapon) {
+			continue;
+		}
+		auto l = XMVector3Length(pos - weapon->mTransform->WorldPosition()).x;
 		if (l < lowL) {
-			lowObj = enemy;
+			lowObj = weapon;
 			lowL = l;
 		}
+		
 	}
 	return lowObj;
 }
@@ -68,7 +73,6 @@ GameObject GetWeapon::GetPointMinWeapon(GameObject currentTarget, MinVect::ENum 
 	float lowL = 9999999.0f;
 	GameObject lowObj = NULL;
 
-
 	auto mat = XMMatrixLookToLH(XMVectorZero(), vect, XMVectorSet(0, 1, 0, 1));
 	mat = XMMatrixTranspose(mat);
 	XMVECTOR Null;
@@ -77,12 +81,15 @@ GameObject GetWeapon::GetPointMinWeapon(GameObject currentTarget, MinVect::ENum 
 	auto temp = XMMatrixMultiply(XMMatrixTranslationFromVector(currentTarget->mTransform->WorldPosition()), mat);
 	auto CurrentTargetPos = temp.r[3];
 
-	for (auto enemy : m_WeaponList) {
-		if (!enemy) continue;
-		auto posmat = XMMatrixMultiply(XMMatrixTranslationFromVector(enemy->mTransform->WorldPosition()), mat);
+	for (auto weapon : m_WeaponList) {
+		if (!weapon) continue;
+		if (weapon == m_ExClusionWeapon) {
+			continue;
+		}	
+		auto posmat = XMMatrixMultiply(XMMatrixTranslationFromVector(weapon->mTransform->WorldPosition()), mat);
 		float l = abs(posmat.r[3].x - CurrentTargetPos.x);
 
-		XMVECTOR vect2 = XMVector3Normalize(enemy->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
+		XMVECTOR vect2 = XMVector3Normalize(weapon->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
 		if (m_Camera) {
 			if (XMVector3Dot(camvec, vect2).x < 0)continue;
 		}
@@ -91,7 +98,7 @@ GameObject GetWeapon::GetPointMinWeapon(GameObject currentTarget, MinVect::ENum 
 
 			if (posmat.r[3].x < CurrentTargetPos.x) {
 				if (l < lowL) {
-					lowObj = enemy;
+					lowObj = weapon;
 					lowL = l;
 				}
 			}
@@ -99,11 +106,15 @@ GameObject GetWeapon::GetPointMinWeapon(GameObject currentTarget, MinVect::ENum 
 		else if (minVect == MinVect::right) {
 			if (posmat.r[3].x > CurrentTargetPos.x) {
 				if (l < lowL) {
-					lowObj = enemy;
+					lowObj = weapon;
 					lowL = l;
 				}
 			}
 		}
 	}
 	return lowObj;
+}
+
+void GetWeapon::SetExClusionWeapon(GameObject weapon){
+	m_ExClusionWeapon = weapon;
 }

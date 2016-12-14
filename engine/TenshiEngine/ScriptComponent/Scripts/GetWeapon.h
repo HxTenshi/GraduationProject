@@ -22,10 +22,12 @@ public:
 
 	GameObject GetMinWeapon();
 	GameObject GetPointMinWeapon(GameObject currentTarget, MinVect::ENum minVect);
+	void SetExClusionWeapon(GameObject weapon);
 
 private:
 	//ƒƒ“ƒo•Ï”
 	std::list<GameObject> m_WeaponList;
 	SERIALIZE
 	GameObject m_Camera;
+	GameObject m_ExClusionWeapon;
 };
