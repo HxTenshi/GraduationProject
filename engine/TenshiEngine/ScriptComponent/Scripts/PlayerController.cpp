@@ -129,6 +129,9 @@ void PlayerController::Initialize(){
 
 	m_MoutionSpeed = 1.0f;
 
+	m_MoveX = 0.0f;
+	m_MoveZ = 0.0f;
+
 	m_MoveVelo = XMVectorZero();
 
 	m_StateFunc.resize(PlayerState::Count);
@@ -1088,6 +1091,47 @@ void PlayerController::move()
 		x = 1.0f;
 	}
 
+	float kansei = 10.0f * time;
+	if (x == 0.0f && m_MoveX != 0.0f) {
+		if (abs(m_MoveX) <= kansei) {
+			x = -m_MoveX;
+		}
+		else {
+			x = -(m_MoveX / abs(m_MoveX));
+			x *= kansei;
+		}
+	}
+	else {
+		x *= kansei;
+	}
+	if (y == 0.0f && m_MoveZ != 0.0f) {
+		if (abs(m_MoveZ) <= kansei) {
+			y = -m_MoveZ;
+		}
+		else {
+			y = -(m_MoveZ / abs(m_MoveZ));
+			y *= kansei;
+		}
+	}
+	else {
+		y *= kansei;
+	}
+
+	m_MoveX += x;
+	m_MoveZ += y;
+
+	m_MoveX = min(max(m_MoveX, -1.0f), 1.0f);
+	m_MoveZ = min(max(m_MoveZ, -1.0f), 1.0f);
+
+	auto xy = XMVectorSet(m_MoveX, m_MoveZ, 0, 1);
+	auto l = XMVector2Length(xy).x;
+	if (l>=0.01f) {
+		l = min(max(l, -1.0f), 1.0f);
+		xy = XMVector2Normalize(xy) * l;
+	}
+	else {
+		xy = XMVectorZero();
+	}
 
 	m_IsGround = m_CharacterControllerComponent->IsGround();
 
@@ -1115,8 +1159,6 @@ void PlayerController::move()
 			}
 		}
 	}
-
-	auto xy = XMVector2Normalize(XMVectorSet(x, y, 0, 1));
 	auto v = XMVectorZero();
 
 	if (m_Camera) {
@@ -1137,8 +1179,8 @@ void PlayerController::move()
 		}
 
 		v.y = 0.0f;
-		if(XMVector3Length(v).x != 0)
-		v = XMVector3Normalize(v);
+		//if(XMVector3Length(v).x != 0)
+		//v = XMVector3Normalize(v);
 	}
 
 	mVelocity = v;
@@ -1148,23 +1190,28 @@ void PlayerController::move()
 		if (BindInput(PlayerInput::Jump)) {
 			mJump.y += m_JumpPower;
 		}
-		v *= speed;
-
-		mJump.x = v.x;
-		mJump.z = v.z;
+		//v *= speed;
+		//mJump.x = v.x;
+		//mJump.z = v.z;
 	}
-	else{
 
-		//mJump.x -= mJump.x * 6.0f * time;
-		//mJump.z -= mJump.z * 6.0f * time;
-		auto v2 = mJump + v * speed * 1.5f * time;
-		v2.y = 0.0f;
-		auto s = min(max(XMVector3Length(v2).x, -speed), speed);
-		v2 = XMVector3Normalize(v2)*s;
-		mJump.x = v2.x;
-		mJump.z = v2.z;
+	//äµê´à⁄ìÆ
+	//else{
+	//	//mJump.x -= mJump.x * 6.0f * time;
+	//	//mJump.z -= mJump.z * 6.0f * time;
+	//	auto v2 = mJump + v * speed * 1.5f * time;
+	//	v2.y = 0.0f;
+	//	auto s = min(max(XMVector3Length(v2).x, -speed), speed);
+	//	v2 = XMVector3Normalize(v2)*s;
+	//	mJump.x = v2.x;
+	//	mJump.z = v2.z;
 
-	}
+	//}
+
+	v *= speed;
+
+	mJump.x = v.x;
+	mJump.z = v.z;
 
 }
 

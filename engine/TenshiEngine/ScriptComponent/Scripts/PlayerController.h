@@ -189,6 +189,9 @@ private:
 
 	float m_MoutionSpeed;
 
+	float m_MoveX;
+	float m_MoveZ;
+
 	//11 / 04í«â¡çXêV
 	SERIALIZE
 	GameObject m_WeaponHand;
