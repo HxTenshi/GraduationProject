@@ -36,10 +36,17 @@ void SoundManager::OnCollideExit(GameObject target){
 }
 
 void SoundManager::GetSound(SoundID::Enum key, XMVECTOR pos){
-
+	if (!soundBox.IsLoad()) {
+		Hx::Debug()->Log("soundBox‚È‚¢‚æ");
+		return;
+	}
  	GameObject g = Hx::Instance(soundBox);
 	g->mTransform->WorldPosition(pos);
 	auto s = g->GetComponent<SoundComponent>();
+	if (!s) {
+		Hx::Debug()->Log("SoundManageruSoundCommponent‚È‚¢‚æv");
+		return;
+	}
 	s->LoadFile(m_SoundMap[key]);
 	s->Play();
 }

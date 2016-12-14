@@ -1307,6 +1307,10 @@ void PlayerController::GettingWeapon(){
 	//FƒL[‚ð˜b‚µ‚½‚ç
 	else if (Input::Up(KeyCode::Key_F)) {
 		auto sound = m_soundManager->GetScript<SoundManager>();
+		if (!sound) {
+			Hx::Debug()->Log("SoundManager‚È‚¢‚æ");
+			return;
+		};
 		sound->GetSound(SoundManager::SoundID::Enum::kiru, gameObject->mTransform->WorldPosition());
 		throwAway();
 		if (m_tempWeapon) { 

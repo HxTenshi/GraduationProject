@@ -15,8 +15,12 @@ void SoundBox::Start(){
 //毎フレーム呼ばれます
 void SoundBox::Update(){
 	auto sound = gameObject->GetComponent<SoundComponent>();
+	if (!sound) {
+		Hx::Debug()->Log("SoundBox「soundComponentないよ」");
+		return;
+	}
+	//再生が終わったなら
 	if (!sound->IsPlay()) {
-		Hx::Debug()->Log("isplay");
 		Hx::DestroyObject(gameObject);
 	}
 }
