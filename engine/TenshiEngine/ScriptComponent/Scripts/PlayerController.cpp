@@ -158,6 +158,8 @@ void PlayerController::Initialize(){
 	stateFlip();
 
 	m_CurrentAnimeID = -1;
+	m_CurrentAnimeID_Back = -1;
+	m_CurrentAnime_Weight = 1.0f;
 
 	m_AttackStateList.resize(WeaponType::Count);
 	for (auto& list : m_AttackStateList) {
@@ -648,6 +650,8 @@ void PlayerController::LockExit()
 
 void PlayerController::FreeEnter()
 {
+	m_MoveX = 0.0f;
+	m_MoveZ = 0.0f;
 }
 
 void PlayerController::FreeExcute()
@@ -920,12 +924,16 @@ void PlayerController::DodgeEnter()
 	}
 	mJump = XMVectorZero();
 
-	m_DogdeParam.Timer = 0.4f;
+	
 
-	m_MoveVelo = XMVector3Normalize(v) * GetMovementSpeed() * 1.3f;
+	m_DogdeParam.Timer = 0.75f;
+
+	m_MoveVelo = XMVector3Normalize(v) * GetMovementSpeed() * 1.1f;
 	mJump.y += m_JumpPower / 2.0f;
 	
 	m_IsInvisible=true;
+
+	changeAnime(AnimeID::Dogde);
 }
 
 void PlayerController::DodgeExcute()
@@ -946,13 +954,28 @@ void PlayerController::DodgeExcute()
 			}
 		}
 	}
+
+	changeAnime(AnimeID::Dogde);
+
+	if (m_AnimeModel) {
+		auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
+		if (anime->IsAnimationEnd(AnimeID::Dogde)) {
+			SetPlayerState(PlayerState::Free);
+		}
+	}
+	else {
+		SetPlayerState(PlayerState::Free);
+
+	}
 	
 
 	if (m_DogdeParam.Timer <= 0.0f) {
-		SetPlayerState(PlayerState::Free);
+		if (m_NextAttack != -1) {
+			SetPlayerState(PlayerState::Free);
+		}
 	}
 
-	changeAnime(AnimeID::Dogde);
+	//changeAnime(AnimeID::Dogde);
 }
 
 void PlayerController::DodgeExit()
@@ -1571,12 +1594,14 @@ void PlayerController::GettingWeapon(){
 	}
 	//Fキーを話したら
 	else if (Input::Up(KeyCode::Key_F)) {
-		auto sound = m_soundManager->GetScript<SoundManager>();
-		if (!sound) {
-			Hx::Debug()->Log("SoundManagerないよ");
-			return;
-		};
-		sound->GetSound(SoundManager::SoundID::Enum::kiru, gameObject->mTransform->WorldPosition());
+		if (m_soundManager) {
+			auto sound = m_soundManager->GetScript<SoundManager>();
+			if (!sound) {
+				Hx::Debug()->Log("SoundManagerないよ");
+				return;
+			};
+			sound->GetSound(SoundManager::SoundID::Enum::kiru, gameObject->mTransform->WorldPosition());
+		}
 		throwAway();
 		if (m_tempWeapon) { 
 		//選択した武器をセット
@@ -1635,19 +1660,48 @@ float PlayerController::getMoutionTime(int id)
 void PlayerController::animeFlip()
 {
 	if (!m_AnimeModel)return;
-	if (m_CurrentAnimeID_Stack == m_CurrentAnimeID)return;
 	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
+
+	if (m_CurrentAnime_Weight != 1.0f) {
+		m_CurrentAnime_Weight += 10.0f*Hx::DeltaTime()->GetDeltaTime();
+		m_CurrentAnime_Weight = min(m_CurrentAnime_Weight, 1.0f);
+
+
+		if (m_CurrentAnimeID >= 0) {
+			auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
+			p.mWeight = m_CurrentAnime_Weight;
+			anime->SetAnimetionParam(m_CurrentAnimeID, p);
+		}
+		if (m_CurrentAnimeID_Back >= 0) {
+			auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Back);
+			p.mWeight = 1.0f - m_CurrentAnime_Weight;
+			anime->SetAnimetionParam(m_CurrentAnimeID_Back, p);
+		}
+
+	}
+
+	if (m_CurrentAnimeID_Stack == m_CurrentAnimeID)return;
 	if (!anime)return;
-	if (m_CurrentAnimeID >= 0) {
-		auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
+
+	if (m_CurrentAnimeID_Back >= 0) {
+		auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Back);
 		p.mWeight = 0.0f;
-		anime->SetAnimetionParam(m_CurrentAnimeID, p);
+		anime->SetAnimetionParam(m_CurrentAnimeID_Back, p);
+	}
+
+	m_CurrentAnime_Weight = 0.0f;
+
+	if (m_CurrentAnimeID >= 0) {
+		//auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
+		//p.mWeight = 0.0f;
+		//anime->SetAnimetionParam(m_CurrentAnimeID, p);
 	}
 	auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Stack);
 	p.mTime = 0.0f;
-	p.mWeight = 1.0f;
+	p.mWeight = 0.0f;
 	p.mTimeScale = m_MoutionSpeed;
 	anime->SetAnimetionParam(m_CurrentAnimeID_Stack, p);
+	m_CurrentAnimeID_Back = m_CurrentAnimeID;
 	m_CurrentAnimeID = m_CurrentAnimeID_Stack;
 }
 

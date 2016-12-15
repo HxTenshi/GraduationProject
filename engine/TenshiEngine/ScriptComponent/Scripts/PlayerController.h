@@ -249,7 +249,9 @@ private:
 	bool m_LockOnEnabled;
 
 	int m_CurrentAnimeID_Stack;
+	int m_CurrentAnimeID_Back;
 	int m_CurrentAnimeID;
+	float m_CurrentAnime_Weight;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;
 
