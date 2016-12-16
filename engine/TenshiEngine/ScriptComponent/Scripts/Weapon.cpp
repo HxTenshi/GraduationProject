@@ -3,6 +3,7 @@
 #include "h_component.h"
 #include "h_standard.h"
 #include "Enemy.h"
+#include "WeaponEffect.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Weapon::Initialize(){
 	is_hand = false;
@@ -40,6 +41,12 @@ void Weapon::Start(){
 
 //毎フレーム呼ばれます
 void Weapon::Update(){	
+	if (Input::Trigger(KeyCode::Key_C)) {
+		if (m_WeaponEffect) {
+			auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
+			scr->Action();
+		}
+	}
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
