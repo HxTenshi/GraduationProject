@@ -4,9 +4,8 @@
 #include "Game/Component/CharacterControllerComponent.h"
 
 TPSCamera::TPSCamera(){
-	mDistance = 5.0f;
-	mUp = 1.0f;
 	mTarget = NULL;
+	mSaveEnemy = NULL;
 	mRotate = XMFLOAT2(0, 0);
 	m_SpringVelocity = XMVectorZero();
 }
@@ -42,13 +41,21 @@ void TPSCamera::Update(){
 		auto pos = mTarget->mTransform->WorldPosition();
 		auto back = -gameObject->mTransform->Forward() * mDistance;
 		auto up = gameObject->mTransform->Up() * mUp;
-		auto left = gameObject->mTransform->Left() * mLeft;
+		float l = 1.0f;
+		if (mLookTarget) {
+			l = XMVector3Length(mTarget->mTransform->WorldPosition()-mLookTarget->mTransform->WorldPosition()).x;
+			l *= 0.1f;
+			l = min(l, 1.0f);
+
+		}
+		auto left = gameObject->mTransform->Left() * mLeft * l;
 		auto campos = pos + back + up + left;
 
 		if (m_CharacterControllerComponent) {
-			pos += -gameObject->mTransform->Forward()* 1.0f;
-			m_CharacterControllerComponent->Teleport(pos);
+			//pos += gameObject->mTransform->Forward()* 1.0f;
 			campos -= pos;
+			pos.y += 1.0f;
+			m_CharacterControllerComponent->Teleport(pos);
 			m_CharacterControllerComponent->Move(campos);
 
 			campos = gameObject->mTransform->WorldPosition();
@@ -76,14 +83,15 @@ void TPSCamera::Update(){
 	}
 
 	if (mLookTarget) {
-		auto eye = mTarget->mTransform->WorldPosition();
+		auto eye = gameObject->mTransform->WorldPosition();
+		eye -= gameObject->mTransform->Up() * mUp;
+
 		auto at = mLookTarget->mTransform->WorldPosition();
 		auto rotate = XMMatrixTranspose(XMMatrixLookAtLH(eye, at, XMVectorSet(0, 1, 0, 1)));
 		auto q = XMQuaternionRotationMatrix(rotate);
 		gameObject->mTransform->WorldQuaternion(q);
 	}
 	else {
-
 		int mx, my;
 		Input::MousePosition(&mx, &my);
 		auto p = Hx::System()->GetLockCursorPosition();
@@ -104,13 +112,11 @@ void TPSCamera::Update(){
 		qx = XMQuaternionNormalize(qx);
 
 		gameObject->mTransform->WorldQuaternion(qx);
-
 	}
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void TPSCamera::Finish(){
-
 }
 
 //コライダーとのヒット時に呼ばれます
@@ -130,7 +136,7 @@ void TPSCamera::OnCollideExit(GameObject target){
 
 XMVECTOR TPSCamera::spring(XMVECTOR position, const XMVECTOR& desiredPosition)
 {
-	float time = Hx::DeltaTime()->GetDeltaTime();
+	float time = Hx::DeltaTime()->GetNoScaleDeltaTime();
 	// バネの力を計算
 	auto stretch = position - desiredPosition;
 	auto force = -m_SpringStiffness * stretch - m_SpringDamping * m_SpringVelocity;

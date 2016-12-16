@@ -5,6 +5,10 @@
 #include "OutputConnectorMultipleExporterGimic.h"
 #include "OutputChangeEnableGimic.h"
 #include "OutputConectorRandomGimic.h"
+#include "OutputMoveObjectGimic.h"
+# include "OutputChangePhysicesGimic.h"
+#include "OutputConnectorStackGimic.h"
+
 
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 {
@@ -15,6 +19,12 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 	if (auto scr = target->GetScript<OutputConnectorMultipleExporterGimic>())return scr;
 	if (auto scr = target->GetScript<OutputChangeEnableGimic>())return scr;
 	if (auto scr = target->GetScript<OutputConectorRandomGimic>())return scr;
+	if (auto scr = target->GetScript<OutputMoveObjectGimic>())return scr;
+	if (auto scr = target->GetScript<OutputConnectorStackGimic>())return scr;
+	
+	
+
+	if (auto scr = target->GetScript<OutputChangePhysicesGimic>())return scr;
 
 	return NULL;
 }

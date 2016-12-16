@@ -14,7 +14,8 @@ enum DamageType {
 enum WeaponType {
 	Sword,
 	Rance,
-	Axe
+	Axe,
+	Count
 };
 
 class WeaponCommon :public IDllScriptComponent{

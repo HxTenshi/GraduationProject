@@ -106,6 +106,8 @@ private:
 	float m_Recast;
 	SERIALIZE
 	GameObject m_ThrowHit;
+	SERIALIZE
+	GameObject m_WeaponEffect;
 
 	//—é–Ø’Ç‰Á
 	SERIALIZE GameObject mWeaponControl;

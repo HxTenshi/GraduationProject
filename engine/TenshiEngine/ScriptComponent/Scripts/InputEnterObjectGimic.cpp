@@ -27,6 +27,7 @@ void InputEnterObjectGimic::Finish(){
 void InputEnterObjectGimic::OnCollideBegin(GameObject target){
 
 	if (!target)return;
+	if (!_m_OutputGimic)return;
 
 	auto gimic = OutputGimic::GetOutputGimic(_m_OutputGimic);
 	if (!gimic)return;

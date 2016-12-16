@@ -3,6 +3,8 @@
 #include "main.h"
 #include <functional>
 #include <vector>
+#include "WeaponCommon.h"
+#include "Enemy.h"
 
 enum NextAttack {
 	None,
@@ -22,7 +24,11 @@ struct AttackState {
 	float DamageScale = 0.0f;
 	float AddSpecial = 0.0f;
 	float AttackMove = 0.0f;
+	float FloatMove = 0.0f;
 	std::function<void(void)> AttackFunc = []() {};
+	DamageType DamageType = DamageType::LowDamage;
+	BATTLEACTION::Enum KnockbackEffect = BATTLEACTION::WINCEACTION;
+	float KnockbackEffectPower = 0.0f;
 };
 
 class CharacterControllerComponent;
@@ -48,7 +54,7 @@ public:
 			Down,
 			Movie,
 			Dead,
-			Count,
+			Count
 		};
 	};
 	struct KnockBack {
@@ -82,6 +88,9 @@ public:
 
 	void Dead();
 	void AddCoroutine(const std::function<bool(void)>& func);
+	void AddDelayUpdate(const std::function<void(void)>& func);
+
+	int GetHitComboCount();
 private:
 
 	void LockEnter();
@@ -131,12 +140,18 @@ private:
 	void lockOn();
 	void GettingWeapon();
 
+	float GetMovementSpeed();
+
 	void changeAnime(int id);
 	float getMoutionTime(int id);
 	void animeFlip();
 
 	void stateFlip();
 	//ÉÅÉìÉoïœêî
+
+	void ComboAdvantage();
+	void AddCombo();
+	void ClearCombo();
 
 	PlayerState::Enum m_PlayerState_Stack;
 	PlayerState::Enum m_PlayerState;
@@ -168,6 +183,16 @@ private:
 	SERIALIZE
 	float m_MoveSpeed;
 
+
+	float m_MoveSpeed_ComboAdd;
+	float m_MoutionSpeed_ComboAdd;
+	float m_WeaponResist_ComboAdd;
+
+	float m_MoutionSpeed;
+
+	float m_MoveX;
+	float m_MoveZ;
+
 	//11 / 04í«â¡çXêV
 	SERIALIZE
 	GameObject m_WeaponHand;
@@ -193,8 +218,16 @@ private:
 	PrefabAsset m_BloodParticle;
 	SERIALIZE
 	PrefabAsset m_GuardParticle;
+	SERIALIZE
+	GameObject m_soundManager;
+
+	SERIALIZE
+	GameObject m_BoneHips;
 
 	float m_FloatJumpTimer;
+
+	int m_HitCount;
+	float m_ComboTimer;
 
 	XMVECTOR m_MoveVelo;
 	XMVECTOR mJump;
@@ -205,6 +238,7 @@ private:
 	struct DogdeParam {
 		XMVECTOR Velocity = XMVectorZero();
 		float Timer = 0.0f;
+		float HipsZ = 0.0f;
 	} m_DogdeParam;
 
 	float m_RotateLimit;
@@ -220,15 +254,19 @@ private:
 	bool m_LockOnEnabled;
 
 	int m_CurrentAnimeID_Stack;
+	int m_CurrentAnimeID_Back;
 	int m_CurrentAnimeID;
+	float m_CurrentAnime_Weight;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;
 
 	bool m_AttackMode;
 	int m_NextAttack;
 	AttackState m_CurrentAttack;
-	std::vector<AttackState> m_AttackStateList;
+	int m_CurrentWeaponType;
+	std::vector<std::vector<AttackState>> m_AttackStateList;
 
 
 	std::list<std::function<bool(void)>> m_UpdateCoroutine;
+	std::list<std::function<void(void)>> m_DelayUpdate;
 };
