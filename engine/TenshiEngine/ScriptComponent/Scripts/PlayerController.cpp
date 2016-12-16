@@ -16,6 +16,7 @@ namespace Init {
 	static const float RotateLimit_default = 360.0f * 3.0f;
 	static const float RotateLimit_attack = 360.0f * 0.5f;
 	static const float RotateLimit_guard = 360.0f * 0.5f;
+	static const float RotateLimit_dodge = 360.0f * 1000.0f;
 }
 
 struct AttackID {
@@ -373,6 +374,18 @@ void PlayerController::Update(){
 		if (!m_CharacterControllerComponent)return;
 	}
 
+	//if (m_BoneHips && m_AnimeModel) {
+	//	float model_z = m_AnimeModel->mTransform->Position().z;
+	//	float bone_z = m_BoneHips->mTransform->Position().z;
+	//	m_AnimeModel->mTransform->Position(XMVectorSet(0, 0, model_z - bone_z, 1));
+	//}
+
+
+	for (auto& func : m_DelayUpdate) {
+		func();
+	}
+	m_DelayUpdate.clear();
+
 	ComboAdvantage();
 
 	m_StateFunc[m_PlayerState].Excute();
@@ -380,6 +393,7 @@ void PlayerController::Update(){
 	stateFlip();
 
 	animeFlip();
+
 
 	m_UpdateCoroutine.remove_if(
 		[](auto f) {return f(); }
@@ -629,6 +643,11 @@ void PlayerController::AddCoroutine(const std::function<bool(void)>& func)
 	m_UpdateCoroutine.push_back(func);
 }
 
+void PlayerController::AddDelayUpdate(const std::function<void(void)>& func)
+{
+	m_DelayUpdate.push_back(func);
+}
+
 int PlayerController::GetHitComboCount()
 {
 	return m_HitCount;
@@ -688,7 +707,7 @@ void PlayerController::FreeExcute()
 	}
 
 	{
-		if (mVelocity.x == 0.0f&&mVelocity.y == 0.0f) {
+		if (mJump.x == 0.0f && mJump.z == 0.0f) {
 			changeAnime(AnimeID::Idle);
 		}
 		else {
@@ -917,34 +936,76 @@ void PlayerController::AttackExit()
 void PlayerController::DodgeEnter()
 {
 	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
+	m_RotateLimit = Init::RotateLimit_dodge;
 
 	auto v = mJump;
 	if (abs(v.x) == 0 && abs(v.z) == 0) {
 		v = gameObject->mTransform->Forward();
 	}
+	mVelocity = mJump;
+	mVelocity.y = 0.0f;
 	mJump = XMVectorZero();
 
 	
-
-	m_DogdeParam.Timer = 0.75f;
+	m_DogdeParam.HipsZ = 0.0f;
+	m_DogdeParam.Timer = (24.0f*2.0f)/60.0f;
 
 	m_MoveVelo = XMVector3Normalize(v) * GetMovementSpeed() * 1.1f;
+	m_MoveVelo = XMVectorZero();
 	mJump.y += m_JumpPower / 2.0f;
 	
 	m_IsInvisible=true;
 
 	changeAnime(AnimeID::Dogde);
+
+	rotate();
 }
 
 void PlayerController::DodgeExcute()
 {
+	float time = Hx::DeltaTime()->GetDeltaTime();
+	if (m_BoneHips) {
+		auto model = m_AnimeModel->mTransform->Position();
+		//auto bone = m_BoneHips->mTransform->Position();
+		//model.y = 0.0f;
+		//bone.y = 0.0f;
+		//bone -= model;
+		float bone_z = model.z;
+		if (time != 0) {
+			m_MoveVelo = m_AnimeModel->mTransform->Forward() * (bone_z - m_DogdeParam.HipsZ) * (1.0f/time);
+		}
+		else {
+			m_MoveVelo = XMVectorZero();
+		}
+		m_DogdeParam.HipsZ = bone_z;
+
+	}
+
+	//AddDelayUpdate([&]() {
+	//	if (m_BoneHips) {
+
+	//		//float time = Hx::DeltaTime()->GetDeltaTime();
+	//		//float model_z = m_AnimeModel->mTransform->Position().z;
+	//		float bone_z  = m_BoneHips->mTransform->Position().z;
+	//		//m_AnimeModel->mTransform->Position(XMVectorSet(0, 0, model_z - bone_z, 1));
+	//		if (time != 0) {
+	//			//float _z = bone_z - m_DogdeParam.HipsZ;
+	//			m_MoveVelo = m_AnimeModel->mTransform->Forward() * -bone_z / time;
+	//		}
+	//		else {
+	//			m_MoveVelo = XMVectorZero();
+	//		}
+	//		//m_DogdeParam.HipsZ = bone_z;
+	//	}
+	//});
+
 
 	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
 
 	moveUpdate();
 	lockOn();
 
-	m_DogdeParam.Timer -= Hx::DeltaTime()->GetDeltaTime() * m_MoutionSpeed;
+	m_DogdeParam.Timer -= time* m_MoutionSpeed;
 
 	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
 	if (weaponHand && weaponHand->ActionFree()) {
@@ -957,6 +1018,13 @@ void PlayerController::DodgeExcute()
 
 	changeAnime(AnimeID::Dogde);
 
+	if (m_DogdeParam.Timer <= 0.0f) {
+		if (m_NextAttack != -1) {
+			SetPlayerState(PlayerState::Attack);
+			return;
+		}
+	}
+
 	if (m_AnimeModel) {
 		auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
 		if (anime->IsAnimationEnd(AnimeID::Dogde)) {
@@ -967,13 +1035,7 @@ void PlayerController::DodgeExcute()
 		SetPlayerState(PlayerState::Free);
 
 	}
-	
 
-	if (m_DogdeParam.Timer <= 0.0f) {
-		if (m_NextAttack != -1) {
-			SetPlayerState(PlayerState::Free);
-		}
-	}
 
 	//changeAnime(AnimeID::Dogde);
 }
@@ -983,8 +1045,13 @@ void PlayerController::DodgeExit()
 	m_MoutionSpeed = 1.0f;
 
 	m_DogdeParam.Timer = 0.0f;
-	m_MoveVelo = XMVectorZero();
 	m_IsInvisible=false;
+	m_MoveVelo = XMVectorZero();
+	m_RotateLimit = Init::RotateLimit_default;
+
+	//AddDelayUpdate([&]() {
+	//	m_MoveVelo = XMVectorZero();
+	//});
 }
 
 void PlayerController::KnockBackEnter()
@@ -1196,6 +1263,9 @@ void PlayerController::move()
 				v += xy.y * vect;
 				v += xy.x * XMVector3Cross(XMVectorSet(0,1,0,1), vect);
 				end = true;
+				vect.y = 0.0f;
+				vect = XMVector3Normalize(vect);
+				mVelocity = vect;
 			}
 		}
 		if (!end) {
@@ -1206,9 +1276,12 @@ void PlayerController::move()
 		v.y = 0.0f;
 		//if(XMVector3Length(v).x != 0)
 		//v = XMVector3Normalize(v);
+
+		if (!m_LockOnEnabled || xy.x != 0.0f) {
+			mVelocity = v;
+		}
 	}
 
-	mVelocity = v;
 
 	if (m_IsGround) {
 		mJump = XMVectorZero();
@@ -1486,10 +1559,10 @@ void PlayerController::lockOn()
 		camera->SetSaveEnemy(camera->GetLookTarget());
 	}
 
-	auto f = m_Camera->mTransform->Forward();
-	f.y = 0.0f;
-	f = XMVector3Normalize(f);
-	mVelocity = f;
+	//auto f = m_Camera->mTransform->Forward();
+	//f.y = 0.0f;
+	//f = XMVector3Normalize(f);
+	//mVelocity = f;
 
 	auto left = m_Camera->mTransform->Left();
 	auto v = mJump;

@@ -88,6 +88,7 @@ public:
 
 	void Dead();
 	void AddCoroutine(const std::function<bool(void)>& func);
+	void AddDelayUpdate(const std::function<void(void)>& func);
 
 	int GetHitComboCount();
 private:
@@ -220,6 +221,9 @@ private:
 	SERIALIZE
 	GameObject m_soundManager;
 
+	SERIALIZE
+	GameObject m_BoneHips;
+
 	float m_FloatJumpTimer;
 
 	int m_HitCount;
@@ -234,6 +238,7 @@ private:
 	struct DogdeParam {
 		XMVECTOR Velocity = XMVectorZero();
 		float Timer = 0.0f;
+		float HipsZ = 0.0f;
 	} m_DogdeParam;
 
 	float m_RotateLimit;
@@ -263,4 +268,5 @@ private:
 
 
 	std::list<std::function<bool(void)>> m_UpdateCoroutine;
+	std::list<std::function<void(void)>> m_DelayUpdate;
 };
