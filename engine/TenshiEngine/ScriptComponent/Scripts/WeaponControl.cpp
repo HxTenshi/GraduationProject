@@ -121,3 +121,17 @@ void WeaponControl::DeleteHitPoint()
 	isHit = false;
 	mTime = 0;
 }
+
+void WeaponControl::HitStage(GameObject target, GameObject weapon)
+{
+	//Weapon‚ÌŽ~‚Ü‚éˆ—‚ð’Ç‰Á‚·‚é
+	auto physics = weapon->GetScript<PhysXComponent>();
+	//Hx::Debug()->Log(weapon->Name());
+	//Hx::Debug()->Log(std::to_string(physics->gameObject));
+	if (physics)
+	{
+		Hx::Debug()->Log("ƒLƒlƒ}‚Ä‚¡‚Á‚­");
+		physics->SetKinematic(true);
+	}
+
+}

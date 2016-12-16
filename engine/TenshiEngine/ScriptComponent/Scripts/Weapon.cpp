@@ -66,8 +66,9 @@ void Weapon::OnCollideBegin(GameObject target){
 
 	if (mIsEnemyThrow) {
 		if (mWeaponControl) {
+			auto weapon = mWeaponControl->GetScript<WeaponControl>();
 			if (target->GetLayer() == 3)
-				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+				if (weapon) {
 					Hx::Debug()->Log("敵に投げて当たった");
 					Hx::Debug()->Log(target->Name());
 					Hx::Debug()->Log(gameObject->Name());
@@ -75,6 +76,16 @@ void Weapon::OnCollideBegin(GameObject target){
 				}
 		}
 	}
+
+	//ステージに当たった
+	if (target->GetLayer() == 4) {
+		Hx::Debug()->Log("Stageに当たった");
+		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+			Hx::Debug()->Log("Stageから");
+			weapon->HitStage(target, gameObject);
+		}
+	}
+
 	if (target->GetLayer() == 3 && is_hand) {
 		//サンドバッグへのダメージの処理
 		if (auto scr = Enemy::GetEnemy(target)) {
