@@ -111,9 +111,56 @@ void EnemyRezardMan::ChildInitialize()
 	}
 }
 
-bool EnemyRezardMan::GetChildFlag()
+void EnemyRezardMan::SoloAction()
 {
-	return m_Child;
+	if (m_BattleModeParam.id == BATTLEACTION::CONFRONTACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 30, 20, 20, 0, 5));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::APPROACHACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 0, 40, 30, 0, 5));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 40, 20, 0, 0, 5));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 20, 0, 30, 0, 5));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION) {
+		if (m_BattleModeParam.beforeId == BATTLEACTION::BACKSTEPACTION) {
+			ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(20, 30, 0, 30, 0, 5));
+		}
+		else {
+			ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(20, 30, 20, 30, 0, 5));
+		}
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::PROVOCATION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 0, 40, 30, 0, 0));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::BACKSTEPACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(15, 0, 0, 0, 70, 15));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::WINCEACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::DOWNACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
+	}
+	else if (m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION) {
+		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 40, 20, 0, 0, 5));
+	}
+}
+
+ENEMY_TYPE EnemyRezardMan::GetEnemyType()
+{
+	ENEMY_TYPE enemy_type = ENEMY_TYPE::PARENT;
+	if (m_Child) {
+		enemy_type = ENEMY_TYPE::CHILD;
+	}
+	
+	return enemy_type;
 }
 
 float EnemyRezardMan::GetOnBattleRange()

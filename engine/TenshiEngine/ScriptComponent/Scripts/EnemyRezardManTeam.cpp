@@ -1,6 +1,7 @@
 #include "EnemyRezardManTeam.h"
 #include "Enemy.h"
 #include "EnemyRezardMan.h"
+#include "EnemyArcher.h"
 
 #include "../h_standard.h"
 #include "../h_component.h"
@@ -14,17 +15,24 @@ void EnemyRezardManTeam::TeamInitialize(){
 		auto iScript = Enemy::GetEnemy(i);
 		if (!iScript)return;
 		iScript->SetPlayer(m_Player);
-		if (iScript->GetChildFlag()) {
+
+		EnemyOne eo;
+		eo.enemyParameter.enemy_type = iScript->GetEnemyType();
+		if (iScript->GetEnemyType() == ENEMY_TYPE::CHILD) {
 			iScript->ChangeActionAndTrackingAction(ACTIONMODE::TRACKINGMODE, TRACKINGACTION::CHILDTRACKING);
-			EnemyOne eo;
-			eo.enemyGameObject = i;
+			eo.enemyGameObject = i; 
 			teamMember.push_back(eo);
-		}
-		else {
-			EnemyOne eo;
+			}
+		else if (iScript->GetEnemyType() == ENEMY_TYPE::PARENT) {
 			eo.enemyGameObject = i;
 			iScript->ChangeActionAndTrackingAction(ACTIONMODE::TRACKINGMODE, TRACKINGACTION::PARENTTRACKING);
 			teamMember.insert(teamMember.begin(),eo);
+			}
+		else if (iScript->GetEnemyType() == ENEMY_TYPE::CHILD_ARCHER) {
+			eo.enemyGameObject = i;
+			archerCount++;
+			iScript->ChangeActionAndTrackingAction(ACTIONMODE::TRACKINGMODE, TRACKINGACTION::CHILDTRACKING);
+			teamMember.push_back(eo);
 		}
 	}
 	m_DiscoveryPlayer = false;
@@ -39,7 +47,8 @@ bool EnemyRezardManTeam::Alive()
 		if (!jScript)return false;
 		if (jScript->IsEnd()) {
 			//親なら親死んだフラグにセット
-			if (!jScript->GetChildFlag())parentAlive = false;
+			if (!j->enemyParameter.enemy_type == ENEMY_TYPE::PARENT)parentAlive = false;
+			if (j->enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER)archerCount--;
 			//vectorから削除
 			j = teamMember.erase(j);
 			if (m_DrawFlag)Hx::Debug()->Log("RezardManTeam : " + std::to_string(teamMember.size()) + "人");
@@ -100,7 +109,7 @@ void EnemyRezardManTeam::TeamUpdate()
 	//戦闘時の移動先を計算するのに使う(↓3つ全部)
 	XMVECTOR parentMoveVec;
 	int howManyPeople = 0;
-	float battlePosAngle = 3.14f / (float)(teamMember.size());
+	float battlePosAngle = 3.14f / (float)(teamMember.size() - archerCount);
 
 	XMVECTOR firstBattlePos;
 	auto firstScript = Enemy::GetEnemy(teamMember[battlePosFirst].enemyGameObject);
@@ -113,6 +122,7 @@ void EnemyRezardManTeam::TeamUpdate()
 	int firstSearch = 0;
 	int aftersCount = 0;
 	for (auto& j : teamMember) {
+		if (j.enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER)continue;
 		auto jScript = Enemy::GetEnemy(j.enemyGameObject);
 		if (!jScript)return;
 		if (firstSearch == battlePosFirst) {
@@ -166,166 +176,141 @@ void EnemyRezardManTeam::TeamUpdate()
 				jScript->ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 			}
 		}
+		else if (teamMember.size() == 1) {
+			//アクションが終了したため次のを決める
+			if (eap.battleModeParameter.actionFinish) {
+				jScript->SoloAction();
+			}
+		}
 		//戦闘時だったら
-		else if (eap.actionMode == ACTIONMODE::BATTLEMODE) {			
-			jScript->SetBattlePosition(battlePos[howManyPeople]);
-			if (teamMember.size() == 1) {
-				//アクションが終了したため次のを決める
-				if (eap.battleModeParameter.actionFinish) {
-					if (eap.battleModeParameter.id == BATTLEACTION::CONFRONTACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 30, 20, 20, 0, 5));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::APPROACHACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 0, 40, 30, 0, 5));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::ATTACKDOWNACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 40, 20, 0, 0, 5));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::JUMPATTACKACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 20, 0, 30, 0, 5));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::GUARDACTION) {
-						if (eap.battleModeParameter.beforeId == BATTLEACTION::BACKSTEPACTION) {
-							jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(20, 30, 0, 30, 0, 5));
-						}
-						else {
-							jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(20, 30, 20, 30, 0, 5));
-						}
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::PROVOCATION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 0, 40, 30, 0, 0));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::BACKSTEPACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(15, 0, 0, 0, 70, 15));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::DOWNACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::HITINGUARDACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
-					}
-					else if (eap.battleModeParameter.id == BATTLEACTION::ATTACKMONCKEYACTION) {
-						jScript->ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 40, 20, 0, 0, 5));
-					}
-				}
+		else if (eap.actionMode == ACTIONMODE::BATTLEMODE) {	
+			if (j.enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER) {
+
 			}
 			else {
-		
-				//攻撃
-				if (j.enemyParameter.attack) {
-					if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION ||
-						eap.battleModeParameter.id == BATTLEACTION::UPPERDOWNACTION ||
-						eap.battleModeParameter.id == BATTLEACTION::BEATDOWNACTION ||
-						eap.battleModeParameter.id == BATTLEACTION::DOWNACTION ||
-						eap.battleModeParameter.actionFinish) {
-						j.enemyParameter.attack = false;
-						whoAttack++;
-						nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
-						if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
+				jScript->SetBattlePosition(battlePos[howManyPeople]);
+				if (teamMember.size() == 1) {
+					//アクションが終了したため次のを決める
+					if (eap.battleModeParameter.actionFinish) {
+						jScript->SoloAction();
 					}
 				}
-				//同時攻撃
-				else if (j.enemyParameter.everyoneAttack) {
-					//誰か一人でもしていたらできていないやつをできなくする
-					if (everyoneAttack) {
-						everyoneAttackCountFlag = false;
-						nextAttackTimeCount = 0.0f;
-						battlePosFirst++;
-						if (battlePosFirst >= teamMember.size()) {
-							battlePosFirst = 0;
+				else {
+					//攻撃
+					if (j.enemyParameter.attack) {
+						if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION ||
+							eap.battleModeParameter.id == BATTLEACTION::UPPERDOWNACTION ||
+							eap.battleModeParameter.id == BATTLEACTION::BEATDOWNACTION ||
+							eap.battleModeParameter.id == BATTLEACTION::DOWNACTION ||
+							eap.battleModeParameter.actionFinish) {
+							j.enemyParameter.attack = false;
+							whoAttack++;
+							nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
+							if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
 						}
 					}
-					//終わったら
-					if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION ||
-						eap.battleModeParameter.id == BATTLEACTION::UPPERDOWNACTION ||
-						eap.battleModeParameter.id == BATTLEACTION::BEATDOWNACTION ||
-						eap.battleModeParameter.id == BATTLEACTION::DOWNACTION ||
-						eap.battleModeParameter.id == BATTLEACTION::JUMPATTACKACTION) {
-						j.enemyParameter.everyoneAttack = false;
-						everyoneAttack = false;
-						nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
-						if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
-					}
-					else {
-						//バックステップが終わったら
-						if (eap.battleModeParameter.id == BATTLEACTION::BACKSTEPACTION) {
-							if (eap.battleModeParameter.actionFinish) {
-								jScript->ChangeBattleAction(BATTLEACTION::JUMPATTACKACTION);
-							}
-						}
-						else {
+					//同時攻撃
+					else if (j.enemyParameter.everyoneAttack) {
+						//誰か一人でもしていたらできていないやつをできなくする
+						if (everyoneAttack) {
 							everyoneAttackCountFlag = false;
 							nextAttackTimeCount = 0.0f;
-							jScript->ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
+							battlePosFirst++;
+							if (battlePosFirst >= teamMember.size() - archerCount) {
+								battlePosFirst = 0;
+							}
 						}
-					}
-				}
-				//アクションが終了したため次のを決める
-				else if (eap.battleModeParameter.actionFinish) {
-					////自分の番だが攻撃できない場合
-					//if (!eap.battleModeParameter.canChangeAttackAction &&
-					//	whoAttack == howManyPeople) {
-					//	whoAttack++;
-					//}
-		
-					//全員が攻撃したら
-					if (whoAttack >= teamMember.size()) {
-						whoAttack = 0;
-						everyoneAttackCountFlag = true;
-					}
-					if (!j.enemyParameter.attack && whoAttack == howManyPeople && !everyoneAttackCountFlag) {
-						j.enemyParameter.nextAttackTimeCountFlag = true;
-					}
-					if (!j.enemyParameter.attack) {
-						//自分の番じゃなかったらランダムで指定
-						switch (rand() % 3) {
-						case 0:
-							jScript->ChangeBattleAction(BATTLEACTION::APPROACHACTION);
-							break;
-						case 1:
-							jScript->ChangeBattleAction(BATTLEACTION::GUARDACTION);
-							break;
-						case 2:
-							jScript->ChangeBattleAction(BATTLEACTION::PROVOCATION);
-							break;
-						default:
-							break;
-						}
-					}
-				}
-				else if (j.enemyParameter.nextAttackTimeCountFlag) {
-					nextAttackTimeCount += Hx::DeltaTime()->GetDeltaTime();
-					if (nextAttackTimeCount >= nextAttackTime) {
-						if (nextAttackTimeCount < 5 && eap.battleModeParameter.arrival && eap.battleModeParameter.canChangeAttackAction) {
-							j.enemyParameter.attack = true;
-							j.enemyParameter.nextAttackTimeCountFlag = false;
-							nextAttackTimeCount = 0.0f;
-							jScript->ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
-							if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(nextAttackTime));
+						//終わったら
+						if (eap.battleModeParameter.id == BATTLEACTION::WINCEACTION ||
+							eap.battleModeParameter.id == BATTLEACTION::UPPERDOWNACTION ||
+							eap.battleModeParameter.id == BATTLEACTION::BEATDOWNACTION ||
+							eap.battleModeParameter.id == BATTLEACTION::DOWNACTION ||
+							eap.battleModeParameter.id == BATTLEACTION::JUMPATTACKACTION) {
+							j.enemyParameter.everyoneAttack = false;
+							everyoneAttack = false;
+							nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
+							if (m_DrawFlag)Hx::Debug()->Log("nextAttackTime" + std::to_string(nextAttackTime));
 						}
 						else {
-							j.enemyParameter.nextAttackTimeCountFlag = false;
-							nextAttackTimeCount = 0.0f;
-							nextAttackTime = 0.0f;
-							whoAttack++;
-							if (m_DrawFlag)Hx::Debug()->Log("skip");
+							//バックステップが終わったら
+							if (eap.battleModeParameter.id == BATTLEACTION::BACKSTEPACTION) {
+								if (eap.battleModeParameter.actionFinish) {
+									jScript->ChangeBattleAction(BATTLEACTION::JUMPATTACKACTION);
+								}
+							}
+							else {
+								everyoneAttackCountFlag = false;
+								nextAttackTimeCount = 0.0f;
+								jScript->ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
+							}
 						}
 					}
-				}
-				else if (everyoneAttackCountFlag) {
-					if (nextAttackTimeCount >= nextAttackTime) {
-						if (nextAttackTimeCount < 5 && eap.battleModeParameter.canChangeAttackAction) {
-							j.enemyParameter.everyoneAttack = true;
-							everyoneAttack = true;
-							if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(nextAttackTime));
+					//アクションが終了したため次のを決める
+					else if (eap.battleModeParameter.actionFinish) {
+						////自分の番だが攻撃できない場合
+						//if (!eap.battleModeParameter.canChangeAttackAction &&
+						//	whoAttack == howManyPeople) {
+						//	whoAttack++;
+						//}
+
+						//全員が攻撃したら
+						if (whoAttack >= teamMember.size() - archerCount) {
+							whoAttack = 0;
+							everyoneAttackCountFlag = true;
+						}
+						if (!j.enemyParameter.attack && whoAttack == howManyPeople && !everyoneAttackCountFlag) {
+							j.enemyParameter.nextAttackTimeCountFlag = true;
+						}
+						if (!j.enemyParameter.attack) {
+							//自分の番じゃなかったらランダムで指定
+							switch (rand() % 3) {
+							case 0:
+								jScript->ChangeBattleAction(BATTLEACTION::APPROACHACTION);
+								break;
+							case 1:
+								jScript->ChangeBattleAction(BATTLEACTION::GUARDACTION);
+								break;
+							case 2:
+								jScript->ChangeBattleAction(BATTLEACTION::PROVOCATION);
+								break;
+							default:
+								break;
+							}
+						}
+					}
+					else if (j.enemyParameter.nextAttackTimeCountFlag) {
+						nextAttackTimeCount += Hx::DeltaTime()->GetDeltaTime();
+						if (nextAttackTimeCount >= nextAttackTime) {
+							if (nextAttackTimeCount < 5 && eap.battleModeParameter.arrival && eap.battleModeParameter.canChangeAttackAction) {
+								j.enemyParameter.attack = true;
+								j.enemyParameter.nextAttackTimeCountFlag = false;
+								nextAttackTimeCount = 0.0f;
+								jScript->ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
+								if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(nextAttackTime));
+							}
+							else {
+								j.enemyParameter.nextAttackTimeCountFlag = false;
+								nextAttackTimeCount = 0.0f;
+								nextAttackTime = 0.0f;
+								whoAttack++;
+								if (m_DrawFlag)Hx::Debug()->Log("skip");
+							}
+						}
+					}
+					else if (everyoneAttackCountFlag) {
+						if (nextAttackTimeCount >= nextAttackTime) {
+							if (nextAttackTimeCount < 5 && eap.battleModeParameter.canChangeAttackAction) {
+								j.enemyParameter.everyoneAttack = true;
+								everyoneAttack = true;
+								if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(nextAttackTime));
+							}
 						}
 					}
 				}
 			}
 		}
+
+		if(j.enemyParameter.enemy_type != ENEMY_TYPE::CHILD_ARCHER)
 		howManyPeople++;
 	}
 	if (everyoneAttackCountFlag) {

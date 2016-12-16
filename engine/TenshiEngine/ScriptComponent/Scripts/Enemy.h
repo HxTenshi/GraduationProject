@@ -42,6 +42,7 @@ struct BATTLEACTION {
 	APPROACHACTION,
 	ATTACKDOWNACTION,
 	JUMPATTACKACTION,
+	SHOTACTION,
 	GUARDACTION,
 	PROVOCATION,
 	BACKSTEPACTION,
@@ -128,6 +129,13 @@ struct EnemyAllParamter{
 	float damage;
 };
 
+enum ENEMY_TYPE {
+	PARENT,
+	CHILD,
+	PARENT_ARCHER,
+	CHILD_ARCHER,
+};
+
 template<class T>
 const T& clamp(const T& v, const T& min, const T& max) {
 	if (v <= min)return min;
@@ -145,7 +153,8 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 	virtual void ChildInitialize() {}
-	virtual bool GetChildFlag() { return false; };
+	virtual void SoloAction() {}
+	virtual ENEMY_TYPE GetEnemyType() { return ENEMY_TYPE::CHILD; };
 	virtual float GetOnBattleRange() { return 0.0f; };
 	virtual void Attack(GameObject player) {};
 	virtual bool Damage(float damage_, BATTLEACTION::Enum winceType_,XMVECTOR accelPower_) { return false; };

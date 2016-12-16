@@ -2,9 +2,9 @@
 #include "main.h"
 #include "Enemy.h"
 
-class EnemyRezardMan : public Enemy{
+class EnemyArcher : public Enemy {
 public:
-	EnemyRezardMan();
+	EnemyArcher();
 	void ChildInitialize() override;
 	void SoloAction() override;
 	ENEMY_TYPE GetEnemyType() override;
@@ -38,7 +38,7 @@ private:
 	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
 	SERIALIZE float APROACHMINTIME;
 	SERIALIZE float APROACHMAXTIME;
-	
+
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();
 	void TrackingModeFinalize();
@@ -46,10 +46,6 @@ private:
 	void BattleModeInitilize();
 	void BattleModeUpdate();
 	void BattleModeFinalize();
-
-	void ParentTrackingModeInitilize();
-	void ParentTrackingModeUpdate();
-	void ParentTrackingModeFinalize();
 
 	void ChildTrackingModeInitilize();
 	void ChildTrackingModeUpdate();
@@ -59,29 +55,9 @@ private:
 	void ConfrontModeUpdate();
 	void ConfrontModeFinalize();
 
-	void ApproachModeInitilize();
-	void ApproachModeUpdate();
-	void ApproachModeFinalize();
-
-	void AttackDownModeInitilize();
-	void AttackDownModeUpdate();
-	void AttackDownModeFinalize();
-
-	void JumpAttackModeInitilize();
-	void JumpAttackModeUpdate();
-	void JumpAttackModeFinalize();
-
-	void GuardModeInitilize();
-	void GuardModeUpdate();
-	void GuardModeFinalize();
-
-	void ProvocationModeInitilize();
-	void ProvocationModeUpdate();
-	void ProvocationModeFinalize();
-
-	void BackStepModeInitilize();
-	void BackStepModeUpdate();
-	void BackStepModeFinalize();
+	void ShotModeInitilize();
+	void ShotModeUpdate();
+	void ShotModeFinalize();
 
 	void WinceModeInitilize();
 	void WinceModeUpdate();
@@ -99,27 +75,9 @@ private:
 	void DownUpdate();
 	void DownFinalize();
 
-	void HitInGuardModeInitilize();
-	void HitInGuardModeUpdate();
-	void HitInGuardModeFinalize();
-
-	void Prowl();
-
-	//ç°âÒÇÕâΩâÒâ‰ñùÇ∑ÇÈÇ©(m_HitInGuardMinCountÅ`m_HitInGuardMaxCount)
-	int PatienceInThisTime;
-
-	void AttackMonckeyModeInitilize();
-	void AttackMonckeyModeUpdate();
-	void AttackMonckeyModeFinalize();
-
 	void DeadModeInitilize();
 	void DeadModeUpdate();
 	void DeadModeFinalize();
-
 public:
-	static BATTLEACTION::Enum GetChangeBattleAction(
-		int guardProbability, int approachProbability,
-		int backstepProbability, int attackProbability,
-		int jumpAttackProbability, int provocationProbability
-		);
+	
 };
