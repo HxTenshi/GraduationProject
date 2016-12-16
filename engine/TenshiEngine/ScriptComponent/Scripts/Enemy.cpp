@@ -42,6 +42,12 @@ void Enemy::Update() {
 		Damage(1.0f, BATTLEACTION::BEATDOWNACTION,XMVectorSet(0, -20, 0, 1));
 	}
 
+	if (gameObject->mTransform->WorldPosition().y < -10) {
+		gameObject->RemoveComponent<CharacterControllerComponent>();
+		Hx::DestroyObject(gameObject);
+		m_Isend = true;
+	}
+
 	AnimLerp();
 
 	actionModeUpdate[m_ActionModeID]();

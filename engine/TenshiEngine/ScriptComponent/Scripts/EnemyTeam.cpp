@@ -22,6 +22,8 @@ void EnemyTeam::Initialize(){
 	parentAlive = true;
 
 	battlePosFirst = 0;
+
+	m_AttackStart = false;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）

@@ -38,6 +38,7 @@ private:
 	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
 	SERIALIZE float APROACHMINTIME;
 	SERIALIZE float APROACHMAXTIME;
+	SERIALIZE PrefabAsset ArrowPrefab;
 
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();

@@ -66,12 +66,12 @@ bool EnemyRezardManTeam::Alive()
 
 void EnemyRezardManTeam::DiscoveryOrLostPlayerSet()
 {
+	bool lostPlayer = true;
+	bool discoveryPlayer = false;
 	for (auto j = teamMember.begin(); j != teamMember.end(); j++) {
 		auto jScript = Enemy::GetEnemy(j->enemyGameObject);
 		if (!jScript)return;
 		auto eap = jScript->GetEnemyAllParameter(false);
-		bool lostPlayer = true;
-		bool discoveryPlayer = false;
 		if (eap.actionMode == ACTIONMODE::TRACKINGMODE) {
 			//発見したかどうか
 			lostPlayer = false;
@@ -82,12 +82,14 @@ void EnemyRezardManTeam::DiscoveryOrLostPlayerSet()
 		else {
 			//見失ったかどうか
 			discoveryPlayer = false;
-			if(lostPlayer)
-			lostPlayer = jScript->LostPlayer();
+			if (lostPlayer) {
+				lostPlayer = jScript->LostPlayer();
+			}
 		}
 
-		if (m_DiscoveryPlayer && lostPlayer && !j->enemyParameter.everyoneAttack)
+		if (m_DiscoveryPlayer && lostPlayer && !j->enemyParameter.everyoneAttack) {
 			m_DiscoveryPlayer = false;
+		}
 		else if (!m_DiscoveryPlayer && discoveryPlayer) {
 			whoAttack = 0;
 			m_DiscoveryPlayer = true;
@@ -176,16 +178,24 @@ void EnemyRezardManTeam::TeamUpdate()
 				jScript->ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 			}
 		}
-		else if (teamMember.size() == 1) {
-			//アクションが終了したため次のを決める
-			if (eap.battleModeParameter.actionFinish) {
-				jScript->SoloAction();
-			}
-		}
 		//戦闘時だったら
 		else if (eap.actionMode == ACTIONMODE::BATTLEMODE) {	
 			if (j.enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER) {
-
+				if (teamMember.size() == 1) {
+					//アクションが終了したため次のを決める
+					if (eap.battleModeParameter.actionFinish) {
+						jScript->SoloAction();
+					}
+				}
+				else {
+					if (m_AttackStart) {
+						m_AttackStart = false;
+						jScript->ChangeBattleAction(BATTLEACTION::SHOTACTION);
+					}
+					if (eap.battleModeParameter.actionFinish) {
+						jScript->ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+					}
+				}
 			}
 			else {
 				jScript->SetBattlePosition(battlePos[howManyPeople]);
@@ -286,6 +296,7 @@ void EnemyRezardManTeam::TeamUpdate()
 								j.enemyParameter.nextAttackTimeCountFlag = false;
 								nextAttackTimeCount = 0.0f;
 								jScript->ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
+								m_AttackStart = true;
 								if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(nextAttackTime));
 							}
 							else {

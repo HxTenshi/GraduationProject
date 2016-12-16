@@ -3,6 +3,7 @@
 #include "../h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
 #include "PlayerController.h"
+#include "EnemyArrow.h"
 
 EnemyArcher::EnemyArcher()
 {
@@ -87,7 +88,6 @@ void EnemyArcher::SoloAction()
 	else if (m_BattleModeParam.id == BATTLEACTION::SHOTACTION) {
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 	}
-	Hx::Debug()->Log("3");
 }
 
 ENEMY_TYPE EnemyArcher::GetEnemyType()
@@ -124,11 +124,11 @@ void EnemyArcher::TrackingModeFinalize()
 
 void EnemyArcher::ChildTrackingModeInitilize()
 {
-	AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
 }
 
 void EnemyArcher::ChildTrackingModeUpdate()
 {
+	AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
 }
 
 void EnemyArcher::ChildTrackingModeFinalize()
@@ -140,7 +140,7 @@ void EnemyArcher::ConfrontModeInitilize()
 	AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
 	m_BattleModeParam.count = 0.0f;
 	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)((APROACHMAXTIME - APROACHMINTIME) * 100)) / 100.0f) + APROACHMINTIME;
-	Hx::Debug()->Log("1");
+	Hx::Debug()->Log("ConfrontMode");
 }
 
 void EnemyArcher::ConfrontModeUpdate()
@@ -150,7 +150,6 @@ void EnemyArcher::ConfrontModeUpdate()
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
 		m_BattleModeParam.actionFinish = true;
-		Hx::Debug()->Log("2");
 		m_BattleModeParam.count = 0.0f;
 	}
 }
@@ -162,6 +161,14 @@ void EnemyArcher::ConfrontModeFinalize()
 void EnemyArcher::ShotModeInitilize()
 {
 	AnimChange(ANIM_ID::ANIM_JUMPATTACK, 5.0f, false, true);
+	auto arrow = Hx::Instance(ArrowPrefab);
+	if (!arrow)return;
+	arrow->mTransform->WorldPosition(this->gameObject->mTransform->WorldPosition() + XMVectorSet(0,2,0,0));
+	auto arrowScript = arrow->GetScript<EnemyArrow>();
+	if (!arrowScript)return;
+	arrowScript->SetEnemy(this->gameObject);
+	arrowScript->SetVec(XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()));
+	Hx::Debug()->Log("ShotMode");
 }
 
 void EnemyArcher::ShotModeUpdate()
@@ -169,7 +176,6 @@ void EnemyArcher::ShotModeUpdate()
 	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
 		m_BattleModeParam.actionFinish = true;
 	};
@@ -349,22 +355,12 @@ void EnemyArcher::Attack(GameObject player)
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("‰½‚©‚É•Ší‚ª“–‚½‚Á‚½");
-	if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION ||
-		m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION ||
-		m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION) {
-		if (m_DrawLog)
-			Hx::Debug()->Log("m_Player‚ÉUŒ‚‚ªHit");
-		if (!player)return;
-		auto playerScript = player->GetScript<PlayerController>();
-		if (!playerScript)return;
-
-		if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION)
-			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
-		else if (m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION)
-			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-		else if (m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION)
-			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-	}
+	if (m_DrawLog)
+		Hx::Debug()->Log("m_Player‚ÉUŒ‚‚ªHit");
+	if (!player)return;
+	auto playerScript = player->GetScript<PlayerController>();
+	if (!playerScript)return;
+	playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 }
 
 /****************************************************ƒ_ƒ[ƒW‚Ìˆ—********************************************************/

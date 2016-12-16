@@ -70,4 +70,6 @@ protected:
 	int battlePosFirst;
 
 	int archerCount = 0;
+
+	bool m_AttackStart;
 };
