@@ -140,7 +140,6 @@ void EnemyArcher::ConfrontModeInitilize()
 	AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
 	m_BattleModeParam.count = 0.0f;
 	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)((APROACHMAXTIME - APROACHMINTIME) * 100)) / 100.0f) + APROACHMINTIME;
-	Hx::Debug()->Log("ConfrontMode");
 }
 
 void EnemyArcher::ConfrontModeUpdate()
@@ -168,7 +167,6 @@ void EnemyArcher::ShotModeInitilize()
 	if (!arrowScript)return;
 	arrowScript->SetEnemy(this->gameObject);
 	arrowScript->SetVec(XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()));
-	Hx::Debug()->Log("ShotMode");
 }
 
 void EnemyArcher::ShotModeUpdate()
