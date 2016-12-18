@@ -10,16 +10,10 @@ public:
 	void Update()override;
 	void Finish()override;
 
-	//アクションの起動処理
+	//アクションの起動処理1回で一つ生成
 	void Action();
-	//アクションの実行中の処理
-	void Play();
-	//ライフタイムのリセット
-	void Reset();
-	//存在しているか
-	bool isAlive();
-	//時間が過ぎると削除する
-	void DeleteAction();
+	//アニメーションの違いによるタイムのセット
+	void SetLifeTime(float time,float dtime=0.5f);
 
 private:
 	//メンバ変数
@@ -29,7 +23,10 @@ private:
 	GameObject m_now_Effect;
 	SERIALIZE
 	float m_life_time;
-	float m_now_life_time;
+	SERIALIZE
+	float m_stop_particle_time;
+
+
 	
 
 };

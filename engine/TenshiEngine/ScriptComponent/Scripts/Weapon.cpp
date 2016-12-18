@@ -8,6 +8,7 @@
 void Weapon::Initialize(){
 	is_hand = false;
 	is_fly = false;
+	is_attack = false;
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
@@ -66,9 +67,8 @@ void Weapon::OnCollideBegin(GameObject target){
 
 	if (mIsEnemyThrow) {
 		if (mWeaponControl) {
-			auto weapon = mWeaponControl->GetScript<WeaponControl>();
 			if (target->GetLayer() == 3)
-				if (weapon) {
+				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
 					Hx::Debug()->Log("敵に投げて当たった");
 					Hx::Debug()->Log(target->Name());
 					Hx::Debug()->Log(gameObject->Name());
@@ -76,16 +76,6 @@ void Weapon::OnCollideBegin(GameObject target){
 				}
 		}
 	}
-
-	//ステージに当たった
-	if (target->GetLayer() == 4) {
-		Hx::Debug()->Log("Stageに当たった");
-		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
-			Hx::Debug()->Log("Stageから");
-			weapon->HitStage(target, gameObject);
-		}
-	}
-
 	if (target->GetLayer() == 3 && is_hand) {
 		//サンドバッグへのダメージの処理
 		if (auto scr = Enemy::GetEnemy(target)) {
@@ -242,6 +232,21 @@ bool Weapon::isGetWeapon()
 float Weapon::GetMaxDurable()
 {
 	return m_param.GetMaxDurable();
+}
+
+bool Weapon::isAttack()
+{
+	return is_attack;
+}
+
+void Weapon::SetAttackFlag(bool flag)
+{
+	is_attack = flag;
+}
+
+void Weapon::SetAttackFlag(int flag)
+{
+	is_attack = flag;
 }
 
 void Weapon::ThrowAwayAction()
