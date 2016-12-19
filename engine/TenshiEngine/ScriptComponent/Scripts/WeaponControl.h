@@ -22,6 +22,8 @@ public:
 	bool IsHit();
 	void DeleteHitPoint();
 
+	void HitStage(GameObject target, GameObject weapon);
+
 private:
 	//ƒƒ“ƒo•Ï”
 	bool isHit;

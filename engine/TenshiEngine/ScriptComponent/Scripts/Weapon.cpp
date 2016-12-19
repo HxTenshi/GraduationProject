@@ -8,6 +8,7 @@
 void Weapon::Initialize(){
 	is_hand = false;
 	is_fly = false;
+	is_attack = false;
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
@@ -231,6 +232,21 @@ bool Weapon::isGetWeapon()
 float Weapon::GetMaxDurable()
 {
 	return m_param.GetMaxDurable();
+}
+
+bool Weapon::isAttack()
+{
+	return is_attack;
+}
+
+void Weapon::SetAttackFlag(bool flag)
+{
+	is_attack = flag;
+}
+
+void Weapon::SetAttackFlag(int flag)
+{
+	is_attack = flag;
 }
 
 void Weapon::ThrowAwayAction()
