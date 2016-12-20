@@ -448,6 +448,14 @@ void PlayerController::Update(){
 		if (camera) {
 			if (auto aim = mAimController->GetScript<AimController>()) {
 				if (Input::Down(KeyCode::Key_I)) {
+					if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+						if (auto target = scr->GetHandWeapon())
+						{
+							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+								script->SetPoint(target, m_CharacterControllerComponent);
+							}
+						}
+					}
 					aim->ChangeAimMode(camera, gameObject, true);
 
 				}

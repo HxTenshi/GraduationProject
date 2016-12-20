@@ -76,6 +76,17 @@ void Weapon::OnCollideBegin(GameObject target){
 				}
 		}
 	}
+
+	if (target->GetLayer() == 4) {
+		Hx::Debug()->Log("Stageに当たった");
+		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+			Hx::Debug()->Log("移動可能");
+			WeaponUsePhysX();
+			weapon->Hit();
+			//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
+		}
+	}
+
 	if (target->GetLayer() == 3 && is_hand) {
 		//サンドバッグへのダメージの処理
 		if (auto scr = Enemy::GetEnemy(target)) {

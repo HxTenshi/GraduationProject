@@ -116,22 +116,30 @@ bool WeaponControl::IsHit()
 	return isHit;
 }
 
+void WeaponControl::Hit()
+{
+	isHit = true;
+}
+
 void WeaponControl::DeleteHitPoint()
 {
 	isHit = false;
 	mTime = 0;
 }
 
-void WeaponControl::HitStage(GameObject target, GameObject weapon)
+void WeaponControl::HitStage(GameObject target, GameObject weapon,weak_ptr<PhysXComponent> physices)
 {
 	//Weapon‚ÌŽ~‚Ü‚éˆ—‚ð’Ç‰Á‚·‚é
-	auto physics = weapon->GetScript<PhysXComponent>();
-	//Hx::Debug()->Log(weapon->Name());
-	//Hx::Debug()->Log(std::to_string(physics->gameObject));
-	if (physics)
+	auto physics = weapon->GetScript<std::weak_ptr<PhysXComponent>>();
+	//std::weak_ptr<PhysXComponent> pt = weapon->GetScript<std::weak_ptr<PhysXComponent>>();
+	Hx::Debug()->Log(weapon->Name());
+	Hx::Debug()->Log(target->Name());
+	Hx::Debug()->Log(weapon->GetScript<PhysXColliderComponent>()->ClassName());
+	
+	if (physices)
 	{
 		Hx::Debug()->Log("ƒLƒlƒ}‚Ä‚¡‚Á‚­");
-		physics->SetKinematic(true);
+		//physics->SetKinematic(true);
 	}
 
 }
