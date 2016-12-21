@@ -18,6 +18,7 @@ struct AttackState {
 	int NextLowID = -1;
 	int NextHighID = -1;
 	int MoutionID = -1;
+	int EndID = -1;
 	float AttackTime = 0.0f;
 	float KoutyokuTime = 0.0f;
 	float NextTime = 0.0f;

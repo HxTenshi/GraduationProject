@@ -55,12 +55,16 @@ void TPSCamera::Update(){
 			//pos += gameObject->mTransform->Forward()* 1.0f;
 			campos -= pos;
 			pos.y += 1.0f;
+
+			//campos = gameObject->mTransform->WorldPosition();
+			//campos = spring(currentPos, campos);
+
 			m_CharacterControllerComponent->Teleport(pos);
 			m_CharacterControllerComponent->Move(campos);
 
-			campos = gameObject->mTransform->WorldPosition();
-			auto p = spring(currentPos, campos);
-			gameObject->mTransform->WorldPosition(p);
+			//campos = gameObject->mTransform->WorldPosition();
+			//auto p = spring(currentPos, campos);
+			//gameObject->mTransform->WorldPosition(p);
 		}
 		else {
 			auto p = spring(currentPos, campos);
@@ -99,6 +103,13 @@ void TPSCamera::Update(){
 		float _my = my - p.y;
 		if (abs(_mx) < 1.1f)_mx = 0.0f;
 		if (abs(_my) < 1.1f)_my = 0.0f;
+
+		_my = Input::Down(KeyCode::Key_UP) != 0 ? -1 : 0;
+		_my = Input::Down(KeyCode::Key_DOWN) != 0 ? 1 : _my;
+		_mx = Input::Down(KeyCode::Key_RIGHT) != 0 ? 1 : 0;
+		_mx = Input::Down(KeyCode::Key_LEFT) != 0 ? -1 : _mx;
+		_my *= 15.0f;
+		_mx *= 15.0f;
 		mRotate.y += _mx / 200.0f;
 		mRotate.x += _my / 200.0f;
 
