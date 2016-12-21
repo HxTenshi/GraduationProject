@@ -3,10 +3,12 @@
 #include "h_component.h"
 #include "h_standard.h"
 #include "Enemy.h"
+#include "WeaponEffect.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Weapon::Initialize(){
 	is_hand = false;
 	is_fly = false;
+	is_attack = false;
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
@@ -40,6 +42,12 @@ void Weapon::Start(){
 
 //毎フレーム呼ばれます
 void Weapon::Update(){	
+	if (Input::Trigger(KeyCode::Key_C)) {
+		if (m_WeaponEffect) {
+			auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
+			scr->Action();
+		}
+	}
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
@@ -68,6 +76,17 @@ void Weapon::OnCollideBegin(GameObject target){
 				}
 		}
 	}
+
+	if (target->GetLayer() == 4) {
+		Hx::Debug()->Log("Stageに当たった");
+		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+			Hx::Debug()->Log("移動可能");
+			WeaponUsePhysX();
+			weapon->Hit();
+			//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
+		}
+	}
+
 	if (target->GetLayer() == 3 && is_hand) {
 		//サンドバッグへのダメージの処理
 		if (auto scr = Enemy::GetEnemy(target)) {
@@ -224,6 +243,21 @@ bool Weapon::isGetWeapon()
 float Weapon::GetMaxDurable()
 {
 	return m_param.GetMaxDurable();
+}
+
+bool Weapon::isAttack()
+{
+	return is_attack;
+}
+
+void Weapon::SetAttackFlag(bool flag)
+{
+	is_attack = flag;
+}
+
+void Weapon::SetAttackFlag(int flag)
+{
+	is_attack = flag;
 }
 
 void Weapon::ThrowAwayAction()

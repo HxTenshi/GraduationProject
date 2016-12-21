@@ -32,6 +32,9 @@ public:
 	GameObject GetLookTarget() { return mLookTarget; }
 	void SetLookTarget(GameObject target) { mLookTarget = target; }
 
+	GameObject GetSaveEnemy() { return mSaveEnemy; }
+	void SetSaveEnemy(GameObject saveTarget) { mSaveEnemy = saveTarget; }
+
 	float GetSpringStiffness() { return m_SpringStiffness; }
 	void SetSpringStiffness(float f) { m_SpringStiffness = f; }
 
@@ -56,6 +59,7 @@ private:
 	GameObject mTarget;
 	SERIALIZE
 	GameObject mLookTarget;
+	GameObject mSaveEnemy;	//ターゲットの敵を保存するよう
 
 	SERIALIZE
 	float m_SpringStiffness;

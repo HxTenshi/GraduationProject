@@ -379,7 +379,7 @@ float4 PS1_Main(PS_IN In) : SV_TARGET
 	Depth = (Depth - texd);
 	Depth = abs(Depth);
 	float d = 100.0 / Far;
-	Depth = (Depth > 0.05*d) ? 1 : (Depth / (0.05f*d));
+	Depth = (Depth > 0.01*d) ? 1 : (Depth / (0.01f*d));
 	Depth = min(max(Depth, 0), 1);
 	//Depth = 1;
 	

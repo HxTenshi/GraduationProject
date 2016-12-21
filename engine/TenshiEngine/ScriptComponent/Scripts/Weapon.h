@@ -86,6 +86,18 @@ public:
 	///武器の最大の耐久値を取得
 	/// </summary>
 	float GetMaxDurable();
+	/// <summary>
+	///攻撃しているか
+	/// </summary>
+	bool isAttack();
+	/// <summary>
+	///攻撃フラグのセット
+	/// </summary>
+	void SetAttackFlag(bool flag);
+	/// <summary>
+	///攻撃フラグのセット
+	/// </summary>
+	void SetAttackFlag(int flag);
 private:
 	/// <summary>
 	///投げ捨てる時のアクション
@@ -106,6 +118,8 @@ private:
 	float m_Recast;
 	SERIALIZE
 	GameObject m_ThrowHit;
+	SERIALIZE
+	GameObject m_WeaponEffect;
 
 	//鈴木追加
 	SERIALIZE GameObject mWeaponControl;
@@ -124,6 +138,7 @@ private:
 	bool is_ground_hit;
 	//捨てる処理が変わる時に無くなる
 	bool is_fly;
+	bool is_attack;
 
 	HitCollbackType m_HitCollback;
 };
