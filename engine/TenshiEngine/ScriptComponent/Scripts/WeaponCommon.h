@@ -15,6 +15,7 @@ enum WeaponType {
 	Sword,
 	Rance,
 	Axe,
+	SwordDH,
 	Count
 };
 
