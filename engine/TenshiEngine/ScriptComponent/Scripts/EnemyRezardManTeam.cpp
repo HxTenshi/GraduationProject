@@ -47,7 +47,7 @@ bool EnemyRezardManTeam::Alive()
 		if (!jScript)return false;
 		if (jScript->IsEnd()) {
 			//親なら親死んだフラグにセット
-			if (!j->enemyParameter.enemy_type == ENEMY_TYPE::PARENT)parentAlive = false;
+			if (j->enemyParameter.enemy_type == ENEMY_TYPE::PARENT)parentAlive = false;
 			if (j->enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER)archerCount--;
 			//vectorから削除
 			j = teamMember.erase(j);
@@ -159,6 +159,7 @@ void EnemyRezardManTeam::TeamUpdate()
 			eap.actionMode != ACTIONMODE::TRACKINGMODE &&
 			eap.battleModeParameter.id != BATTLEACTION::DEADACTION &&
 			eap.battleModeParameter.actionFinish &&
+			!j.enemyParameter.everyoneAttack &&
 			!wasAttacked) {
 			whoAttack = 0;
 			jScript->ChangeActionMode(ACTIONMODE::TRACKINGMODE);
@@ -181,15 +182,15 @@ void EnemyRezardManTeam::TeamUpdate()
 		//戦闘時だったら
 		else if (eap.actionMode == ACTIONMODE::BATTLEMODE) {	
 			if (j.enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER) {
-				if (teamMember.size() == 1) {
+				if (teamMember.size() == 1 || archerCount == teamMember.size()) {
 					//アクションが終了したため次のを決める
 					if (eap.battleModeParameter.actionFinish) {
 						jScript->SoloAction();
 					}
 				}
 				else {
-					if (m_AttackStart) {
-						m_AttackStart = false;
+					if (j.enemyParameter.m_ArcharAttackStart) {
+						j.enemyParameter.m_ArcharAttackStart = false;
 						jScript->ChangeBattleAction(BATTLEACTION::SHOTACTION);
 					}
 					if (eap.battleModeParameter.actionFinish) {
@@ -199,7 +200,7 @@ void EnemyRezardManTeam::TeamUpdate()
 			}
 			else {
 				jScript->SetBattlePosition(battlePos[howManyPeople]);
-				if (teamMember.size() == 1) {
+				if (teamMember.size() == 1){
 					//アクションが終了したため次のを決める
 					if (eap.battleModeParameter.actionFinish) {
 						jScript->SoloAction();
@@ -296,7 +297,11 @@ void EnemyRezardManTeam::TeamUpdate()
 								j.enemyParameter.nextAttackTimeCountFlag = false;
 								nextAttackTimeCount = 0.0f;
 								jScript->ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
-								m_AttackStart = true;
+								for (auto& archerSearch : teamMember) {
+									if (archerSearch.enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER) {
+										archerSearch.enemyParameter.m_ArcharAttackStart = true;
+									}
+								}
 								if (m_DrawFlag)Hx::Debug()->Log("nextAttackTimeCount" + std::to_string(nextAttackTime));
 							}
 							else {
