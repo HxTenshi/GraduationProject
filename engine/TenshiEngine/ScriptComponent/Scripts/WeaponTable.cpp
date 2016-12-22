@@ -24,6 +24,8 @@ WeaponTable::WeaponTable()
 		p.SetDurable(durable.data()[count]);
 		p.SetAttack(atk.data()[count]);
 		p.SetDurableDamage(1, 10);
+		p.SetWeaponType(i);
+		m_id.insert(std::pair<int, std::string>(count, i));
 		m_Param.insert(std::pair < std::string, funifuni::WeaponParametor>(i, p));
 		count++;
 	}
@@ -145,5 +147,11 @@ void WeaponTable::Load(std::string fname)
 		m_data.push_back(buff);
 	}
 	m_maxcount = count;
+}
+
+std::string WeaponTable::IDtoName(int id)
+{
+	if (0 > id | m_maxcount < id - 1)return "•ºm‚ÌŒ•";
+	return m_id[id];
 }
 
