@@ -69,7 +69,7 @@ public:
 	GameObject Instance(const std::string & base, bool undo = false);
 	GameObject Instance(bool undo = false);
 	GameObject Instance(GameObject base, bool undo = false);
-	GameObject Instance(picojson::value base, bool undo = false);
+	GameObject Instance(picojson::value base, bool undo = false, bool parentTop = true);
 	GameObject Instance(PrefabAssetDataPtr base, bool undo = false);
 
 	static void AddObject(GameObjectPtr actor, bool undoFlag = false, bool DelayInitialize = false);
@@ -110,6 +110,7 @@ public:
 	void WindowParentSet(GameObject child);
 
 	GameObject GetEngineRootActor();
+	EditorCamera* GetEditorCamera();
 #endif
 
 	void ChangePlayGame(bool isPlay);
@@ -125,8 +126,8 @@ public:
 
 
 private:
-	Game(const Game&);
-	Game operator = (Game&);
+	Game(const Game&) = delete;
+	Game operator = (Game&) = delete;
 
 	enum class ActorMove{
 		Create,
@@ -147,7 +148,7 @@ private:
 
 #ifdef _ENGINE_MODE
 	//ツリービューのアイテム削除に失敗したアクター
-	std::list<GameObjectPtr> mTreeViewItem_ErrerClearList;
+	std::list<Actor*> mTreeViewItem_ErrerClearList;
 	static std::list<GameObjectPtr> mEngineObjects;
 
 	static GameObjectPtr mEngineRootObject;
