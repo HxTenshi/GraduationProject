@@ -10,7 +10,8 @@
 #include "GetEnemy.h"
 #include "AimController.h"
 #include "SoundManager.h"
-# include "WeaponControl.h"
+#include "WeaponControl.h"
+#include "GetWeapon.h"
 
 namespace Init {
 	static const float RotateLimit_default = 360.0f * 3.0f;
@@ -72,8 +73,12 @@ struct PlayerInput {
 		LockOn,
 		LockOn_L,
 		LockOn_R,
+		GetWeaponDown,
 		GetWeapon,
 		ReleaseWeapon,
+		ThrowWeapon,
+		FreeAIM,
+		GoingWeapon,
 		Count,
 	};
 };
@@ -85,22 +90,30 @@ static const std::function<bool(void)> g_playerInputs[PlayerInput::Count] = {
 	[]()->bool { return Input::Down(KeyCode::Key_A) != 0; },//Move_L,
 	[]()->bool { return Input::Down(KeyCode::Key_D) != 0; },//Move_R,
 
-	[]()->bool { return Input::Down(KeyCode::Key_V) == 0 && Input::Up(KeyCode::Key_C); },//ATK_L,
-	[]()->bool { return Input::Down(KeyCode::Key_C) == 0 && Input::Up(KeyCode::Key_V); },//ATK_H,
+	[]()->bool { return (Input::Down(KeyCode::Key_V) == 0 && Input::Up(KeyCode::Key_C)) || Input::Trigger(PAD_X_KeyCode::Button_X); },//ATK_L,
+
+	[]()->bool { return (Input::Down(KeyCode::Key_C) == 0 && Input::Up(KeyCode::Key_V)) || Input::Trigger(PAD_X_KeyCode::Button_Y); },//ATK_H,
 	[]()->bool { return 
-	Input::Down(KeyCode::Key_C) != 0.0f &&
+	(Input::Down(KeyCode::Key_C) != 0.0f &&
 	Input::Down(KeyCode::Key_V) != 0.0f &&
 	Input::Down(KeyCode::Key_C) <= 0.1f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()) &&
-	Input::Down(KeyCode::Key_V) <= 0.1f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()); },//ATK_S,
+	Input::Down(KeyCode::Key_V) <= 0.1f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()))
+	||
+	Input::Trigger(PAD_X_KeyCode::Button_B)
+	; },//ATK_S,
 	
-	[]()->bool { return Input::Trigger(KeyCode::Key_SPACE) != 0; },//Jump,
-	[]()->bool { return Input::Trigger(KeyCode::Key_LSHIFT) != 0; },//Step,
-	[]()->bool { return Input::Down(KeyCode::Key_G) != 0; },//Guard,
-	[]()->bool { return Input::Trigger(KeyCode::Key_T) != 0; },//LockOn,
-	[]()->bool { return Input::Trigger(KeyCode::Key_Y) != 0; },//LockOn_L,
-	[]()->bool { return Input::Trigger(KeyCode::Key_U) != 0; },//LockOn_R,
-	[]()->bool { return Input::Trigger(KeyCode::Key_F) != 0; },//GetWeapon,
-	[]()->bool { return Input::Trigger(KeyCode::Key_E) != 0; },//ReleaseWeapon,
+	[]()->bool { return Input::Trigger(KeyCode::Key_SPACE) != 0 || Input::Trigger(PAD_X_KeyCode::Button_A) != 0; },//Jump,
+	[]()->bool { return Input::Trigger(KeyCode::Key_LSHIFT) != 0 || (Input::Down(PAD_X_KeyCode::Button_R2) != 0 && Input::Trigger(PAD_X_KeyCode::Button_A) != 0); },//Step,
+	[]()->bool { return Input::Down(KeyCode::Key_G) != 0 || Input::Down(PAD_X_KeyCode::Button_R2) != 0; },//Guard,
+	[]()->bool { return Input::Trigger(KeyCode::Key_T) != 0 || Input::Trigger(PAD_X_KeyCode::Button_R3) != 0; },//LockOn,
+	[]()->bool { return Input::Trigger(KeyCode::Key_Y) != 0 || Input::Analog(PAD_X_LevelCode::Level_RStickX).x < -0.1f; },//LockOn_L,
+	[]()->bool { return Input::Trigger(KeyCode::Key_U) != 0 || Input::Analog(PAD_X_LevelCode::Level_RStickX).x > 0.1f; },//LockOn_R,
+	[]()->bool { return Input::Down(KeyCode::Key_F) != 0 || Input::Down(PAD_X_KeyCode::Button_R1) != 0; },//GetWeaponDown,
+	[]()->bool { return Input::Up(KeyCode::Key_F) != 0 || Input::Up(PAD_X_KeyCode::Button_R1) != 0; },//GetWeapon,
+	[]()->bool { return Input::Trigger(KeyCode::Key_E) != 0 || (Input::Down(PAD_X_KeyCode::Button_R2) != 0 && Input::Trigger(PAD_X_KeyCode::Button_X) != 0); },//ReleaseWeapon,
+	[]()->bool { return Input::Up(KeyCode::Key_Q) != 0 || Input::Up(PAD_X_KeyCode::Button_L2) != 0; },//ThrowWeapon,
+	[]()->bool { return Input::Down(KeyCode::Key_Q) >= 0.3f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()) || Input::Down(PAD_X_KeyCode::Button_L2) >= 0.3f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()); },//FreeAIM,
+	[]()->bool { return Input::Trigger(KeyCode::Key_K) != 0 || Input::Trigger(PAD_X_KeyCode::Button_L1) != 0; },//GoingWeapon,
 };
 
 inline bool BindInput(PlayerInput::Enum input) {
@@ -449,38 +462,11 @@ void PlayerController::Update(){
 		[](auto f) {return f(); }
 	);
 
-	if (Input::Down(KeyCode::Key_O)) {
-		Damage(5.0f,XMVectorSet(0,0,-1,1),KnockBack::Low);
-	}
-	if (Input::Down(KeyCode::Key_P)) {
-		Damage(10.0f, XMVectorSet(0, 0, -1, 1), KnockBack::Down);
-	}
-
 	if (!m_WeaponHand)return;
 
 	//10 / 29 更新
 	if (mMoveAvility) {
-		if (Input::Down(KeyCode::Key_Q)) {
-			//敵のターゲット取得処理
-			if (!m_Camera)return;
-			auto camera = m_Camera->GetScript<TPSCamera>();
-			if (camera) {
-				GameObject target; /*= camera->GetLookTarget();*/
-								   //ロックオンしている敵が居たら投げれる
-				if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
-					target = scr->GetHandWeapon();
-				}
-				if (target) {
-					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-						script->SetPoint(target, m_CharacterControllerComponent);
-					}
-					throwAway(camera->GetLookTarget());
-				}
-			}
-
-		}
-
-		if (Input::Down(KeyCode::Key_K) && mWeaponControl) {
+		if (BindInput(PlayerInput::GoingWeapon) && mWeaponControl) {
 			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
 				if (weaponCtr->IsHit())
 				{
@@ -497,7 +483,7 @@ void PlayerController::Update(){
 
 		if (camera) {
 			if (auto aim = mAimController->GetScript<AimController>()) {
-				if (Input::Down(KeyCode::Key_I)) {
+				if (BindInput(PlayerInput::FreeAIM)) {
 					if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
 						if (auto target = scr->GetHandWeapon())
 						{
@@ -508,18 +494,35 @@ void PlayerController::Update(){
 					}
 					aim->ChangeAimMode(camera, gameObject, true);
 
-				}
-				if (Input::Up(KeyCode::Key_I)) {
-					aim->ChangeAimMode(camera, gameObject, false);
-					Hx::Debug()->Log("UP : "+std::to_string(camera->gameObject->mTransform->Forward().x));
-					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
-					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
-					auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
-					if (weaponHand) {
-						weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+					if (BindInput(PlayerInput::ThrowWeapon)) {
+						aim->ChangeAimMode(camera, gameObject, false);
+						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
+						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
+						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
+						auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+						if (weaponHand) {
+							weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+						}
+						//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
 					}
-					//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
 				}
+				else if (BindInput(PlayerInput::ThrowWeapon)) {
+						if (!m_Camera)return;
+						auto camera = m_Camera->GetScript<TPSCamera>();
+						if (camera) {
+							GameObject target; /*= camera->GetLookTarget();*/
+							if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+								target = scr->GetHandWeapon();
+							}
+							if (target) {
+								if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+									script->SetPoint(target, m_CharacterControllerComponent);
+								}
+								throwAway(camera->GetLookTarget());
+							}
+						}
+					}
+
 			}
 		}
 
@@ -823,6 +826,12 @@ void PlayerController::GuardExcute()
 {
 	float time = Hx::DeltaTime()->GetDeltaTime();
 
+
+	if (BindInput(PlayerInput::ReleaseWeapon)) {
+		throwAway();
+		SetPlayerState(PlayerState::Free);
+		return;
+	}
 
 	guard();
 
@@ -1285,6 +1294,12 @@ void PlayerController::move()
 		x = 1.0f;
 	}
 
+	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+	if (XMVector2Length(ls).x > 0.05f) {
+		x = ls.x;
+		y = ls.y;
+	}
+
 	float kansei = 10.0f * time;
 	if (x == 0.0f && m_MoveX != 0.0f) {
 		if (abs(m_MoveX) <= kansei) {
@@ -1698,7 +1713,8 @@ void PlayerController::GettingWeapon(){
 	if (!m_Camera) return;
 
 	//GetWeaponのスクリプトの取得
-	auto getWeapon = m_GetWeapon->GetScript<GetWeapon>();
+	//auto getWeapon = GetWeapon();
+	auto getWeapon = m_GetWeapon->GetScript<::GetWeapon>();
 	if (!getWeapon) return;
 	
 	//WeaponHandのスクリプトの取得
@@ -1734,14 +1750,14 @@ void PlayerController::GettingWeapon(){
 		//スローモードにする
 		timeMgr->OnSlow();
 		
-		if (Input::Trigger(KeyCode::Key_G)) {
+		if (BindInput(PlayerInput::LockOn_L)) {
 			//選択対象から左に一番近いものを取得
 			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::left);
 			if(t)
 			m_tempWeapon = t;
 
 		}
-		else if (Input::Trigger(KeyCode::Key_H)) {
+		else if (BindInput(PlayerInput::LockOn_R)) {
 			//選択対象から右に一番近いものを取得
 			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::right);
 			if (t)
@@ -1769,11 +1785,11 @@ void PlayerController::GettingWeapon(){
 	}
 
 	//Fキーを押している時間をカウント
-	if (Input::Down(KeyCode::Key_F)) {
+	if (BindInput(PlayerInput::GetWeaponDown)) {
 		m_InputF_Time += 1.0f * Hx::DeltaTime()->GetDeltaTime();
 	}
 	//Fキーを話したら
-	else if (Input::Up(KeyCode::Key_F)) {
+	else if (BindInput(PlayerInput::GetWeapon)) {
 		if (m_soundManager) {
 			auto sound = m_soundManager->GetScript<SoundManager>();
 			if (!sound) {

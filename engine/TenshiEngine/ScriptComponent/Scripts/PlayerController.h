@@ -5,6 +5,7 @@
 #include <vector>
 #include "WeaponCommon.h"
 #include "Enemy.h"
+class Weapon;
 
 enum NextAttack {
 	None,
