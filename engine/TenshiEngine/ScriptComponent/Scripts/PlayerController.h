@@ -142,6 +142,7 @@ private:
 	void throwAway(GameObject target = NULL, bool isMove = false);
 	void lockOn();
 	void GettingWeapon();
+	void throwWeapon();
 
 	float GetMovementSpeed();
 
@@ -261,6 +262,8 @@ private:
 	int m_CurrentAnimeID;
 	bool m_ChangeAnime;
 	float m_CurrentAnime_Weight;
+
+	bool m_FreeAIMMode;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;
 

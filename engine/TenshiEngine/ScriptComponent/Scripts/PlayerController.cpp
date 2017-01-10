@@ -143,6 +143,7 @@ void PlayerController::Initialize(){
 	m_RotateLimit = Init::RotateLimit_default;
 	m_CurrentWeaponType = 0;
 	m_ChangeAnime = false;
+	m_FreeAIMMode = false;
 
 	m_HitCount = 0;
 	m_MoveSpeed_ComboAdd = 0.0f;
@@ -461,73 +462,6 @@ void PlayerController::Update(){
 	m_UpdateCoroutine.remove_if(
 		[](auto f) {return f(); }
 	);
-
-	if (!m_WeaponHand)return;
-
-	//10 / 29 更新
-	if (mMoveAvility) {
-		if (BindInput(PlayerInput::GoingWeapon) && mWeaponControl) {
-			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
-				if (weaponCtr->IsHit())
-				{
-					weaponCtr->DeleteHitPoint();
-					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-						script->OnMove();
-					}
-				}
-			}
-
-		}
-
-		auto camera = m_Camera->GetScript<TPSCamera>();
-
-		if (camera) {
-			if (auto aim = mAimController->GetScript<AimController>()) {
-				if (BindInput(PlayerInput::FreeAIM)) {
-					if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
-						if (auto target = scr->GetHandWeapon())
-						{
-							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-								script->SetPoint(target, m_CharacterControllerComponent);
-							}
-						}
-					}
-					aim->ChangeAimMode(camera, gameObject, true);
-
-					if (BindInput(PlayerInput::ThrowWeapon)) {
-						aim->ChangeAimMode(camera, gameObject, false);
-						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
-						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
-						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
-						auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
-						if (weaponHand) {
-							weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
-						}
-						//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
-					}
-				}
-				else if (BindInput(PlayerInput::ThrowWeapon)) {
-						if (!m_Camera)return;
-						auto camera = m_Camera->GetScript<TPSCamera>();
-						if (camera) {
-							GameObject target; /*= camera->GetLookTarget();*/
-							if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
-								target = scr->GetHandWeapon();
-							}
-							if (target) {
-								if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-									script->SetPoint(target, m_CharacterControllerComponent);
-								}
-								throwAway(camera->GetLookTarget());
-							}
-						}
-					}
-
-			}
-		}
-
-	}
-
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -760,6 +694,18 @@ void PlayerController::FreeExcute()
 
 	//周りの武器の取得,選択関連
 	GettingWeapon();
+
+	if (m_InputF_Time > 0.5f) {
+		if (mJump.x == 0.0f && mJump.z == 0.0f) {
+			changeAnime(AnimeID::Idle);
+		}
+		else {
+			changeAnime(AnimeID::Move);
+		}
+		return;
+	}
+
+	throwWeapon();
 
 	if (dodge()) {
 		SetPlayerState(PlayerState::Dodge);
@@ -1293,11 +1239,16 @@ void PlayerController::move()
 	if (BindInput(PlayerInput::Move_R)) {
 		x = 1.0f;
 	}
+	float max_x = 1.0f;
+	float max_z = 1.0f;
 
 	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
 	if (XMVector2Length(ls).x > 0.05f) {
 		x = ls.x;
 		y = ls.y;
+
+		max_x = abs(x);
+		max_z = abs(y);
 	}
 
 	float kansei = 10.0f * time;
@@ -1329,8 +1280,8 @@ void PlayerController::move()
 	m_MoveX += x;
 	m_MoveZ += y;
 
-	m_MoveX = min(max(m_MoveX, -1.0f), 1.0f);
-	m_MoveZ = min(max(m_MoveZ, -1.0f), 1.0f);
+	m_MoveX = min(max(m_MoveX, -max_x), max_x);
+	m_MoveZ = min(max(m_MoveZ, -max_z), max_z);
 
 	auto xy = XMVectorSet(m_MoveX, m_MoveZ, 0, 1);
 	auto l = XMVector2Length(xy).x;
@@ -1453,6 +1404,14 @@ void PlayerController::dontmove()
 	if (BindInput(PlayerInput::Move_R)) {
 		x = 1.0f;
 	}
+
+
+	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+	if (XMVector2Length(ls).x > 0.05f) {
+		x = ls.x;
+		y = ls.y;
+	}
+
 	
 	auto xy = XMVector2Normalize(XMVectorSet(x, y, 0, 1));
 	auto v = XMVectorZero();
@@ -1532,11 +1491,11 @@ void PlayerController::rotate()
 
 bool PlayerController::dodge()
 {
-	if (m_IsGround) {
+	//if (m_IsGround) {
 		if (BindInput(PlayerInput::Step)) {
 			return true;
 		}
-	}
+	//}
 
 	return false;
 }
@@ -1831,6 +1790,74 @@ void PlayerController::GettingWeapon(){
 		}
 		//常に一番近い武器を取得
 		m_tempWeapon = getWeapon->GetMinWeapon();	
+	}
+}
+
+void PlayerController::throwWeapon()
+{
+	//10 / 29 更新
+	if (mMoveAvility) {
+		if (BindInput(PlayerInput::GoingWeapon) && mWeaponControl) {
+			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+				if (weaponCtr->IsHit())
+				{
+					weaponCtr->DeleteHitPoint();
+					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+						script->OnMove();
+					}
+				}
+			}
+
+		}
+
+		auto camera = m_Camera->GetScript<TPSCamera>();
+
+		if (camera) {
+			if (auto aim = mAimController->GetScript<AimController>()) {
+				if (BindInput(PlayerInput::FreeAIM) && !m_FreeAIMMode) {
+					if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+						if (auto target = scr->GetHandWeapon())
+						{
+							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+								script->SetPoint(target, m_CharacterControllerComponent);
+							}
+						}
+					}
+					aim->ChangeAimMode(camera, gameObject, true);
+					m_FreeAIMMode = true;
+				}
+				else if (BindInput(PlayerInput::ThrowWeapon) && m_FreeAIMMode) {
+					m_FreeAIMMode = false;
+					aim->ChangeAimMode(camera, gameObject, false);
+					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
+					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
+					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
+					auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+					if (weaponHand) {
+						weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+					}
+					//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
+				}
+				else if (BindInput(PlayerInput::ThrowWeapon)) {
+					if (!m_Camera)return;
+					auto camera = m_Camera->GetScript<TPSCamera>();
+					if (camera) {
+						GameObject target; /*= camera->GetLookTarget();*/
+						if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+							target = scr->GetHandWeapon();
+						}
+						if (target) {
+							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+								script->SetPoint(target, m_CharacterControllerComponent);
+							}
+							throwAway(camera->GetLookTarget());
+						}
+					}
+				}
+
+			}
+		}
+
 	}
 }
 

@@ -19,7 +19,7 @@ void InputEnterObjectGimic::Update(){
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void InputEnterObjectGimic::Finish(){
-
+	
 }
 
 #include "h_standard.h"
