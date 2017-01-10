@@ -110,6 +110,13 @@ void TPSCamera::Update(){
 		_mx = Input::Down(KeyCode::Key_LEFT) != 0 ? -1 : _mx;
 		_my *= 15.0f;
 		_mx *= 15.0f;
+
+		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_RStick);
+		if (XMVector2Length(ls).x > 0.05f) {
+			_mx = ls.x * 10.0f;
+			_my = ls.y * -10.0f;
+		}
+
 		mRotate.y += _mx / 200.0f;
 		mRotate.x += _my / 200.0f;
 
