@@ -38,10 +38,11 @@ public:
 	out convert(out param) {
 		return LoaderValueType<check>::isType(param);
 	}
-
+	std::string IDtoName(int id);
 private:
 	//•Ší‚Ìƒpƒ‰ƒ[ƒ^
 	std::map<std::string, funifuni::WeaponParametor> m_Param;
+	std::map<int, std::string> m_id;
 
 	//‚ƒ‚“‚–
 	std::vector<std::vector<std::string>> m_data;

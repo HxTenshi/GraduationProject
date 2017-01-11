@@ -8,6 +8,7 @@
 #include "OutputMoveObjectGimic.h"
 # include "OutputChangePhysicesGimic.h"
 #include "OutputConnectorStackGimic.h"
+# include "OutputAnimation.h"
 
 
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
@@ -25,6 +26,6 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 	
 
 	if (auto scr = target->GetScript<OutputChangePhysicesGimic>())return scr;
-
+	if (auto scr = target->GetScript<OutputAnimation>())return scr;
 	return NULL;
 }

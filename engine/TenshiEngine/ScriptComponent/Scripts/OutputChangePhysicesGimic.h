@@ -12,5 +12,5 @@ private:
 	SERIALIZE GameObject m_Target;
 	//—LŒø‰»–³Œø‚©
 	SERIALIZE bool mIsEnable;
-
+	SERIALIZE GameObject m_Output;
 };

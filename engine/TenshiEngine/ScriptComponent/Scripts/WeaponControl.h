@@ -20,9 +20,10 @@ public:
 
 	bool IsHitHead(GameObject target);
 	bool IsHit();
+	void Hit();
 	void DeleteHitPoint();
 
-	void HitStage(GameObject target, GameObject weapon);
+	void HitStage(GameObject target, GameObject weapon, weak_ptr<PhysXComponent> physices);
 
 private:
 	//ƒƒ“ƒo•Ï”

@@ -5,6 +5,7 @@
 #include <vector>
 #include "WeaponCommon.h"
 #include "Enemy.h"
+class Weapon;
 
 enum NextAttack {
 	None,
@@ -18,13 +19,13 @@ struct AttackState {
 	int NextLowID = -1;
 	int NextHighID = -1;
 	int MoutionID = -1;
+	int EndID = -1;
 	float AttackTime = 0.0f;
-	float KoutyokuTime = 0.0f;
-	float NextTime = 0.0f;
 	float DamageScale = 0.0f;
 	float AddSpecial = 0.0f;
 	float AttackMove = 0.0f;
 	float FloatMove = 0.0f;
+	float OnDamageStart = 999999.0f;
 	std::function<void(void)> AttackFunc = []() {};
 	DamageType DamageType = DamageType::LowDamage;
 	BATTLEACTION::Enum KnockbackEffect = BATTLEACTION::WINCEACTION;
@@ -92,6 +93,8 @@ public:
 
 	int GetHitComboCount();
 private:
+
+	Weapon* GetWeapon();
 
 	void LockEnter();
 	void LockExcute();
@@ -256,6 +259,7 @@ private:
 	int m_CurrentAnimeID_Stack;
 	int m_CurrentAnimeID_Back;
 	int m_CurrentAnimeID;
+	bool m_ChangeAnime;
 	float m_CurrentAnime_Weight;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;

@@ -8,7 +8,7 @@
 void Weapon::Initialize(){
 	is_hand = false;
 	is_fly = false;
-	is_attack = false;
+	is_attack = 0;
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
@@ -42,6 +42,9 @@ void Weapon::Start(){
 
 //毎フレーム呼ばれます
 void Weapon::Update(){	
+	if (is_attack == 2) {
+		is_attack = 3;
+	}
 	if (Input::Trigger(KeyCode::Key_C)) {
 		if (m_WeaponEffect) {
 			auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
@@ -69,15 +72,26 @@ void Weapon::OnCollideBegin(GameObject target){
 		if (mWeaponControl) {
 			if (target->GetLayer() == 3)
 				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
-					Hx::Debug()->Log("敵に投げて当たった");
-					Hx::Debug()->Log(target->Name());
-					Hx::Debug()->Log(gameObject->Name());
+					//Hx::Debug()->Log("敵に投げて当たった");
+					//Hx::Debug()->Log(target->Name());
+					//Hx::Debug()->Log(gameObject->Name());
 					weapon->HitActor(target, gameObject);
 				}
 		}
 	}
+
+	if (target->GetLayer() == 4) {
+		//Hx::Debug()->Log("Stageに当たった");
+		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+			//Hx::Debug()->Log("移動可能");
+			WeaponUsePhysX();
+			weapon->Hit();
+			//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
+		}
+	}
+
 	if (target->GetLayer() == 3 && is_hand) {
-		//サンドバッグへのダメージの処理
+		//敵へのダメージの処理
 		if (auto scr = Enemy::GetEnemy(target)) {
 			if (!is_ground_hit) {
 				m_Recast = 0.0f;
@@ -91,7 +105,20 @@ void Weapon::OnCollideBegin(GameObject target){
 
 //コライダーとのヒット中に呼ばれます
 void Weapon::OnCollideEnter(GameObject target) {
-	(void)target;
+	
+	if (is_attack == 1 || is_attack == 2) {
+		if (target->GetLayer() == 3 && is_hand) {
+			//敵へのダメージの処理
+			if (auto scr = Enemy::GetEnemy(target)) {
+				if (!is_ground_hit) {
+					m_Recast = 0.0f;
+					//scr->Damage(m_AttackForce);
+					m_HitCollback(target, this, HitState::Damage);
+				}
+			}
+		}
+	}
+	is_attack = 2;
 	 
 }
 
@@ -155,7 +182,7 @@ void Weapon::WeaponUsePhysX()
 		is_hand = false;
 		is_ground_hit = true;
 		is_fly = false;
-		Hx::Debug()->Log("Hit");
+		//Hx::Debug()->Log("Hit");
 	}
 }
 /// <summary>
@@ -178,7 +205,7 @@ void Weapon::GetWeapon()
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	gameObject->GetComponent<PhysXComponent>()->SetKinematic(false);
-	Hx::Debug()->Log("get");
+	//Hx::Debug()->Log("get");
 }
 
 float Weapon::GetAttackPower()
@@ -236,17 +263,24 @@ float Weapon::GetMaxDurable()
 
 bool Weapon::isAttack()
 {
-	return is_attack;
+	return is_attack != 0;
 }
 
 void Weapon::SetAttackFlag(bool flag)
 {
-	is_attack = flag;
+	if (flag) {
+		if (is_attack == 0) {
+			is_attack = 1;
+		}
+	}
+	else {
+		is_attack = 0;
+	}
 }
 
 void Weapon::SetAttackFlag(int flag)
 {
-	is_attack = flag;
+	SetAttackFlag((bool)flag);
 }
 
 void Weapon::ThrowAwayAction()
@@ -268,5 +302,4 @@ void Weapon::PierceSupport(GameObject obj)
 
 void Weapon::Effect()
 {
-
 }

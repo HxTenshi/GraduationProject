@@ -10,7 +10,8 @@
 #include "GetEnemy.h"
 #include "AimController.h"
 #include "SoundManager.h"
-# include "WeaponControl.h"
+#include "WeaponControl.h"
+#include "GetWeapon.h"
 
 namespace Init {
 	static const float RotateLimit_default = 360.0f * 3.0f;
@@ -24,7 +25,10 @@ struct AttackID {
 		Low1,
 		Low2,
 		Low3,
+		Low1End,
+		Low2End,
 		High1,
+		High1End,
 		High2,
 		FloatLow1,
 		Special,
@@ -47,6 +51,9 @@ struct AnimeID {
 		AttackLow3,
 		AttackHigh1,
 		AttackHigh2,
+		AttackLow1End,
+		AttackLow2End,
+		AttackHigh1End,
 		Count,
 	};
 };
@@ -66,8 +73,12 @@ struct PlayerInput {
 		LockOn,
 		LockOn_L,
 		LockOn_R,
+		GetWeaponDown,
 		GetWeapon,
 		ReleaseWeapon,
+		ThrowWeapon,
+		FreeAIM,
+		GoingWeapon,
 		Count,
 	};
 };
@@ -79,22 +90,30 @@ static const std::function<bool(void)> g_playerInputs[PlayerInput::Count] = {
 	[]()->bool { return Input::Down(KeyCode::Key_A) != 0; },//Move_L,
 	[]()->bool { return Input::Down(KeyCode::Key_D) != 0; },//Move_R,
 
-	[]()->bool { return Input::Down(KeyCode::Key_V) == 0 && Input::Up(KeyCode::Key_C); },//ATK_L,
-	[]()->bool { return Input::Down(KeyCode::Key_C) == 0 && Input::Up(KeyCode::Key_V); },//ATK_H,
+	[]()->bool { return (Input::Down(KeyCode::Key_V) == 0 && Input::Up(KeyCode::Key_C)) || Input::Trigger(PAD_X_KeyCode::Button_X); },//ATK_L,
+
+	[]()->bool { return (Input::Down(KeyCode::Key_C) == 0 && Input::Up(KeyCode::Key_V)) || Input::Trigger(PAD_X_KeyCode::Button_Y); },//ATK_H,
 	[]()->bool { return 
-	Input::Down(KeyCode::Key_C) != 0.0f &&
+	(Input::Down(KeyCode::Key_C) != 0.0f &&
 	Input::Down(KeyCode::Key_V) != 0.0f &&
 	Input::Down(KeyCode::Key_C) <= 0.1f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()) &&
-	Input::Down(KeyCode::Key_V) <= 0.1f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()); },//ATK_S,
+	Input::Down(KeyCode::Key_V) <= 0.1f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()))
+	||
+	Input::Trigger(PAD_X_KeyCode::Button_B)
+	; },//ATK_S,
 	
-	[]()->bool { return Input::Trigger(KeyCode::Key_SPACE) != 0; },//Jump,
-	[]()->bool { return Input::Trigger(KeyCode::Key_LSHIFT) != 0; },//Step,
-	[]()->bool { return Input::Down(KeyCode::Key_G) != 0; },//Guard,
-	[]()->bool { return Input::Trigger(KeyCode::Key_T) != 0; },//LockOn,
-	[]()->bool { return Input::Trigger(KeyCode::Key_Y) != 0; },//LockOn_L,
-	[]()->bool { return Input::Trigger(KeyCode::Key_U) != 0; },//LockOn_R,
-	[]()->bool { return Input::Trigger(KeyCode::Key_F) != 0; },//GetWeapon,
-	[]()->bool { return Input::Trigger(KeyCode::Key_E) != 0; },//ReleaseWeapon,
+	[]()->bool { return Input::Trigger(KeyCode::Key_SPACE) != 0 || Input::Trigger(PAD_X_KeyCode::Button_A) != 0; },//Jump,
+	[]()->bool { return Input::Trigger(KeyCode::Key_LSHIFT) != 0 || (Input::Down(PAD_X_KeyCode::Button_R2) != 0 && Input::Trigger(PAD_X_KeyCode::Button_A) != 0); },//Step,
+	[]()->bool { return Input::Down(KeyCode::Key_G) != 0 || Input::Down(PAD_X_KeyCode::Button_R2) != 0; },//Guard,
+	[]()->bool { return Input::Trigger(KeyCode::Key_T) != 0 || Input::Trigger(PAD_X_KeyCode::Button_R3) != 0; },//LockOn,
+	[]()->bool { return Input::Trigger(KeyCode::Key_Y) != 0 || Input::Analog(PAD_X_LevelCode::Level_RStickX).x < -0.1f; },//LockOn_L,
+	[]()->bool { return Input::Trigger(KeyCode::Key_U) != 0 || Input::Analog(PAD_X_LevelCode::Level_RStickX).x > 0.1f; },//LockOn_R,
+	[]()->bool { return Input::Down(KeyCode::Key_F) != 0 || Input::Down(PAD_X_KeyCode::Button_R1) != 0; },//GetWeaponDown,
+	[]()->bool { return Input::Up(KeyCode::Key_F) != 0 || Input::Up(PAD_X_KeyCode::Button_R1) != 0; },//GetWeapon,
+	[]()->bool { return Input::Trigger(KeyCode::Key_E) != 0 || (Input::Down(PAD_X_KeyCode::Button_R2) != 0 && Input::Trigger(PAD_X_KeyCode::Button_X) != 0); },//ReleaseWeapon,
+	[]()->bool { return Input::Up(KeyCode::Key_Q) != 0 || Input::Up(PAD_X_KeyCode::Button_L2) != 0; },//ThrowWeapon,
+	[]()->bool { return Input::Down(KeyCode::Key_Q) >= 0.3f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()) || Input::Down(PAD_X_KeyCode::Button_L2) >= 0.3f * (1.0f / Hx::DeltaTime()->GetNoScaleDeltaTime()); },//FreeAIM,
+	[]()->bool { return Input::Trigger(KeyCode::Key_K) != 0 || Input::Trigger(PAD_X_KeyCode::Button_L1) != 0; },//GoingWeapon,
 };
 
 inline bool BindInput(PlayerInput::Enum input) {
@@ -123,6 +142,7 @@ void PlayerController::Initialize(){
 	m_IsGuard = false;
 	m_RotateLimit = Init::RotateLimit_default;
 	m_CurrentWeaponType = 0;
+	m_ChangeAnime = false;
 
 	m_HitCount = 0;
 	m_MoveSpeed_ComboAdd = 0.0f;
@@ -173,68 +193,82 @@ void PlayerController::Initialize(){
 	{
 		AttackState attack;
 		auto& attacklist = m_AttackStateList[WeaponType::Sword];
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::Low1;
 		attack.NextLowID = AttackID::Low2;
-		attack.NextHighID = AttackID::High2;
+		attack.NextHighID = AttackID::High1;
 		attack.MoutionID = AnimeID::AttackLow1;
+		attack.EndID = AttackID::Low1End;
 		attack.AddSpecial = 10.0f;
 
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 1.0f;
 
-		attack.KoutyokuTime = 0.2f;
-		attack.NextTime = 0.0f;
 		attack.DamageScale = 1.0f;
-		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.AttackTime = 18.0f/60.0f;//getMoutionTime(attack.MoutionID);
+		attack.OnDamageStart = 9.0f/60.0f;
 		attack.AttackMove = 0.0f;
 		attack.AttackFunc = [&]() {};
 		attack.DamageType = DamageType::LowDamage;
 		attacklist[attack.ID] = attack;
 
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::Low2;
 		attack.NextLowID = AttackID::Low3;
-		attack.NextHighID = AttackID::High2;
-		attack.MoutionID = AnimeID::AttackLow2;
-		attack.AttackTime = getMoutionTime(attack.MoutionID);
-		attack.AttackMove = 2.0f;
+		attack.NextHighID = AttackID::High1;
+		attack.MoutionID = AnimeID::AttackLow1;
+		attack.EndID = AttackID::Low2End;
+
+		attack.DamageScale = 1.2f;
+		attack.AttackTime = 28.0f / 60.0f;//getMoutionTime(attack.MoutionID);
+		attack.OnDamageStart = 15.0f / 60.0f;
+		attack.AttackMove = 0.0f;
 
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::Low3;
 		attack.NextLowID = -1;
-		attack.NextHighID = AttackID::High2;
-		attack.MoutionID = AnimeID::AttackLow3;
-		attack.AttackTime = getMoutionTime(attack.MoutionID);
-		attack.AttackMove = 7.0f;
-		attacklist[attack.ID] = attack;
+		attack.NextHighID = AttackID::High1;
+		attack.MoutionID = AnimeID::AttackLow1;
+		attack.EndID = -1;
 
+		attack.DamageScale = 1.5f;
+		attack.AttackTime = 36.0f / 60.0f;//getMoutionTime(attack.MoutionID);
+		attack.OnDamageStart = 28.0f / 60.0f;
+		attack.AttackMove = 0.0f;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::DogdeAttack;
 		attack.NextLowID = AttackID::Low2;
-		attack.NextHighID = AttackID::High2;
+		attack.NextHighID = AttackID::High1;
 		attack.MoutionID = AnimeID::AttackLow3;
+
+		attack.DamageScale = 1.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::High1;
 		attack.NextLowID = -1;
-		attack.NextHighID = AttackID::High2;
+		attack.NextHighID = -1;
+		attack.EndID = AttackID::High1End;
 		attack.MoutionID = AnimeID::AttackHigh1;
 		attack.DamageType = DamageType::HighDamage;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.OnDamageStart = 6.0f / 60.0f;
 		attack.DamageScale = 0.5f;
 		attack.AttackMove = 0.0f;
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::High2;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
 		attack.MoutionID = AnimeID::AttackHigh2;
+		attack.EndID = -1;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.DamageScale = 10.0f;
 		attack.AttackMove = 0.0f;
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatLow1;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
@@ -244,7 +278,7 @@ void PlayerController::Initialize(){
 		attack.AttackMove = 7.0f;
 		attack.DamageType = DamageType::LowDamage;
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::Special;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
@@ -254,6 +288,36 @@ void PlayerController::Initialize(){
 		attack.AttackMove = 10.0f;
 		attack.AddSpecial = 0.0f;
 		attack.DamageType = DamageType::DethBrowDamage;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+
+
+		attack.ID = AttackID::Low1End;
+		attack.NextLowID = -1;
+		attack.NextHighID = -1;
+		attack.MoutionID = AnimeID::AttackLow1End;
+		attack.EndID = -1;
+		attack.AddSpecial = 0.0f;
+
+		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
+		attack.KnockbackEffectPower = 0.0f;
+
+		attack.DamageScale = 0.0f;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.AttackMove = 0.0f;
+		attack.AttackFunc = [&]() {};
+		attack.DamageType = DamageType::LowDamage;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+
+		attack.ID = AttackID::Low2End;
+		attack.MoutionID = AnimeID::AttackLow2End;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::High1End;
+		attack.MoutionID = AnimeID::AttackHigh1End;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attacklist[attack.ID] = attack;
 	}
 	{
@@ -269,8 +333,6 @@ void PlayerController::Initialize(){
 		attack.KnockbackEffect = BATTLEACTION::UPPERDOWNACTION;
 		attack.KnockbackEffectPower = 5.0f;
 
-		attack.KoutyokuTime = 0.2f;
-		attack.NextTime = 0.0f;
 		attack.DamageScale = 1.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.AttackMove = 0.0f;
@@ -278,7 +340,7 @@ void PlayerController::Initialize(){
 		attack.AttackFunc = [&]() {};
 		attack.DamageType = DamageType::LowDamage;
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 
 		attack.ID = AttackID::Low2;
 		attack.NextLowID = AttackID::Low3;
@@ -292,7 +354,7 @@ void PlayerController::Initialize(){
 		attack.KnockbackEffectPower = 1.0f;
 
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::Low3;
 		attack.NextLowID = -1;
 		attack.NextHighID = AttackID::High2;
@@ -300,14 +362,14 @@ void PlayerController::Initialize(){
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.AttackMove = 7.0f;
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::DogdeAttack;
 		attack.NextLowID = AttackID::Low2;
 		attack.NextHighID = AttackID::High2;
 		attack.MoutionID = AnimeID::AttackLow3;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::High1;
 		attack.NextLowID = -1;
 		attack.NextHighID = AttackID::High2;
@@ -318,7 +380,7 @@ void PlayerController::Initialize(){
 		attack.AttackMove = 0.0f;
 		attack.FloatMove = 10.0f;
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::High2;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
@@ -330,7 +392,7 @@ void PlayerController::Initialize(){
 		attack.KnockbackEffectPower = 1.0f;
 
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatLow1;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
@@ -343,7 +405,7 @@ void PlayerController::Initialize(){
 		attack.KnockbackEffect = BATTLEACTION::BEATDOWNACTION;
 		attack.KnockbackEffectPower = -5.0f;
 		attacklist[attack.ID] = attack;
-
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::Special;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
@@ -356,6 +418,7 @@ void PlayerController::Initialize(){
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 1.0f;
 		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
 	}
 }
 
@@ -399,38 +462,11 @@ void PlayerController::Update(){
 		[](auto f) {return f(); }
 	);
 
-	if (Input::Down(KeyCode::Key_O)) {
-		Damage(5.0f,XMVectorSet(0,0,-1,1),KnockBack::Low);
-	}
-	if (Input::Down(KeyCode::Key_P)) {
-		Damage(10.0f, XMVectorSet(0, 0, -1, 1), KnockBack::Down);
-	}
-
 	if (!m_WeaponHand)return;
 
 	//10 / 29 更新
 	if (mMoveAvility) {
-		if (Input::Down(KeyCode::Key_Q)) {
-			//敵のターゲット取得処理
-			if (!m_Camera)return;
-			auto camera = m_Camera->GetScript<TPSCamera>();
-			if (camera) {
-				GameObject target; /*= camera->GetLookTarget();*/
-								   //ロックオンしている敵が居たら投げれる
-				if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
-					target = scr->GetHandWeapon();
-				}
-				if (target) {
-					if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-						script->SetPoint(target, m_CharacterControllerComponent);
-					}
-					throwAway(camera->GetLookTarget());
-				}
-			}
-
-		}
-
-		if (Input::Down(KeyCode::Key_K) && mWeaponControl) {
+		if (BindInput(PlayerInput::GoingWeapon) && mWeaponControl) {
 			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
 				if (weaponCtr->IsHit())
 				{
@@ -447,21 +483,46 @@ void PlayerController::Update(){
 
 		if (camera) {
 			if (auto aim = mAimController->GetScript<AimController>()) {
-				if (Input::Down(KeyCode::Key_I)) {
+				if (BindInput(PlayerInput::FreeAIM)) {
+					if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+						if (auto target = scr->GetHandWeapon())
+						{
+							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+								script->SetPoint(target, m_CharacterControllerComponent);
+							}
+						}
+					}
 					aim->ChangeAimMode(camera, gameObject, true);
 
-				}
-				if (Input::Up(KeyCode::Key_I)) {
-					aim->ChangeAimMode(camera, gameObject, false);
-					Hx::Debug()->Log("UP : "+std::to_string(camera->gameObject->mTransform->Forward().x));
-					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
-					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
-					auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
-					if (weaponHand) {
-						weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+					if (BindInput(PlayerInput::ThrowWeapon)) {
+						aim->ChangeAimMode(camera, gameObject, false);
+						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
+						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
+						Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
+						auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+						if (weaponHand) {
+							weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+						}
+						//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
 					}
-					//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
 				}
+				else if (BindInput(PlayerInput::ThrowWeapon)) {
+						if (!m_Camera)return;
+						auto camera = m_Camera->GetScript<TPSCamera>();
+						if (camera) {
+							GameObject target; /*= camera->GetLookTarget();*/
+							if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+								target = scr->GetHandWeapon();
+							}
+							if (target) {
+								if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+									script->SetPoint(target, m_CharacterControllerComponent);
+								}
+								throwAway(camera->GetLookTarget());
+							}
+						}
+					}
+
 			}
 		}
 
@@ -653,6 +714,19 @@ int PlayerController::GetHitComboCount()
 	return m_HitCount;
 }
 
+Weapon * PlayerController::GetWeapon()
+{
+	auto weaponhand = m_WeaponHand->GetScript<WeaponHand>();
+	if (weaponhand) {
+		if (auto weapon = weaponhand->GetHandWeapon()) {
+			if (auto w = weapon->GetScript<Weapon>()) {
+				return w;
+			}
+		}
+	}
+	return nullptr;
+}
+
 void PlayerController::LockEnter()
 {
 }
@@ -753,6 +827,12 @@ void PlayerController::GuardExcute()
 	float time = Hx::DeltaTime()->GetDeltaTime();
 
 
+	if (BindInput(PlayerInput::ReleaseWeapon)) {
+		throwAway();
+		SetPlayerState(PlayerState::Free);
+		return;
+	}
+
 	guard();
 
 	if (m_GuardParam.AttackGuard) {
@@ -764,8 +844,13 @@ void PlayerController::GuardExcute()
 			m_GuardParam.KnockBackTime = 0.5f;
 		}
 		if (m_WeaponHand) {
-			if(auto w = m_WeaponHand->GetScript<Weapon>())
-				w->Damage(DamageType::HighDamage, m_WeaponResist_ComboAdd);
+			if (auto wh = m_WeaponHand->GetScript<WeaponHand>()) {
+				if (auto weapon = wh->GetHandWeapon()) {
+					if (auto w = weapon->GetScript<Weapon>()) {
+						w->Damage(DamageType::HighDamage, m_WeaponResist_ComboAdd);
+					}
+				}
+			}
 		}
 		m_GuardParam.AttackGuard = false;
 	}
@@ -816,15 +901,11 @@ void PlayerController::AttackEnter()
 	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
 
 	if (m_NextAttack >= 0 && m_NextAttack < AttackID::Count) {
-		if (m_tempWeapon) {
-			auto w = m_tempWeapon->GetScript<Weapon>();
-			if (w) {
-				WeaponType t = w->GetWeaponType();
-				m_CurrentWeaponType = (int)t;
-				m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
-			}
+		if (auto w = GetWeapon()) {
+			WeaponType t = w->GetWeaponType();
+			m_CurrentWeaponType = (int)t;
+			m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
 		}
-
 	}
 
 	m_CurrentAttack.AttackFunc();
@@ -874,6 +955,13 @@ void PlayerController::AttackExcute()
 
 	float time = Hx::DeltaTime()->GetDeltaTime() * m_MoutionSpeed;
 	m_CurrentAttack.AttackTime -= time;
+	m_CurrentAttack.OnDamageStart -= time;
+
+	if (m_CurrentAttack.OnDamageStart >= 0.0f) {
+		if (auto w = GetWeapon()) {
+			w->SetAttackFlag(true);
+		}
+	}
 	if (m_CurrentAttack.AttackTime > 0.0f) {
 		m_MoveVelo = gameObject->mTransform->Forward() * m_CurrentAttack.AttackMove;
 
@@ -903,6 +991,10 @@ void PlayerController::AttackExcute()
 
 		m_NextAttack = -1;
 
+		if (auto w = GetWeapon()) {
+			w->SetAttackFlag(false);
+		}
+
 		return;
 	}
 
@@ -911,17 +1003,36 @@ void PlayerController::AttackExcute()
 		return;
 	}
 
-	m_CurrentAttack.NextTime -= time;
-	m_CurrentAttack.KoutyokuTime -= time;
-	if (m_CurrentAttack.KoutyokuTime > 0.0f)return;
+	m_NextAttack = m_CurrentAttack.EndID;
 
-	if (m_CurrentAttack.NextTime > 0.0f)return;
+	if (m_NextAttack >= 0) {
+		m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
 
+		m_CurrentAttack.AttackFunc();
+
+		changeAnime(m_CurrentAttack.MoutionID);
+
+		if (m_CurrentAttack.FloatMove != 0.0f) {
+			mJump.y = 0.0f;
+			mJump.y += m_CurrentAttack.FloatMove;
+		}
+
+		m_NextAttack = -1;
+
+		if (auto w = GetWeapon()) {
+			w->SetAttackFlag(false);
+		}
+
+		return;
+	}
 	SetPlayerState(PlayerState::Free);
 }
 
 void PlayerController::AttackExit()
 {
+	if (auto w = GetWeapon()) {
+		w->SetAttackFlag(false);
+	}
 	m_MoutionSpeed = 1.0f;
 
 	m_CurrentAttack = AttackState();
@@ -1183,6 +1294,12 @@ void PlayerController::move()
 		x = 1.0f;
 	}
 
+	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+	if (XMVector2Length(ls).x > 0.05f) {
+		x = ls.x;
+		y = ls.y;
+	}
+
 	float kansei = 10.0f * time;
 	if (x == 0.0f && m_MoveX != 0.0f) {
 		if (abs(m_MoveX) <= kansei) {
@@ -1269,8 +1386,13 @@ void PlayerController::move()
 			}
 		}
 		if (!end) {
-			v += xy.y * m_Camera->mTransform->Forward();
-			v += xy.x * m_Camera->mTransform->Left();
+			auto f = m_Camera->mTransform->Forward();
+			f.y = 0.0f;
+			auto l = m_Camera->mTransform->Left();
+			l.y = 0.0f;
+			
+			v += xy.y * XMVector3Normalize(f);
+			v += xy.x * XMVector3Normalize(l);
 		}
 
 		v.y = 0.0f;
@@ -1591,7 +1713,8 @@ void PlayerController::GettingWeapon(){
 	if (!m_Camera) return;
 
 	//GetWeaponのスクリプトの取得
-	auto getWeapon = m_GetWeapon->GetScript<GetWeapon>();
+	//auto getWeapon = GetWeapon();
+	auto getWeapon = m_GetWeapon->GetScript<::GetWeapon>();
 	if (!getWeapon) return;
 	
 	//WeaponHandのスクリプトの取得
@@ -1627,14 +1750,14 @@ void PlayerController::GettingWeapon(){
 		//スローモードにする
 		timeMgr->OnSlow();
 		
-		if (Input::Trigger(KeyCode::Key_G)) {
+		if (BindInput(PlayerInput::LockOn_L)) {
 			//選択対象から左に一番近いものを取得
 			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::left);
 			if(t)
 			m_tempWeapon = t;
 
 		}
-		else if (Input::Trigger(KeyCode::Key_H)) {
+		else if (BindInput(PlayerInput::LockOn_R)) {
 			//選択対象から右に一番近いものを取得
 			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::right);
 			if (t)
@@ -1662,11 +1785,11 @@ void PlayerController::GettingWeapon(){
 	}
 
 	//Fキーを押している時間をカウント
-	if (Input::Down(KeyCode::Key_F)) {
+	if (BindInput(PlayerInput::GetWeaponDown)) {
 		m_InputF_Time += 1.0f * Hx::DeltaTime()->GetDeltaTime();
 	}
 	//Fキーを話したら
-	else if (Input::Up(KeyCode::Key_F)) {
+	else if (BindInput(PlayerInput::GetWeapon)) {
 		if (m_soundManager) {
 			auto sound = m_soundManager->GetScript<SoundManager>();
 			if (!sound) {
@@ -1680,7 +1803,7 @@ void PlayerController::GettingWeapon(){
 		//選択した武器をセット
 			weaponHand->SetWeapon(m_tempWeapon, [&](auto o,Weapon* w, auto t) {
 				if (Enemy* scr = Enemy::GetEnemy(o)) {
-					if (m_CurrentAttack.AttackTime > 0.0f) {
+					if (w->isAttack()) {
 
 						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(), m_CurrentAttack.KnockbackEffect,XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower,0,1));
 						if (t == Weapon::HitState::Damage) {
@@ -1719,7 +1842,9 @@ float PlayerController::GetMovementSpeed()
 #include <algorithm>
 void PlayerController::changeAnime(int id)
 {
+	if (id == m_CurrentAnimeID)return;
 	m_CurrentAnimeID_Stack = id;
+	m_ChangeAnime = true;
 }
 
 float PlayerController::getMoutionTime(int id)
@@ -1734,40 +1859,53 @@ void PlayerController::animeFlip()
 {
 	if (!m_AnimeModel)return;
 	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
+	if (!anime)return;
 
 	if (m_CurrentAnime_Weight != 1.0f) {
-		m_CurrentAnime_Weight += 10.0f*Hx::DeltaTime()->GetDeltaTime();
+		m_CurrentAnime_Weight += 10.0f*Hx::DeltaTime()->GetDeltaTime() * m_MoutionSpeed;
 		m_CurrentAnime_Weight = min(m_CurrentAnime_Weight, 1.0f);
 
-
-		if (m_CurrentAnimeID >= 0) {
-			auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
-			p.mWeight = m_CurrentAnime_Weight;
-			anime->SetAnimetionParam(m_CurrentAnimeID, p);
+		if (m_CurrentAnimeID == m_CurrentAnimeID_Back) {
+			if (m_CurrentAnimeID >= 0) {
+				auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
+				p.mWeight = 1.0f;
+				anime->SetAnimetionParam(m_CurrentAnimeID, p);
+			}
 		}
-		if (m_CurrentAnimeID_Back >= 0) {
-			auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Back);
-			p.mWeight = 1.0f - m_CurrentAnime_Weight;
-			anime->SetAnimetionParam(m_CurrentAnimeID_Back, p);
+		else {
+			if (m_CurrentAnimeID >= 0) {
+				auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
+				p.mWeight = m_CurrentAnime_Weight;
+				anime->SetAnimetionParam(m_CurrentAnimeID, p);
+			}
+			if (m_CurrentAnimeID_Back >= 0) {
+				auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Back);
+				p.mWeight = 1.0f - m_CurrentAnime_Weight;
+				anime->SetAnimetionParam(m_CurrentAnimeID_Back, p);
+			}
 		}
 
 	}
 
-	if (m_CurrentAnimeID_Stack == m_CurrentAnimeID)return;
-	if (!anime)return;
+	if (!m_ChangeAnime)return;
+	m_ChangeAnime = false;
 
 	if (m_CurrentAnimeID_Back >= 0) {
 		auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Back);
 		p.mWeight = 0.0f;
+		p.mTime = 0.0f;
+		p.mTimeScale = 0.0f;
 		anime->SetAnimetionParam(m_CurrentAnimeID_Back, p);
 	}
 
 	m_CurrentAnime_Weight = 0.0f;
 
 	if (m_CurrentAnimeID >= 0) {
-		//auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
-		//p.mWeight = 0.0f;
-		//anime->SetAnimetionParam(m_CurrentAnimeID, p);
+		auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
+		p.mWeight = 1.0f;
+		//p.mTime = 0.0f;
+		p.mTimeScale = 0.0f;
+		anime->SetAnimetionParam(m_CurrentAnimeID, p);
 	}
 	auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Stack);
 	p.mTime = 0.0f;

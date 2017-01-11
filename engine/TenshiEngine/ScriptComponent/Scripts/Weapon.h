@@ -138,7 +138,7 @@ private:
 	bool is_ground_hit;
 	//Ì‚Ä‚éˆ—‚ª•Ï‚í‚é‚É–³‚­‚È‚é
 	bool is_fly;
-	bool is_attack;
+	int is_attack;
 
 	HitCollbackType m_HitCollback;
 };
