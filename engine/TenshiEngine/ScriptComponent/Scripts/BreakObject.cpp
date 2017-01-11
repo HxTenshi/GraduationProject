@@ -20,17 +20,19 @@ void BreakObject::Update(){
 void BreakObject::Finish(){
 
 }
-
+#include"Weapon.h"
 //コライダーとのヒット時に呼ばれます
 void BreakObject::OnCollideBegin(GameObject target){
 	if (!target)return;
-	if(!target->GetScript<Weapon>())return;
+	if (auto w = target->GetScript<Weapon>()) {
+		if (!w->isAttack())return;
 
-	if (m_NormalObject) {
-		m_NormalObject->Disable();
-	}
-	if (m_BreakObject) {
-		m_BreakObject->Enable();
+		if (m_NormalObject) {
+			m_NormalObject->Disable();
+		}
+		if (m_BreakObject) {
+			m_BreakObject->Enable();
+		}
 	}
 }
 

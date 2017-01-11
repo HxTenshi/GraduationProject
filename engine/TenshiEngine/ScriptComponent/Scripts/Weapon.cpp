@@ -118,7 +118,9 @@ void Weapon::OnCollideEnter(GameObject target) {
 			}
 		}
 	}
-	is_attack = 2;
+	if (is_attack == 1) {
+		is_attack = 2;
+	}
 	 
 }
 
