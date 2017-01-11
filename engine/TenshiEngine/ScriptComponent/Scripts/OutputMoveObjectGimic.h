@@ -63,6 +63,8 @@ private:
 		float m_Speed;
 
 	SERIALIZE
+		bool m_Rebirth;
+	SERIALIZE
 		bool m_Loop;
 
 	SERIALIZE
@@ -74,6 +76,7 @@ private:
 	float m_Timer;
 	float m_TimerMax;
 	bool m_WaitMode;
+	bool m_RebirthMode;
 	int m_CurrentPos;
 	XMVECTOR m_position[2];
 	XMVECTOR m_quaternion[2];
