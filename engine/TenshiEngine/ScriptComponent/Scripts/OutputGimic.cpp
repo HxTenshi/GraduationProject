@@ -9,7 +9,8 @@
 # include "OutputChangePhysicesGimic.h"
 #include "OutputConnectorStackGimic.h"
 # include "OutputAnimation.h"
-
+# include "OutputPlayAudio.h"
+# include "OutputColliderActive.h"
 
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 {
@@ -22,8 +23,8 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 	if (auto scr = target->GetScript<OutputConectorRandomGimic>())return scr;
 	if (auto scr = target->GetScript<OutputMoveObjectGimic>())return scr;
 	if (auto scr = target->GetScript<OutputConnectorStackGimic>())return scr;
-	
-	
+	if (auto scr = target->GetScript<OutputPlayAudio>())return scr;
+	if (auto scr = target->GetScript<OutputColliderActive>())return scr;
 
 	if (auto scr = target->GetScript<OutputChangePhysicesGimic>())return scr;
 	if (auto scr = target->GetScript<OutputAnimation>())return scr;

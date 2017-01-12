@@ -14,6 +14,12 @@ bool OutputAnimation::OnStart(GameObject Sender)
 	p.mTime = mTime;
 	p.mWeight = mWeight;
 	p.mTimeScale = mTimeScale;
+	p.mLoop = false;
 	anime->SetAnimetionParam(mPlayAnimationID, p);
+
+	auto scr = OutputGimic::GetOutputGimic(m_Output);
+	if (!scr)return false;
+	scr->OnStart(Sender);
+
 	return true;
 }
