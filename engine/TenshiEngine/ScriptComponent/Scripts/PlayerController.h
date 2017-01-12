@@ -69,7 +69,8 @@ public:
 	void SetPlayerState(PlayerState::Enum state);
 	PlayerState::Enum GetPlayerState();
 	void PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel);
-	void Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel = KnockBack::None);
+	//DodgeInevitable ‰ñ”ð•s‰Â”\‚©
+	void Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel = KnockBack::None, bool DodgeInevitable = false);
 	bool IsInvisible();
 	bool IsDead();
 	bool IsDogde();

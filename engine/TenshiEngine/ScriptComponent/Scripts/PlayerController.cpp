@@ -520,7 +520,7 @@ void PlayerController::PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum
 	}
 }
 
-void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel)
+void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel,bool DodgeInevitable)
 {
 	if (IsGuard() && XMVector3Dot(gameObject->mTransform->Forward(), attackVect).x < 0) {
 		m_GuardParam.AttackGuard = true;
@@ -531,10 +531,14 @@ void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBac
 					if(auto w = scr->GetHandWeapon())
 						particle->mTransform->WorldPosition(w->mTransform->WorldPosition());
 		return;
+	} 
+	//‰ñ”ð•s‰Â”\‹Z‚©
+	if (!DodgeInevitable || this->GetPlayerState() != PlayerState::Dodge) {
+		if (IsInvisible()) {
+			return;
+		}
 	}
-	if (IsInvisible()) {
-		return;
-	}
+
 	PlayKnockBack(attackVect,knockBackLevel);
 	AddHP(-damage);
 	ClearCombo();
