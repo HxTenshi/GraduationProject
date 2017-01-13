@@ -12,6 +12,10 @@ struct EnemyParameter {
 
 	//Ÿ‚ÌUŒ‚‚Ü‚Å‚ÌŠÔ‚ğƒJƒEƒ“ƒg‚·‚é‚©‚Ç‚¤‚©
 	bool nextAttackTimeCountFlag = false;
+
+	ENEMY_TYPE enemy_type = ENEMY_TYPE::PARENT;
+
+	bool m_ArcharAttackStart = false;
 };
 
 struct EnemyOne {
@@ -66,4 +70,6 @@ protected:
 	bool parentAlive;
 
 	int battlePosFirst;
+
+	int archerCount = 0;
 };
