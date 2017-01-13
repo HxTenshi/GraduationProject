@@ -24,14 +24,16 @@ EnemyEbilEye::EnemyEbilEye()
 	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
 	m_TrackingModeParam.id = TRACKINGACTION::PARENTTRACKING;
 	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
+	m_RotateAngle = 0;
 }
 void EnemyEbilEye::ChildInitialize()
 {
+	m_Gravity = XMVectorSet(0, 0, 0, 0);
 }
 
 void EnemyEbilEye::SoloAction()
 {
-	m_Gravity = XMVectorSet(0, 0, 0, 0);
+
 }
 
 ENEMY_TYPE EnemyEbilEye::GetEnemyType()
@@ -69,6 +71,23 @@ void EnemyEbilEye::TrackingModeInitilize()
 
 void EnemyEbilEye::TrackingModeUpdate()
 {
+	auto myPos = gameObject->mTransform->WorldPosition();
+	auto moveVec = XMVector2Transform(m_MovePositionCenter, XMMatrixMultiply(XMMatrixTranslation(0, 0, m_MovePositionRadius), XMMatrixRotationY(m_RotateAngle)));
+
+	auto naviVec = XMVector3Normalize(moveVec - myPos);
+	m_Forward = gameObject->mTransform->Forward();
+	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, naviVec));
+
+	m_View = acos(clamp(XMVector3Dot(m_Forward, naviVec).x, -1.0f, 1.0f));
+	auto qua = gameObject->mTransform->Quaternion();
+	qua = XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, m_View));
+	qua.z = 0;
+	gameObject->mTransform->WorldQuaternion(qua);
+	m_Forward = gameObject->mTransform->Forward();
+	if(XMVector3Length(myPos - moveVec).x > 1.0f)
+	m_Vec += m_Forward * m_TrackingSpeed;
+
+	m_RotateAngle += m_RotateSpeed * Hx::DeltaTime()->GetDeltaTime();
 }
 
 void EnemyEbilEye::TrackingModeFinalize()

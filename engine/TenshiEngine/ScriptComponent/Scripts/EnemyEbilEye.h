@@ -32,5 +32,11 @@ private:
 	void ConfrontModeUpdate();
 	void ConfrontModeFinalize();
 
+	SERIALIZE XMVECTOR m_MovePositionCenter;
+	SERIALIZE float m_MovePositionRadius;
+	SERIALIZE float m_RotateSpeed;
+	SERIALIZE float m_TrackingSpeed;
+
+	float m_RotateAngle;
 public:
 };
