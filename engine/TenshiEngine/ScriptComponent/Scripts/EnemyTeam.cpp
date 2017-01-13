@@ -1,5 +1,6 @@
 #include "EnemyTeam.h"
 #include "EnemyRezardManTeam.h"
+#include "EnemyOneTeam.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void EnemyTeam::Initialize(){
@@ -59,6 +60,8 @@ EnemyTeam * EnemyTeam::GetEnemyTeam(GameObject target)
 	if (!target)return NULL;
 
 	if (auto scr = target->GetScript<EnemyRezardManTeam>())return scr;
+
+	if (auto scr = target->GetScript<EnemyOneTeam>())return scr;
 
 	return NULL;
 }
