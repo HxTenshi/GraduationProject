@@ -147,7 +147,6 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 		character->mTransform->DegreeRotate(XMVectorSet(0, angle, 0, 0));
 		mWeapon->GetComponent<PhysXComponent>()->SetGravity(false);
 		XMVECTOR targetVector = XMVector3Normalize(log);
-		float power = 1;
 		character->mTransform->AddForce(targetVector * 30, ForceMode::eIMPULSE);
 
 		if (auto scr = mWeapon->GetScript<Weapon>()) {
@@ -173,7 +172,7 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 			//’Ç]‚·‚é
 			mirrer->SetTargetBoneID(id);
 
-			scr->ThrowAway(targetVector * power);
+			scr->ThrowAway(targetVector * m_ThrowPower);
 			m_ActionFree = false;
 		}
 	}
@@ -182,10 +181,9 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 void WeaponHand::ThrowAway(XMVECTOR vector)
 {
 	if (!mWeapon || !m_ActionFree)return;
-	float power = 1;
 	if (auto scr = mWeapon->GetScript<Weapon>()) {
 		mWeapon = NULL;
-		scr->ThrowAway(vector * power);
+		scr->ThrowAway(vector * m_ThrowPower);
 		m_ActionFree = false;
 	}
 }

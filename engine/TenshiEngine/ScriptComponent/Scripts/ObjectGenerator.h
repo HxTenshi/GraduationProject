@@ -3,7 +3,7 @@
 #include "main.h"
 
 
-class BreakObject :public IDllScriptComponent{
+class ObjectGenerator :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -16,10 +16,13 @@ public:
 private:
 	//ÉÅÉìÉoïœêî
 
-	SERIALIZE
-	GameObject m_NormalObject;
-	SERIALIZE
-	GameObject m_BreakObject;
-	SERIALIZE
-		bool m_OnlyBombBreak;
+	SERIALIZE float m_Time;
+	SERIALIZE int m_Num;
+	SERIALIZE float m_GeneratPercent;
+	SERIALIZE PrefabAsset m_Object;
+	SERIALIZE bool m_UniqueGeneratMode;
+	SERIALIZE bool m_RotateCopy;
+	GameObject m_GeneratObject;
+	float m_Timer;
+	int m_Count;
 };

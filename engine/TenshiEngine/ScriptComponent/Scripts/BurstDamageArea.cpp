@@ -1,45 +1,45 @@
-#include "DoTDamageArea.h"
+#include "BurstDamageArea.h"
 
-#include "h_standard.h"
 #include "PlayerController.h"
+#include "h_standard.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
-void DoTDamageArea::Initialize(){
+void BurstDamageArea::Initialize(){
 
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
-void DoTDamageArea::Start(){
+void BurstDamageArea::Start(){
 
 }
 
 //毎フレーム呼ばれます
-void DoTDamageArea::Update(){
+void BurstDamageArea::Update(){
 
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
-void DoTDamageArea::Finish(){
+void BurstDamageArea::Finish(){
 
 }
 
 //コライダーとのヒット時に呼ばれます
-void DoTDamageArea::OnCollideBegin(GameObject target){
+void BurstDamageArea::OnCollideBegin(GameObject target){
 	(void)target;
 }
 
 //コライダーとのヒット中に呼ばれます
-void DoTDamageArea::OnCollideEnter(GameObject target){
+void BurstDamageArea::OnCollideEnter(GameObject target){
 	if (target) {
 		float time = Hx::DeltaTime()->GetDeltaTime();
 		auto player = target->GetScript<PlayerController>();
 		if (player) {
-			player->Damage(m_1secDamege * time, XMVectorZero(),PlayerController::KnockBack::None, true, true);
+			player->Damage(m_Damege, XMVectorZero(), m_KnockBackDonw?PlayerController::KnockBack::Down : PlayerController::KnockBack::Low, m_DodgeInevitable,m_GuardInevitable);
 		}
 	}
 }
 
 //コライダーとのロスト時に呼ばれます
-void DoTDamageArea::OnCollideExit(GameObject target){
+void BurstDamageArea::OnCollideExit(GameObject target){
 	(void)target;
 }

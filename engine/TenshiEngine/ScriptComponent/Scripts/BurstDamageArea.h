@@ -3,7 +3,7 @@
 #include "main.h"
 
 
-class BreakObject :public IDllScriptComponent{
+class BurstDamageArea :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -15,11 +15,8 @@ public:
 
 private:
 	//ÉÅÉìÉoïœêî
-
-	SERIALIZE
-	GameObject m_NormalObject;
-	SERIALIZE
-	GameObject m_BreakObject;
-	SERIALIZE
-		bool m_OnlyBombBreak;
+	SERIALIZE float m_Damege;
+	SERIALIZE bool m_KnockBackDonw;
+	SERIALIZE bool m_DodgeInevitable;
+	SERIALIZE bool m_GuardInevitable;
 };
