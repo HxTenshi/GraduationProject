@@ -520,9 +520,9 @@ void PlayerController::PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum
 	}
 }
 
-void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel,bool DodgeInevitable)
+void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel,bool DodgeInevitable, bool GuardInevitable)
 {
-	if (IsGuard() && XMVector3Dot(gameObject->mTransform->Forward(), attackVect).x < 0) {
+	if (!GuardInevitable && IsGuard() && XMVector3Dot(gameObject->mTransform->Forward(), attackVect).x < 0) {
 		m_GuardParam.AttackGuard = true;
 
 		if(auto particle = Hx::Instance(m_GuardParticle))

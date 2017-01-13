@@ -3,7 +3,7 @@
 #include "main.h"
 
 
-class BreakObject :public IDllScriptComponent{
+class BombDamageEffect :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -13,13 +13,14 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
+	void SetDamage(float value);
+	void SetKnockBackPower(float value);
+	float GetDamage();
+	float GetKnockBackPower();
+
 private:
 	//ÉÅÉìÉoïœêî
-
-	SERIALIZE
-	GameObject m_NormalObject;
-	SERIALIZE
-	GameObject m_BreakObject;
-	SERIALIZE
-		bool m_OnlyBombBreak;
+	SERIALIZE float m_Damage;
+	SERIALIZE float m_KnockBackPower;
+	bool m_dead;
 };

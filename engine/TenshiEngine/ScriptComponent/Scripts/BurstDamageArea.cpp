@@ -34,7 +34,7 @@ void BurstDamageArea::OnCollideEnter(GameObject target){
 		float time = Hx::DeltaTime()->GetDeltaTime();
 		auto player = target->GetScript<PlayerController>();
 		if (player) {
-			player->Damage(m_Damege, XMVectorZero(), m_KnockBackDonw?PlayerController::KnockBack::Down : PlayerController::KnockBack::Low, m_DodgeInevitable);
+			player->Damage(m_Damege, XMVectorZero(), m_KnockBackDonw?PlayerController::KnockBack::Down : PlayerController::KnockBack::Low, m_DodgeInevitable,m_GuardInevitable);
 		}
 	}
 }

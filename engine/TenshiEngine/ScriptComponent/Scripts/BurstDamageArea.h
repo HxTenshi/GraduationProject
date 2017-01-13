@@ -18,4 +18,5 @@ private:
 	SERIALIZE float m_Damege;
 	SERIALIZE bool m_KnockBackDonw;
 	SERIALIZE bool m_DodgeInevitable;
+	SERIALIZE bool m_GuardInevitable;
 };

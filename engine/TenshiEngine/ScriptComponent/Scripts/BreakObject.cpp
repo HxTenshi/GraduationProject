@@ -1,6 +1,6 @@
 #include "BreakObject.h"
+#include "AttackFilter.h"
 
-class Weapon;
 //生成時に呼ばれます（エディター中も呼ばれます）
 void BreakObject::Initialize(){
 
@@ -24,9 +24,11 @@ void BreakObject::Finish(){
 //コライダーとのヒット時に呼ばれます
 void BreakObject::OnCollideBegin(GameObject target){
 	if (!target)return;
-	if (auto w = target->GetScript<Weapon>()) {
-		if (!w->isAttack())return;
-
+	auto fil = AttackFilter::Filter::eAll;
+	if (m_OnlyBombBreak) {
+		fil = AttackFilter::Filter::eBomb;
+	}
+	if (AttackFilter::IsAttack(target,fil)) {
 		if (m_NormalObject) {
 			m_NormalObject->Disable();
 		}
