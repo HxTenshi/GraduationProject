@@ -58,6 +58,8 @@ void Bomb::Explosion()
 	if (m_explosion_time<=0) {
 
 		//”š”­ˆ—
+		GameObject obj=Hx::Instance(m_Explosion_pref);
+		obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
 		Hx::DestroyObject(m_weapon_object);
 	}
 }
