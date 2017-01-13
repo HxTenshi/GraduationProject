@@ -48,8 +48,12 @@ void EnemyOneTeam::DiscoveryOrLostPlayerSet()
 	for (auto j = teamMember.begin(); j != teamMember.end(); j++) {
 		auto jScript = Enemy::GetEnemy(j->enemyGameObject);
 		if (!jScript)return;
-		if (!m_DiscoveryPlayer)jScript->DiscoveryPlayer();
-		else jScript->LostPlayer();
+		if (!m_DiscoveryPlayer) {
+			m_DiscoveryPlayer =	jScript->DiscoveryPlayer();
+		}
+		else {
+			m_DiscoveryPlayer = !jScript->LostPlayer();
+		}
 	}
 }
 

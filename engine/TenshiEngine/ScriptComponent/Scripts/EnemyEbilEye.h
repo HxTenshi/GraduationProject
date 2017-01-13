@@ -34,8 +34,12 @@ private:
 
 	SERIALIZE XMVECTOR m_MovePositionCenter;
 	SERIALIZE float m_MovePositionRadius;
+	SERIALIZE float m_MoveRotateSpeed;
+	SERIALIZE float m_Speed;
+	SERIALIZE float m_TrackingRange;
+	SERIALIZE float m_TrackingAngle;
+	SERIALIZE float m_LostRange;
 	SERIALIZE float m_RotateSpeed;
-	SERIALIZE float m_TrackingSpeed;
 
 	float m_RotateAngle;
 public:

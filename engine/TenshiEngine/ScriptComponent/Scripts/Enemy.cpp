@@ -24,6 +24,7 @@ void Enemy::Initialize() {
 	m_Isend = false;
 	m_WasAttacked = false;
 	ChildInitialize();
+	m_Forward = gameObject->mTransform->Forward();
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
@@ -33,6 +34,8 @@ void Enemy::Start() {
 //毎フレーム呼ばれます
 void Enemy::Update() {
 	m_Vec = XMVectorZero();
+	if (!m_Player)return;
+	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
 	if (Input::Trigger(KeyCode::Key_1)) {
 		Damage(1.0f,BATTLEACTION::WINCEACTION, XMVectorSet(0, 2, 0, 1));
 	}
