@@ -285,6 +285,11 @@ void Weapon::SetAttackFlag(int flag)
 	SetAttackFlag((bool)flag);
 }
 
+bool Weapon::GetIsHand()
+{
+	return is_hand;
+}
+
 void Weapon::ThrowAwayAction()
 {
 	if (is_ground_hit || is_hand)return;

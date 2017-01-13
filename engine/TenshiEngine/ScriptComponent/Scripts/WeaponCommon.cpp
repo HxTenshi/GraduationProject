@@ -58,6 +58,7 @@ namespace funifuni {
 		if (type == "Rance")m_Type = WeaponType::Rance;
 		if (type == "Axe")m_Type = WeaponType::Axe;
 		if (type == "SwordDH")m_Type = WeaponType::Sword;
+		if (type == "Other")m_Type = WeaponType::Other;
 	}
 	WeaponType WeaponParametor::GetWeaponType()
 	{
