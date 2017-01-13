@@ -6,6 +6,7 @@
 #include "PlayerController.h"
 #include "EnemyRezardMan.h"
 #include "EnemyArcher.h"
+#include "EnemyEbilEye.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
@@ -248,6 +249,7 @@ Enemy * Enemy::GetEnemy(GameObject target)
 
 	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
 	if (auto scr = target->GetScript<EnemyArcher>())return scr;
+	if (auto scr = target->GetScript<EnemyEbilEye>())return scr;
 
 	return NULL;
 }

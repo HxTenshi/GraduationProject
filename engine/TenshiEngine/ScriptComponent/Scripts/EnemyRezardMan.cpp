@@ -1013,4 +1013,4 @@ BATTLEACTION::Enum EnemyRezardMan::GetChangeBattleAction(int guardProbability, i
 		return BATTLEACTION::PROVOCATION;
 	}
 	return BATTLEACTION::CONFRONTACTION;
-}
+}\
