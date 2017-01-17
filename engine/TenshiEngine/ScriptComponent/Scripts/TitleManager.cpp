@@ -57,22 +57,26 @@ namespace funifuni {
 
 	//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 	void TitleManager::Start() {
+		iup_flag = true;
 	}
 
 	//毎フレーム呼ばれます
 	void TitleManager::Update() {
 
 		if (Input::Trigger(KeyCode::Key_A) && !is_next) {
-			Back();
 			is_next = true;
 			is_arrow = false;
+			InitPosition(is_arrow);
+			Back();
 			SetArrowPosition();
 		}
 		if (Input::Trigger(KeyCode::Key_D) && !is_next) {
-			Next();
 			is_next = true;
 			is_arrow = true;
+			InitPosition(is_arrow);
+			Next();
 			SetArrowPosition();
+
 		}
 		if (is_next) {
 
@@ -102,6 +106,33 @@ namespace funifuni {
 	//コライダーとのロスト時に呼ばれます
 	void TitleManager::OnCollideExit(GameObject target) {
 		(void)target;
+	}
+	void TitleManager::InitPosition(bool arrow)
+	{
+		if (iup_flag) {
+			iup_flag = false;
+			if (arrow) {
+				if (arrow) {
+					XMVECTOR pos = m_ConfigButton->mTransform->Position();
+					XMVECTOR pos2 = m_GameEndButton->mTransform->Position();
+					pos.x = -1040;
+					pos2.x = -1040;
+					m_ConfigButton->mTransform->Position(pos);
+					m_GameEndButton->mTransform->Position(pos);
+				}
+				else {
+					XMVECTOR pos = m_ConfigButton->mTransform->Position();
+					XMVECTOR pos2 = m_GameEndButton->mTransform->Position();
+					pos.x = 3000;
+					pos2.x = 3000;
+					m_ConfigButton->mTransform->Position(pos);
+					m_GameEndButton->mTransform->Position(pos);
+				}
+			}
+			else {
+			}
+			
+		}
 	}
 	//ポジションの制御
 	bool TitleManager::ArrowOver()
