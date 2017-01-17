@@ -138,7 +138,6 @@ void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
 			m_Animparam.animLerpFlag = true;
 			m_Animparam.lerpSpeed = speed;
 			m_Animparam.afterAnimLoop = roop;
-
 			AnimeParam ap;
 			if (!ModelObject)return;
 			auto anim = ModelObject->GetComponent<AnimationComponent>();
