@@ -20,7 +20,8 @@ private:
 		GameObject m_weapon_object;
 	SERIALIZE
 		float m_explosion_time;
-
+	SERIALIZE
+		PrefabAsset m_Explosion_pref;
 	bool is_start;
 	bool started_flag;
 };

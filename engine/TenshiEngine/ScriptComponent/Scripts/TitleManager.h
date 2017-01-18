@@ -35,6 +35,7 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
+	void InitPosition(bool arrow);
 	//指定の位置をオーバーしたら
 	bool ArrowOver();
 	void Back();
@@ -67,6 +68,8 @@ private:
 	bool is_arrow;
 
 	bool is_next;
+
+	bool iup_flag;
 
 	SERIALIZE
 		GameObject m_Canvas;
