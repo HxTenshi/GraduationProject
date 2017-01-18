@@ -117,8 +117,6 @@ private:
 	SERIALIZE
 	std::string m_name;
 	SERIALIZE
-	GameObject m_table;
-	SERIALIZE
 	float m_Recast;
 	SERIALIZE
 	GameObject m_ThrowHit;

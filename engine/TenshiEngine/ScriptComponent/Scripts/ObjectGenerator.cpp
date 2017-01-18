@@ -1,6 +1,7 @@
 #include "ObjectGenerator.h"
 
 #include"h_standard.h"
+#include "OutputGimic.h"
 
 #include <random>
 
@@ -55,6 +56,10 @@ void ObjectGenerator::Update(){
 	if (m_UniqueGeneratMode) {
 		m_GeneratObject = obj;
 	}
+	if (auto gimick = OutputGimic::GetOutputGimic(m_OutputGimick)) {
+		gimick->OnStart(gameObject);
+	}
+
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）

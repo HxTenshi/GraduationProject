@@ -12,8 +12,9 @@ void Weapon::Initialize(){
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+	auto m_table = WeaponTable::GetWeaponTable();
 	if (m_table) {
-		m_param=m_table->GetScript<WeaponTable>()->GetWeaponParametor(m_name);
+		m_param=m_table->GetWeaponParametor(m_name);
 	}else{
 		m_param.SetAttack(5);
 		m_param.SetDurableDamage(1, 10);
