@@ -6,7 +6,8 @@ class EnemyRezardMan : public Enemy{
 public:
 	EnemyRezardMan();
 	void ChildInitialize() override;
-	bool GetChildFlag() override;
+	void SoloAction() override;
+	ENEMY_TYPE GetEnemyType() override;
 	float GetOnBattleRange() override;
 	void Attack(GameObject player) override;
 	bool Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_) override;
@@ -28,6 +29,7 @@ private:
 	SERIALIZE GameObject m_ModelObject;
 	SERIALIZE GameObject m_MovePoints;
 	SERIALIZE bool m_Child;
+	SERIALIZE bool m_Archer;
 	SERIALIZE float m_AproachRotateSpeed;
 	SERIALIZE float m_CorrectionRotateSpeed;
 	SERIALIZE bool m_DrawLog;

@@ -98,6 +98,10 @@ public:
 	///攻撃フラグのセット
 	/// </summary>
 	void SetAttackFlag(int flag);
+	/// <summary>
+	///手に持っているか
+	/// </summary>
+	bool GetIsHand();
 private:
 	/// <summary>
 	///投げ捨てる時のアクション

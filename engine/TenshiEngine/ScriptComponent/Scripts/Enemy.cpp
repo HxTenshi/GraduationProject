@@ -5,6 +5,8 @@
 #include "Game/Component/CharacterControllerComponent.h"
 #include "PlayerController.h"
 #include "EnemyRezardMan.h"
+#include "EnemyArcher.h"
+#include "EnemyEbilEye.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
@@ -22,6 +24,7 @@ void Enemy::Initialize() {
 	m_Isend = false;
 	m_WasAttacked = false;
 	ChildInitialize();
+	m_Forward = gameObject->mTransform->Forward();
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
@@ -31,6 +34,8 @@ void Enemy::Start() {
 //毎フレーム呼ばれます
 void Enemy::Update() {
 	m_Vec = XMVectorZero();
+	if (!m_Player)return;
+	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
 	if (Input::Trigger(KeyCode::Key_1)) {
 		Damage(1.0f,BATTLEACTION::WINCEACTION, XMVectorSet(0, 2, 0, 1));
 	}
@@ -39,6 +44,12 @@ void Enemy::Update() {
 	}
 	else if (Input::Trigger(KeyCode::Key_3)) {
 		Damage(1.0f, BATTLEACTION::BEATDOWNACTION,XMVectorSet(0, -20, 0, 1));
+	}
+
+	if (gameObject->mTransform->WorldPosition().y < -10) {
+		gameObject->RemoveComponent<CharacterControllerComponent>();
+		Hx::DestroyObject(gameObject);
+		m_Isend = true;
 	}
 
 	AnimLerp();
@@ -240,6 +251,8 @@ Enemy * Enemy::GetEnemy(GameObject target)
 	if (!target)return NULL;
 
 	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
+	if (auto scr = target->GetScript<EnemyArcher>())return scr;
+	if (auto scr = target->GetScript<EnemyEbilEye>())return scr;
 
 	return NULL;
 }
