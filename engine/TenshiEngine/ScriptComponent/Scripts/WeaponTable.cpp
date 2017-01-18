@@ -3,8 +3,14 @@
 #include<iostream>
 #include<sstream>
 #include <vector>
+
+static WeaponTable* g_WeaponTable = NULL;
 WeaponTable::WeaponTable()
 {
+
+	g_WeaponTable = this;
+
+
 	std::vector<std::string> type;
 	std::vector<std::string> name;
 	std::vector<int> durable;
@@ -30,7 +36,7 @@ WeaponTable::WeaponTable()
 		count++;
 	}
 
-	DebugLog();
+	//DebugLog();
 }
 //生成時に呼ばれます（エディター中も呼ばれます）
 void WeaponTable::Initialize() {
@@ -53,7 +59,7 @@ void WeaponTable::Update(){
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void WeaponTable::Finish(){
-
+	g_WeaponTable = NULL;
 }
 
 //コライダーとのヒット時に呼ばれます
@@ -153,5 +159,10 @@ std::string WeaponTable::IDtoName(int id)
 {
 	if (0 > id | m_maxcount < id - 1)return "兵士の剣";
 	return m_id[id];
+}
+
+WeaponTable * WeaponTable::GetWeaponTable()
+{
+	return g_WeaponTable;
 }
 
