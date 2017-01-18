@@ -875,7 +875,7 @@ void EnemyRezardMan::DeadModeFinalize()
 
 //UŒ‚‚·‚é‚Æ‚«‚ÉŒÄ‚Ôˆ—
 
-void EnemyRezardMan::Attack(GameObject player)
+void EnemyRezardMan::Attack(GameObject player, COL_TYPE colType)
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("‰½‚©‚É•Ší‚ª“–‚½‚Á‚½");

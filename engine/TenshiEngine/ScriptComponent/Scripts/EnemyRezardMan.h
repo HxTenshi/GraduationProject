@@ -9,7 +9,7 @@ public:
 	void SoloAction() override;
 	ENEMY_TYPE GetEnemyType() override;
 	float GetOnBattleRange() override;
-	void Attack(GameObject player) override;
+	void Attack(GameObject player, COL_TYPE colType) override;
 	bool Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_) override;
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;

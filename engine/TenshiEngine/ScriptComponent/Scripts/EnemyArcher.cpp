@@ -349,7 +349,7 @@ void EnemyArcher::DeadModeFinalize()
 
 //UŒ‚‚·‚é‚Æ‚«‚ÉŒÄ‚Ôˆ—
 
-void EnemyArcher::Attack(GameObject player)
+void EnemyArcher::Attack(GameObject player, COL_TYPE colType)
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("‰½‚©‚É•Ší‚ª“–‚½‚Á‚½");

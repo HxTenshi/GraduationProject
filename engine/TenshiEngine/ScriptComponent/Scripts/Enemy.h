@@ -112,6 +112,13 @@ enum ENEMY_TYPE {
 	CHILD_ARCHER,
 };
 
+
+enum COL_TYPE {
+	NORMAL,
+	ROTATE,
+};
+
+
 template<class T>
 const T& clamp(const T& v, const T& min, const T& max) {
 	if (v <= min)return min;
@@ -132,7 +139,7 @@ public:
 	virtual void SoloAction() {}
 	virtual ENEMY_TYPE GetEnemyType() { return ENEMY_TYPE::CHILD; };
 	virtual float GetOnBattleRange() { return 0.0f; };
-	virtual void Attack(GameObject player) {};
+	virtual void Attack(GameObject player,COL_TYPE colType) {};
 	virtual bool Damage(float damage_, BATTLEACTION::Enum winceType_,XMVECTOR accelPower_) { return false; };
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};

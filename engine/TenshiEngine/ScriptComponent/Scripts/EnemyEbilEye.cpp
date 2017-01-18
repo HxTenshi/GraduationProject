@@ -2,6 +2,7 @@
 #include "Game/Component/CharacterControllerComponent.h"
 #include "../h_standard.h"
 #include "../h_component.h"
+#include "PlayerController.h"
 
 EnemyEbilEye::EnemyEbilEye()
 {
@@ -29,20 +30,55 @@ EnemyEbilEye::EnemyEbilEye()
 	battleActionUpdate[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EnemyEbilEye::RotateTackleModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EnemyEbilEye::RotateTackleModeFinalize, this);
 
+	battleActionInitilize[BATTLEACTION::WINCEACTION] = std::bind(&EnemyEbilEye::WinceModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&EnemyEbilEye::WinceModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&EnemyEbilEye::WinceModeFinalize, this);
+
+	battleActionInitilize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyEbilEye::UpperDownInitilize, this);
+	battleActionUpdate[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyEbilEye::UpperDownUpdate, this);
+	battleActionFinalize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyEbilEye::UpperDownFinalize, this);
+
+	battleActionInitilize[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyEbilEye::BeatDownInitilize, this);
+	battleActionUpdate[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyEbilEye::BeatDownUpdate, this);
+	battleActionFinalize[BATTLEACTION::BEATDOWNACTION] = std::bind(&EnemyEbilEye::BeatDownFinalize, this);
+
+	battleActionInitilize[BATTLEACTION::DOWNACTION] = std::bind(&EnemyEbilEye::DownInitilize, this);
+	battleActionUpdate[BATTLEACTION::DOWNACTION] = std::bind(&EnemyEbilEye::DownUpdate, this);
+	battleActionFinalize[BATTLEACTION::DOWNACTION] = std::bind(&EnemyEbilEye::DownFinalize, this);
+
+	battleActionInitilize[BATTLEACTION::DEADACTION] = std::bind(&EnemyEbilEye::DeadInitilize, this);
+	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&EnemyEbilEye::DeadUpdate, this);
+	battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&EnemyEbilEye::DeadFinalize, this);
+
 	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
 	m_TrackingModeParam.id = TRACKINGACTION::PARENTTRACKING;
 	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 	m_RotateAngle = 0;
+	m_UpperdownNow = false;
 }
 void EnemyEbilEye::ChildInitialize()
 {
-	m_Gravity = XMVectorSet(0, 0, 0, 0);
+	m_Hp = hp;
 	ModelObject = m_ModelObject;
 }
 
 void EnemyEbilEye::SoloAction()
 {
-
+	if (m_BattleModeParam.id == BATTLEACTION::UPPERDOWNACTION) {
+		m_Gravity = XMVectorSet(0, -9.8f, 0, 0);
+	}
+	else {
+		m_Gravity = XMVectorSet(0, 0, 0, 0);
+	}
+	if (Input::Trigger(KeyCode::Key_1)) {
+		Damage(1.0f, BATTLEACTION::WINCEACTION,XMVectorSet(0,0,0,0));
+	}
+	if (Input::Trigger(KeyCode::Key_2)) {
+		Damage(1.0f, BATTLEACTION::UPPERDOWNACTION, XMVectorSet(0, 10, 0, 0));
+	}
+	if (Input::Trigger(KeyCode::Key_3)) {
+		Damage(1.0f, BATTLEACTION::BEATDOWNACTION, XMVectorSet(0, -10, 0, 0));
+	}
 }
 
 ENEMY_TYPE EnemyEbilEye::GetEnemyType()
@@ -55,12 +91,29 @@ float EnemyEbilEye::GetOnBattleRange()
 	return 0.0f;
 }
 
-void EnemyEbilEye::Attack(GameObject player)
+void EnemyEbilEye::Attack(GameObject player, COL_TYPE colType)
 {
+	if (!player)return;
+	auto playerScript = player->GetScript<PlayerController>();
+	if (!playerScript)return;
+	if (!m_RotateEnd) {
+		if (colType == COL_TYPE::NORMAL && m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION) {
+			playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+		}
+		else if (colType == COL_TYPE::ROTATE && m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION) {
+			playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+		}
+	}
 }
 
 bool EnemyEbilEye::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
+	m_Damage = damage_;
+	m_Accel = accelPower_;
+	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
+		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
+		return true;
+	}
 	return false;
 }
 
@@ -77,7 +130,7 @@ bool EnemyEbilEye::DiscoveryPlayer()
 		if (!Hx::PhysX()->Raycast(rayMyPos,
 				XMVector3Normalize(playerPos - rayMyPos),
 				XMVector3Length(playerPos - rayMyPos).x,
-				Layer::UserTag4)) {
+				Layer::UserTag4) && m_ActionModeID == ACTIONMODE::TRACKINGMODE) {
 			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE,BATTLEACTION::CONFRONTACTION);
 			return true;
 		}
@@ -146,6 +199,7 @@ void EnemyEbilEye::ConfrontModeInitilize()
 {
 	m_Count = (float)(rand() % 50) / 10.0f + 5.0f;
 	AnimChange(ANIM_ID::ANIM_MOVE, 10.0f);
+	m_UpperdownNow = false;
 }
 
 void EnemyEbilEye::ConfrontModeUpdate()
@@ -155,7 +209,12 @@ void EnemyEbilEye::ConfrontModeUpdate()
 	m_Count -= Hx::DeltaTime()->GetDeltaTime();
 
 	if (m_Count <= 0.0f) {
-		ChangeBattleAction(BATTLEACTION::ATTACKMONCKEYACTION);
+		if (rand() % 2 == 0) {
+			ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
+		}
+		else {
+			ChangeBattleAction(BATTLEACTION::ATTACKMONCKEYACTION);
+		}
 	}
 }
 
@@ -247,6 +306,163 @@ void EnemyEbilEye::RotateTackleModeUpdate()
 }
 
 void EnemyEbilEye::RotateTackleModeFinalize()
+{
+}
+
+void EnemyEbilEye::WinceModeInitilize() {
+	m_Hp -= m_Damage;
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false,true);
+
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+	if (!cc->IsGround()) {
+		m_AccelVec = m_Accel;
+	}
+	m_WinceCount = m_WinceTime;
+}
+
+void EnemyEbilEye::WinceModeUpdate() {
+	m_WinceCount -= Hx::DeltaTime()->GetDeltaTime();
+	m_BattleModeParam.canChangeAttackAction = false;
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId) && m_WinceCount < 0){
+		if (!m_UpperdownNow)
+			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+		else {
+			ChangeBattleAction(BATTLEACTION::UPPERDOWNACTION);
+			m_Damage = 0;
+			m_Accel = XMVectorSet(0,0,0,0);
+		}
+	};
+}
+
+void EnemyEbilEye::WinceModeFinalize() {
+	m_BattleModeParam.actionFinish = true;
+	//ChangeBattleAction(40, 0, 40, 20, 0);
+}
+
+void EnemyEbilEye::UpperDownInitilize()
+{
+	m_Hp -= m_Damage;
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
+	m_BattleModeParam.count = 0.0f;
+	if(!m_UpperdownNow)
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false,true);
+	m_AccelVec = m_Accel;
+	m_UpperdownNow = true;
+}
+
+void EnemyEbilEye::UpperDownUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+
+	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+	if (cc->IsGround() && m_AccelVec.y <= 0) {
+		ChangeBattleAction(BATTLEACTION::DOWNACTION);
+	}
+}
+
+void EnemyEbilEye::UpperDownFinalize()
+{
+
+}
+
+void EnemyEbilEye::BeatDownInitilize()
+{
+	m_Hp -= m_Damage;
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
+	m_BattleModeParam.count = 0.0f;
+	m_AccelVec += m_Accel;
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false,true);
+}
+
+void EnemyEbilEye::BeatDownUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+
+	if (cc->IsGround()) {
+		ChangeBattleAction(BATTLEACTION::DOWNACTION);
+	}
+
+}
+
+void EnemyEbilEye::BeatDownFinalize()
+{
+}
+
+void EnemyEbilEye::DownInitilize()
+{
+	AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true);
+	m_TackleStartPos = gameObject->mTransform->Forward();//
+	m_TackleStartPos.y = 0;
+	m_TackleStartPos += gameObject->mTransform->WorldPosition();
+}
+
+void EnemyEbilEye::DownUpdate()
+{
+	LookPosition(m_TackleStartPos);
+	m_BattleModeParam.canChangeAttackAction = false;
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+
+	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+	};
+}
+
+void EnemyEbilEye::DownFinalize()
+{
+}
+
+void EnemyEbilEye::DeadInitilize()
+{
+	m_BattleModeParam.count = 0.0f;
+	m_AccelVec += XMVectorSet(0,-10,0,0);
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
+	m_DeadIsGround = false;
+}
+
+void EnemyEbilEye::DeadUpdate()
+{
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+	if (m_DeadIsGround) {
+		LookPosition(m_TackleStartPos);
+
+		if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
+			gameObject->RemoveComponent<CharacterControllerComponent>();
+			Hx::DestroyObject(gameObject);
+		}
+	}
+
+	if (cc->IsGround()) {
+		AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true);
+		m_TackleStartPos = gameObject->mTransform->Forward();//
+		m_TackleStartPos.y = 0;
+		m_TackleStartPos += gameObject->mTransform->WorldPosition();
+		m_DeadIsGround = true;
+	}
+}
+
+void EnemyEbilEye::DeadFinalize()
 {
 }
 

@@ -36,15 +36,6 @@ void Enemy::Update() {
 	m_Vec = XMVectorZero();
 	if (!m_Player)return;
 	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
-	if (Input::Trigger(KeyCode::Key_1)) {
-		Damage(1.0f,BATTLEACTION::WINCEACTION, XMVectorSet(0, 2, 0, 1));
-	}
-	else if (Input::Trigger(KeyCode::Key_2)) {
-		Damage(1.0f, BATTLEACTION::UPPERDOWNACTION,XMVectorSet(0,10,0,1));
-	}
-	else if (Input::Trigger(KeyCode::Key_3)) {
-		Damage(1.0f, BATTLEACTION::BEATDOWNACTION,XMVectorSet(0, -20, 0, 1));
-	}
 
 	if (gameObject->mTransform->WorldPosition().y < -10) {
 		gameObject->RemoveComponent<CharacterControllerComponent>();

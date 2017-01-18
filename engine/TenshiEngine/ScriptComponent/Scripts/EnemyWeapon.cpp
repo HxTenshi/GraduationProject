@@ -27,7 +27,7 @@ void EnemyWeapon::OnCollideBegin(GameObject target){
 	if (!enemy)return;
 	auto enemyScript = Enemy::GetEnemy(enemy);
 	if (!enemyScript)return;
-	enemyScript->Attack(target);
+	enemyScript->Attack(target,(COL_TYPE)colType);
 }
 
 //コライダーとのヒット中に呼ばれます

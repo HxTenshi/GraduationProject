@@ -9,7 +9,7 @@ public:
 	void SoloAction() override;
 	ENEMY_TYPE GetEnemyType() override;
 	float GetOnBattleRange() override;
-	void Attack(GameObject player) override;
+	void Attack(GameObject player,COL_TYPE colType) override;
 	bool Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_) override;
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
@@ -20,6 +20,8 @@ private:
 		ANIM_ROTATEATTACK,
 		ANIM_ROTATEEYE,
 		ANIM_TACKLE,
+		ANIM_WINCE,
+		ANIM_DOWN
 	};
 	//ÉÅÉìÉoïœêî
 	void TrackingModeInitilize();
@@ -46,6 +48,26 @@ private:
 	void RotateTackleModeUpdate();
 	void RotateTackleModeFinalize();
 
+	void WinceModeInitilize();
+	void WinceModeUpdate();
+	void WinceModeFinalize();
+
+	void UpperDownInitilize();
+	void UpperDownUpdate();
+	void UpperDownFinalize();
+
+	void BeatDownInitilize();
+	void BeatDownUpdate();
+	void BeatDownFinalize();
+
+	void DownInitilize();
+	void DownUpdate();
+	void DownFinalize();
+
+	void DeadInitilize();
+	void DeadUpdate();
+	void DeadFinalize();
+
 	void SetPositionRotation(XMVECTOR pos_,float radius_);
 	void LookPosition(XMVECTOR position_);
 
@@ -60,6 +82,8 @@ private:
 	SERIALIZE GameObject m_ModelObject;
 	SERIALIZE float m_TackleSpeed;
 	SERIALIZE float m_TackleTime;
+	SERIALIZE float m_WinceTime;
+	SERIALIZE float hp;
 
 	float m_RotateAngle;
 	float m_Count;
@@ -67,5 +91,8 @@ private:
 	bool m_RotateEnd;
 	XMVECTOR m_TackleVec;
 	XMVECTOR m_TackleStartPos;
+	float m_WinceCount;
+	bool m_UpperdownNow;
+	bool m_DeadIsGround;
 public:
 };
