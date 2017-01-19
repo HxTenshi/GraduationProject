@@ -1,6 +1,7 @@
 #include "EnemyTeam.h"
 #include "EnemyRezardManTeam.h"
 #include "EnemyOneTeam.h"
+#include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void EnemyTeam::Initialize(){
@@ -30,7 +31,7 @@ void EnemyTeam::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void EnemyTeam::Start(){
-
+	m_Player = UniqueObject::GetPlayer();
 }
 
 //毎フレーム呼ばれます

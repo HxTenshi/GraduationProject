@@ -12,7 +12,6 @@ void EnemyOneTeam::TeamInitialize()
 		if (!i)return;
 		auto iScript = Enemy::GetEnemy(i);
 		if (!iScript)return;
-		iScript->SetPlayer(m_Player);
 
 		EnemyOne eo;
 		eo.enemyParameter.enemy_type = iScript->GetEnemyType();
@@ -32,8 +31,11 @@ bool EnemyOneTeam::Alive()
 		if (jScript->IsEnd()) {
 			//vector‚©‚çíœ
 			j = teamMember.erase(j);
+			Hx::Debug()->Log("erase");
+			Enemy::GetEnemy(j->enemyGameObject)->ChildFinalize();
 			if (teamMember.size() == 0) {
 				return false;
+				Hx::Debug()->Log("teamDie");
 			}
 			continue;
 		}

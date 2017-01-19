@@ -42,7 +42,6 @@ public:
 	virtual void TeamUpdate() {};
 
 	static EnemyTeam* GetEnemyTeam(GameObject target);
-	void SetPlayer(GameObject gameObject) { m_Player = gameObject; };
 private:
 	//ƒƒ“ƒo•Ï”
 

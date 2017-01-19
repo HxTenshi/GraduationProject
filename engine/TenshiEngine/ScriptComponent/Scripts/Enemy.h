@@ -141,6 +141,7 @@ public:
 	virtual float GetOnBattleRange() { return 0.0f; };
 	virtual void Attack(GameObject player,COL_TYPE colType) {};
 	virtual bool Damage(float damage_, BATTLEACTION::Enum winceType_,XMVECTOR accelPower_) { return false; };
+	virtual void ChildFinalize() {}
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};
 	bool IsEnd() { return m_Isend; }
@@ -169,7 +170,6 @@ public:
 		return eap;
 	}
 	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
-	void SetPlayer(GameObject player) { m_Player = player; }
 	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
 	float GetNowAnimTime();
 

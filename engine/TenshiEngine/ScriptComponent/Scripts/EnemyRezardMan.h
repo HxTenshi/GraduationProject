@@ -13,6 +13,7 @@ public:
 	bool Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_) override;
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
+	void ChildFinalize() override;
 
 private:
 	enum ANIM_ID {

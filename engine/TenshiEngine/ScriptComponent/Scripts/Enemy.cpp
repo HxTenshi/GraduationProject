@@ -7,6 +7,7 @@
 #include "EnemyRezardMan.h"
 #include "EnemyArcher.h"
 #include "EnemyEbilEye.h"
+#include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
@@ -18,9 +19,6 @@ void Enemy::Initialize() {
 	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
 	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 
-	if (!m_Player) {
-		m_Player = Hx::FindActor("Player");
-	}
 	m_Isend = false;
 	m_WasAttacked = false;
 	ChildInitialize();
@@ -29,6 +27,7 @@ void Enemy::Initialize() {
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
 void Enemy::Start() {
+	m_Player = UniqueObject::GetPlayer();
 }
 
 //毎フレーム呼ばれます

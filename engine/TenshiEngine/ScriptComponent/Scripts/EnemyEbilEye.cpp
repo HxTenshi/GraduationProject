@@ -59,12 +59,13 @@ EnemyEbilEye::EnemyEbilEye()
 void EnemyEbilEye::ChildInitialize()
 {
 	m_Hp = hp;
+	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
 }
 
 void EnemyEbilEye::SoloAction()
 {
-	if (m_BattleModeParam.id == BATTLEACTION::UPPERDOWNACTION) {
+	if (m_AccelVec.y >= 0 || m_BattleModeParam.id == BATTLEACTION::UPPERDOWNACTION || m_BattleModeParam.id == BATTLEACTION::DEADACTION) {
 		m_Gravity = XMVectorSet(0, -9.8f, 0, 0);
 	}
 	else {
@@ -151,6 +152,13 @@ bool EnemyEbilEye::LostPlayer()
 		return true;
 	}
 	return false;
+}
+
+void EnemyEbilEye::ChildFinalize()
+{
+	Hx::Debug()->Log("final");
+	gameObject->RemoveComponent<CharacterControllerComponent>();
+	Hx::DestroyObject(gameObject);
 }
 
 void EnemyEbilEye::TrackingModeInitilize()
@@ -448,17 +456,18 @@ void EnemyEbilEye::DeadUpdate()
 		LookPosition(m_TackleStartPos);
 
 		if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
-			gameObject->RemoveComponent<CharacterControllerComponent>();
-			Hx::DestroyObject(gameObject);
+			m_Isend = true;
+			Hx::Debug()->Log("isEnd");
 		}
 	}
-
-	if (cc->IsGround()) {
-		AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true);
-		m_TackleStartPos = gameObject->mTransform->Forward();//
-		m_TackleStartPos.y = 0;
-		m_TackleStartPos += gameObject->mTransform->WorldPosition();
-		m_DeadIsGround = true;
+	else {
+		if (cc->IsGround()) {
+			AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true);
+			m_TackleStartPos = gameObject->mTransform->Forward();//
+			m_TackleStartPos.y = 0;
+			m_TackleStartPos += gameObject->mTransform->WorldPosition();
+			m_DeadIsGround = true;
+		}
 	}
 }
 

@@ -56,7 +56,6 @@ void EnemyManager::EnemysIntoEnemyContainer(){
 	if (enemyTeams.size() == 0)return;
 	for (auto& newEnemyTeam : enemyTeams) {
 		m_EnemyTeamVector.push_back(newEnemyTeam);
-		EnemyTeam::GetEnemyTeam(newEnemyTeam)->SetPlayer(m_Player);
 		EnemyTeam::GetEnemyTeam(newEnemyTeam)->TeamInitialize();
 	}
 }

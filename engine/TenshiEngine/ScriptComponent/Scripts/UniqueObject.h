@@ -6,7 +6,7 @@
 class UniqueObject :public IDllScriptComponent{
 public:
 	UniqueObject();
-
+	void Initialize()override;
 	void Finish()override;
 
 	static GameObject GetPlayer();
