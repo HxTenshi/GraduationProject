@@ -5,6 +5,7 @@
 void OutputMoveObjectGimic::Initialize(){
 	m_WaitMode = false;
 	m_IsPlay = false;
+	m_RebirthMode = false;
 	m_CurrentPos = 0;
 	SetEndCollback([]() {});
 
@@ -40,9 +41,9 @@ void OutputMoveObjectGimic::Update(){
 		if (m_Timer == 0.0f) {
 			m_TimerMax = 0.0f;
 			m_WaitMode = true;
-			m_CurrentPos++;
+			m_CurrentPos += m_RebirthMode ? -1:1;
 			next();
-			m_CurrentPos = min(m_CurrentPos, 6);
+			m_CurrentPos = max(min(m_CurrentPos, 6),0);
 		}
 
 		//gameObject->mTransform->WorldQuaternion(quat);
@@ -52,18 +53,22 @@ void OutputMoveObjectGimic::Update(){
 	}
 	if (m_WaitMode) {
 		if (m_Timer == 0.0f) {
-			auto l = XMVector3Length(m_position[1] - m_position[0]).x;
+			//auto l = XMVector3Length(m_position[1] - m_position[0]).x;
 			m_TimerMax = m_Timer = 0.0f;
 			if (m_Speed != 0.0f) {
-				m_TimerMax = m_Timer = l / m_Speed;
+				//m_TimerMax = m_Timer = l / m_Speed;
+				m_TimerMax = m_Timer = m_Speed;
 			}
 			m_WaitMode = false;
-			if (m_CurrentPos == 6) {
+			if ((!m_RebirthMode && m_CurrentPos == 6) || (m_CurrentPos == 0 && m_RebirthMode)) {
 				if (m_Loop) {
 					Stop();
 					Play();
 				}
 				else {
+					if (m_Rebirth) {
+						m_RebirthMode = !m_RebirthMode;
+					}
 					Stop();
 					m_EndCollback();
 				}
@@ -100,10 +105,22 @@ bool OutputMoveObjectGimic::IsPlay()
 
 void OutputMoveObjectGimic::Play()
 {
-	if (IsPlay())return;
+	if (IsPlay()) {
+		if (m_Rebirth) {
+			m_CurrentPos += m_RebirthMode ? -1 : 1;
+			m_CurrentPos = max(min(m_CurrentPos, 6), 0);
+			m_RebirthMode = !m_RebirthMode;
+		}
+		return;
+	}
 	m_IsPlay = true;
 
-	m_CurrentPos = 0;
+	if (!m_RebirthMode) {
+		m_CurrentPos = 0;
+	}
+	else {
+		m_CurrentPos = 6;
+	}
 	m_WaitMode = true;
 	next();
 }
@@ -181,87 +198,151 @@ void OutputMoveObjectGimic::next()
 		m_Timer = m_Point_6_EndWaitTime;
 	}
 
-	if (m_CurrentPos == 0) {
-		if (!m_Point_1 && m_Object) {
-			m_CurrentPos++;
-		}
-		else {
-			if (m_CurrentObjectPointStart) {
+	if (!m_RebirthMode) {
+
+		if (m_CurrentPos == 0) {
+			if (!m_Point_1 || !m_Object || !m_CurrentObjectPointStart) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
 				m_quaternion[0] = m_Object->mTransform->WorldQuaternion();
 				m_position[0] = m_Object->mTransform->WorldPosition();
+
+				m_quaternion[1] = m_Point_1->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_1->mTransform->WorldPosition();
+
+			}
+
+			//m_Point_0_EndTriggerGimmick;
+		}
+
+		if (m_CurrentPos == 1) {
+			if (!m_Point_1 || !m_Point_2) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
 			}
 			else {
 				m_quaternion[0] = m_Point_1->mTransform->WorldQuaternion();
 				m_position[0] = m_Point_1->mTransform->WorldPosition();
+
+				m_quaternion[1] = m_Point_2->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_2->mTransform->WorldPosition();
 			}
-
-			m_quaternion[1] = m_Point_1->mTransform->WorldQuaternion();
-			m_position[1] = m_Point_1->mTransform->WorldPosition();
-
 		}
 
-		//m_Point_0_EndTriggerGimmick;
-	}
+		if (m_CurrentPos == 2) {
+			if (!m_Point_2 || !m_Point_3) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_2->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_2->mTransform->WorldPosition();
 
-	if (m_CurrentPos == 1) {
-		if (!m_Point_1 || !m_Point_2) {
-			m_CurrentPos++;
+				m_quaternion[1] = m_Point_3->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_3->mTransform->WorldPosition();
+			}
 		}
-		else {
-			m_quaternion[0] = m_Point_1->mTransform->WorldQuaternion();
-			m_position[0] = m_Point_1->mTransform->WorldPosition();
+		if (m_CurrentPos == 3) {
+			if (!m_Point_3 || !m_Point_4) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_3->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_3->mTransform->WorldPosition();
 
-			m_quaternion[1] = m_Point_2->mTransform->WorldQuaternion();
-			m_position[1] = m_Point_2->mTransform->WorldPosition();
+				m_quaternion[1] = m_Point_4->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_4->mTransform->WorldPosition();
+			}
 		}
-	}
+		if (m_CurrentPos == 4) {
+			if (!m_Point_4 || !m_Point_5) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_4->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_4->mTransform->WorldPosition();
 
-	if (m_CurrentPos == 2) {
-		if (!m_Point_2 || !m_Point_3) {
-			m_CurrentPos++;
+				m_quaternion[1] = m_Point_5->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_5->mTransform->WorldPosition();
+			}
 		}
-		else {
-			m_quaternion[0] = m_Point_2->mTransform->WorldQuaternion();
-			m_position[0] = m_Point_2->mTransform->WorldPosition();
+		if (m_CurrentPos == 5) {
+			if (!m_Point_5 || !m_Point_6) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_5->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_5->mTransform->WorldPosition();
 
-			m_quaternion[1] = m_Point_3->mTransform->WorldQuaternion();
-			m_position[1] = m_Point_3->mTransform->WorldPosition();
-		}
-	}
-	if (m_CurrentPos == 3) {
-		if (!m_Point_3 || !m_Point_4) {
-			m_CurrentPos++;
-		}
-		else {
-			m_quaternion[0] = m_Point_3->mTransform->WorldQuaternion();
-			m_position[0] = m_Point_3->mTransform->WorldPosition();
-
-			m_quaternion[1] = m_Point_4->mTransform->WorldQuaternion();
-			m_position[1] = m_Point_4->mTransform->WorldPosition();
-		}
-	}
-	if (m_CurrentPos == 4) {
-		if (!m_Point_4 || !m_Point_5) {
-			m_CurrentPos++;
-		}
-		else {
-			m_quaternion[0] = m_Point_4->mTransform->WorldQuaternion();
-			m_position[0] = m_Point_4->mTransform->WorldPosition();
-
-			m_quaternion[1] = m_Point_5->mTransform->WorldQuaternion();
-			m_position[1] = m_Point_5->mTransform->WorldPosition();
+				m_quaternion[1] = m_Point_6->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_6->mTransform->WorldPosition();
+			}
 		}
 	}
-	if (m_CurrentPos == 5) {
-		if (!m_Point_5 || !m_Point_6) {
-			m_CurrentPos++;
-		}
-		else {
-			m_quaternion[0] = m_Point_5->mTransform->WorldQuaternion();
-			m_position[0] = m_Point_5->mTransform->WorldPosition();
+	else {
 
-			m_quaternion[1] = m_Point_6->mTransform->WorldQuaternion();
-			m_position[1] = m_Point_6->mTransform->WorldPosition();
+		if (m_CurrentPos == 6) {
+			m_CurrentPos += m_RebirthMode ? -1 : 1;
+		}
+
+		if (m_CurrentPos == 5) {
+			if (!m_Point_5 || !m_Point_6) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_6->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_6->mTransform->WorldPosition();
+
+				m_quaternion[1] = m_Point_5->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_5->mTransform->WorldPosition();
+			}
+		}
+		if (m_CurrentPos == 4) {
+			if (!m_Point_4 || !m_Point_5) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_5->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_5->mTransform->WorldPosition();
+
+				m_quaternion[1] = m_Point_4->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_4->mTransform->WorldPosition();
+			}
+		}
+		if (m_CurrentPos == 3) {
+			if (!m_Point_3 || !m_Point_4) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_4->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_4->mTransform->WorldPosition();
+
+				m_quaternion[1] = m_Point_3->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_3->mTransform->WorldPosition();
+			}
+		}
+		if (m_CurrentPos == 2) {
+			if (!m_Point_2 || !m_Point_3) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_3->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_3->mTransform->WorldPosition();
+
+				m_quaternion[1] = m_Point_2->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_2->mTransform->WorldPosition();
+			}
+		}
+		if (m_CurrentPos == 1) {
+			if (!m_Point_1 || !m_Point_2) {
+				m_CurrentPos += m_RebirthMode ? -1 : 1;
+			}
+			else {
+				m_quaternion[0] = m_Point_2->mTransform->WorldQuaternion();
+				m_position[0] = m_Point_2->mTransform->WorldPosition();
+
+				m_quaternion[1] = m_Point_1->mTransform->WorldQuaternion();
+				m_position[1] = m_Point_1->mTransform->WorldPosition();
+			}
 		}
 	}
 

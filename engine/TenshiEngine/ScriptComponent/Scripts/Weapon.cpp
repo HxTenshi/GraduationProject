@@ -12,8 +12,9 @@ void Weapon::Initialize(){
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+	auto m_table = WeaponTable::GetWeaponTable();
 	if (m_table) {
-		m_param=m_table->GetScript<WeaponTable>()->GetWeaponParametor(m_name);
+		m_param=m_table->GetWeaponParametor(m_name);
 	}else{
 		m_param.SetAttack(5);
 		m_param.SetDurableDamage(1, 10);
@@ -157,7 +158,7 @@ void Weapon::ThrowAway()
 	gameObject->mTransform->SetParent(Hx::GetRootActor());
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
-	gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
+	//gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
 }
 void Weapon::ThrowAttack()
 {
@@ -173,7 +174,9 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 	mIsEnemyThrow = true;
 	ThrowAway();
 	is_ground_hit = true;
-	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir*50.0f, ForceMode::eIMPULSE);
+	is_attack = 1;
+	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
+	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
 }
 void Weapon::WeaponUsePhysX()
 {
@@ -184,6 +187,7 @@ void Weapon::WeaponUsePhysX()
 		is_hand = false;
 		is_ground_hit = true;
 		is_fly = false;
+		is_attack = 0;
 		//Hx::Debug()->Log("Hit");
 	}
 }
@@ -203,6 +207,7 @@ void Weapon::GetWeapon()
 	is_ground_hit = false;
 	is_hand = true;
 	is_fly = false;
+	is_attack = 0;
 	//gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
@@ -283,6 +288,11 @@ void Weapon::SetAttackFlag(bool flag)
 void Weapon::SetAttackFlag(int flag)
 {
 	SetAttackFlag((bool)flag);
+}
+
+bool Weapon::GetIsHand()
+{
+	return is_hand;
 }
 
 void Weapon::ThrowAwayAction()

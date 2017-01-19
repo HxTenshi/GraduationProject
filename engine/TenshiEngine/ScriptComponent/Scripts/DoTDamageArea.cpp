@@ -34,7 +34,7 @@ void DoTDamageArea::OnCollideEnter(GameObject target){
 		float time = Hx::DeltaTime()->GetDeltaTime();
 		auto player = target->GetScript<PlayerController>();
 		if (player) {
-			player->Damage(m_1secDamege * time, XMVectorZero());
+			player->Damage(m_1secDamege * time, XMVectorZero(),PlayerController::KnockBack::None, true, true);
 		}
 	}
 }

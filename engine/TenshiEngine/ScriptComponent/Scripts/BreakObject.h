@@ -20,4 +20,6 @@ private:
 	GameObject m_NormalObject;
 	SERIALIZE
 	GameObject m_BreakObject;
+	SERIALIZE
+		bool m_OnlyBombBreak;
 };

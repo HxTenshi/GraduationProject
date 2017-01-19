@@ -93,7 +93,8 @@ void WeaponUI::DurableGage(GameObject weapon)
 
 void WeaponUI::SetWeaponIcon(WeaponType wtype,WeaponDamageType wdtype)
 {
-	TextureAsset result=m_sword_ui;
+
+	TextureAsset result;
 	if (wtype == WeaponType::Sword) {
 		if (wdtype == WeaponDamageType::Normal)result = m_sword_ui;
 		if (wdtype == WeaponDamageType::Damage)result = m_sword_damage_ui;
@@ -112,5 +113,6 @@ void WeaponUI::SetWeaponIcon(WeaponType wtype,WeaponDamageType wdtype)
 		if (wdtype == WeaponDamageType::Danger)result = m_axe_danger_ui;
 		if (wdtype == WeaponDamageType::Break)result = m_axe_break_ui;
 	}
+
 	UI->GetComponent<TextureModelComponent>()->SetTexture(result);
 }

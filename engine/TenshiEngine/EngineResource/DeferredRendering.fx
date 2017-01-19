@@ -54,6 +54,17 @@ PS_INPUT VS( VS_INPUT input )
 	return output;
 }
 
+float3 Uncharted2Tonemap(float3 x)
+{
+	float A = 0.15;
+	float B = 0.50;
+	float C = 0.10;
+	float D = 0.20;
+	float E = 0.02;
+	float F = 0.30;
+	return ((x*(A*x + C*B) + D*E) / (x*(A*x + B) + D*F)) - E / F;
+}
+
 //--------------------------------------------------------------------------------------
 // Pixel Shader
 //--------------------------------------------------------------------------------------
@@ -158,6 +169,21 @@ float4 PS(PS_INPUT input) : SV_Target
 	//float l = length( -ray - nor);
 	//l = abs(l);
 	//col = float4(l,l,l, 1);
+
+
+
+
+
+
+
+
+	//col.rgb *= 4.0f;
+	//float ExposureBias = 2.0f;
+	//float3 curr = Uncharted2Tonemap(ExposureBias*col.rgb);
+	//
+	//float W = 11.2;
+	//float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
+	//col.rgb = curr*whiteScale;
 
 	col.rgb = pow(col.rgb, (1 / 2.2));
 	return col;

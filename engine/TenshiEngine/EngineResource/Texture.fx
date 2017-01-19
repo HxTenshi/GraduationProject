@@ -36,8 +36,10 @@ cbuffer cbChangesMaterial : register(b4)
 	float2 MTexScale;
 	float2 MHightPower;
 	float4 MNormaleScale;
+	float2 MOffset;
+	float EmissivePowor;
+	float MNull;
 };
-
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
@@ -46,7 +48,7 @@ PS_INPUT VS( VS_INPUT input )
 	PS_INPUT output = (PS_INPUT)0;
 	output.Pos = mul(input.Pos, World);
 	output.Pos.z = 0;
-	output.Tex = input.Tex;
+	output.Tex = input.Tex * MTexScale + MOffset;
 	
 	return output;
 }

@@ -28,6 +28,8 @@ private:
 	GameObject mWeapon;
 
 	SERIALIZE
+	float m_ThrowPower;
+	SERIALIZE
 	float m_GetSpeed;
 	SERIALIZE
 	float m_GetRotSpeed;

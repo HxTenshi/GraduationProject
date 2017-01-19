@@ -98,6 +98,10 @@ public:
 	///攻撃フラグのセット
 	/// </summary>
 	void SetAttackFlag(int flag);
+	/// <summary>
+	///手に持っているか
+	/// </summary>
+	bool GetIsHand();
 private:
 	/// <summary>
 	///投げ捨てる時のアクション
@@ -112,8 +116,6 @@ private:
 	//メンバ変数
 	SERIALIZE
 	std::string m_name;
-	SERIALIZE
-	GameObject m_table;
 	SERIALIZE
 	float m_Recast;
 	SERIALIZE
