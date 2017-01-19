@@ -5,6 +5,8 @@
 
 #include "OutputGimic.h"
 
+#include "UniqueObject.h"
+
 Matinee::Matinee()
 {
 }
@@ -27,7 +29,9 @@ void Matinee::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void Matinee::Start(){
-
+	if (!m_Camera) {
+		m_Camera = UniqueObject::GetCamera();
+	}
 }
 
 //毎フレーム呼ばれます

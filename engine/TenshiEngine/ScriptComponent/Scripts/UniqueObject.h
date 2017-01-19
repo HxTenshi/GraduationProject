@@ -5,10 +5,11 @@
 
 class UniqueObject :public IDllScriptComponent{
 public:
-	UniqueObject();
 
+	void Initialize()override;
 	void Finish()override;
 
+	static bool IsPlayer(GameObject target);
 	static GameObject GetPlayer();
 	static GameObject GetCamera();
 
