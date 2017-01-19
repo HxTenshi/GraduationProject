@@ -84,6 +84,7 @@ private:
 	SERIALIZE float m_TackleTime;
 	SERIALIZE float m_WinceTime;
 	SERIALIZE float hp;
+	SERIALIZE GameObject player;
 
 	float m_RotateAngle;
 	float m_Count;
