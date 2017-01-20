@@ -18,6 +18,7 @@ private:
 	//ƒƒ“ƒo•Ï”
 	GameObject m_Enemy;
 	XMVECTOR m_Vec;
+	float count;
 
 	SERIALIZE float speed;
 };

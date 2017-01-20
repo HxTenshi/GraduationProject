@@ -14,8 +14,6 @@ void EnemyRezardManTeam::TeamInitialize(){
 		if (!i)return;
 		auto iScript = Enemy::GetEnemy(i);
 		if (!iScript)return;
-		iScript->SetPlayer(m_Player);
-
 		EnemyOne eo;
 		eo.enemyParameter.enemy_type = iScript->GetEnemyType();
 		if (iScript->GetEnemyType() == ENEMY_TYPE::CHILD) {
@@ -50,6 +48,7 @@ bool EnemyRezardManTeam::Alive()
 			if (j->enemyParameter.enemy_type == ENEMY_TYPE::PARENT)parentAlive = false;
 			if (j->enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER)archerCount--;
 			//vectorから削除
+			Enemy::GetEnemy(j->enemyGameObject)->ChildFinalize();
 			j = teamMember.erase(j);
 			if (m_DrawFlag)Hx::Debug()->Log("RezardManTeam : " + std::to_string(teamMember.size()) + "人");
 			if (teamMember.size() == 0) {
@@ -107,6 +106,7 @@ void EnemyRezardManTeam::DiscoveryOrLostPlayerSet()
 
 void EnemyRezardManTeam::TeamUpdate()
 {
+	if (!m_Player)return;
 	auto playerPos = m_Player->mTransform->WorldPosition();
 	//戦闘時の移動先を計算するのに使う(↓3つ全部)
 	XMVECTOR parentMoveVec;
