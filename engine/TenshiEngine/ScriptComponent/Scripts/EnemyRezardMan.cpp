@@ -264,9 +264,7 @@ void EnemyRezardMan::ParentTrackingModeUpdate()
 
 void EnemyRezardMan::ParentTrackingModeFinalize()
 {
-	gameObject->RemoveComponent<CharacterControllerComponent>();
-	Hx::DestroyObject(m_MyWeapon);
-	Hx::DestroyObject(gameObject);
+
 }
 
 void EnemyRezardMan::ChildTrackingModeInitilize()
