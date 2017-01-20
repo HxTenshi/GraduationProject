@@ -2,10 +2,6 @@
 
 static UniqueObject* g_UniqueObject = NULL;
 
-void UniqueObject::Initialize() {
-	g_UniqueObject = this;
-}
-
 void UniqueObject::Initialize()
 {
 	g_UniqueObject = this;

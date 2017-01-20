@@ -56,6 +56,8 @@ struct AnimeID {
 		AttackHigh1End,
 		Jump,
 		SpeedJump,
+		Fall,
+		FallGround,
 		Count,
 	};
 };
@@ -710,7 +712,7 @@ void PlayerController::FreeExcute()
 	GettingWeapon();
 
 	if (m_InputF_Time > 0.5f) {
-		if (m_IsGround) {
+		if (!m_IsGround) {
 			changeAnime(AnimeID::Jump);
 		}else
 		if (mJump.x == 0.0f && mJump.z == 0.0f) {
@@ -744,12 +746,16 @@ void PlayerController::FreeExcute()
 	}
 
 	{
-		if (mJump.x == 0.0f && mJump.z == 0.0f) {
-			changeAnime(AnimeID::Idle);
+		if (!m_IsGround) {
+			changeAnime(AnimeID::Jump);
 		}
-		else {
-			changeAnime(AnimeID::Move);
-		}
+		else
+			if (mJump.x == 0.0f && mJump.z == 0.0f) {
+				changeAnime(AnimeID::Idle);
+			}
+			else {
+				changeAnime(AnimeID::Move);
+			}
 	}
 	if (attack()) {
 		SetPlayerState(PlayerState::Attack);
