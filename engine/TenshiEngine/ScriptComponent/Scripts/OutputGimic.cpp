@@ -14,6 +14,7 @@
 #include "OutputConnectorToggleExporterGimic.h"
 #include "OutputConnectorCooldownGimic.h"
 #include "OutputConnectorCountGimick.h"
+# include "ChangePlayerState.h"
 
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 {
@@ -34,5 +35,6 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 
 	if (auto scr = target->GetScript<OutputChangePhysicesGimic>())return scr;
 	if (auto scr = target->GetScript<OutputAnimation>())return scr;
+	if (auto scr = target->GetScript<ChangePlayerState>())return scr;
 	return NULL;
 }
