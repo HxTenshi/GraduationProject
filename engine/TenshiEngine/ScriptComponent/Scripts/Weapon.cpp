@@ -12,6 +12,7 @@ void Weapon::Initialize(){
 	m_weapon_rot = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+	m_Vector = XMVectorZero();
 	auto m_table = WeaponTable::GetWeaponTable();
 	if (m_table) {
 		m_param=m_table->GetWeaponParametor(m_name);
@@ -57,6 +58,24 @@ void Weapon::Update(){
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
 	//PierceSupport(gameObject);
 	//Hx::Debug()->Log(std::to_string(gameObject->mTransform->DegreeRotate().x));
+
+
+	if (is_fly && XMVector3Length(m_Vector).x != 0.0f) {
+		auto m = gameObject->mTransform->GetMatrix();
+		auto fl = XMVector3Length(m.r[0]).x;
+		auto ul = XMVector3Length(m.r[1]).x;
+		auto ll = XMVector3Length(m.r[2]).x;
+		auto f = XMVector3Normalize(m.r[0]);
+		auto u = XMVector3Normalize(m_Vector);
+		auto l = XMVector3Cross(u, f);
+		f = XMVector3Cross(u, l);
+		m.r[0] = f * fl;
+		m.r[1] = u * ul;
+		m.r[2] = l * ll;
+		gameObject->mTransform->WorldMatrix(m);
+
+	}
+
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -159,6 +178,8 @@ void Weapon::ThrowAway()
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	//gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
+
+	m_Vector = XMVectorSet(0,-1,0,1);
 }
 void Weapon::ThrowAttack()
 {
@@ -177,6 +198,8 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 	is_attack = 1;
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
+
+	m_Vector = throwdir;
 }
 void Weapon::WeaponUsePhysX()
 {

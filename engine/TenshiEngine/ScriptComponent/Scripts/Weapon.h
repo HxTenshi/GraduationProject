@@ -128,6 +128,9 @@ private:
 	bool mIsEnemyThrow;
 	AttackType m_attack_type;
 
+	//Œü‚­‚×‚«•ûŒü
+	XMVECTOR m_Vector;
+
 	//•Ší‚Ìƒpƒ‰ƒ[ƒ^
 	funifuni::WeaponParametor m_param;
 private:

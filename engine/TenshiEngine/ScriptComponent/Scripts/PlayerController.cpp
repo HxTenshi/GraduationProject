@@ -54,6 +54,8 @@ struct AnimeID {
 		AttackLow1End,
 		AttackLow2End,
 		AttackHigh1End,
+		Jump,
+		SpeedJump,
 		Count,
 	};
 };
@@ -132,6 +134,7 @@ void PlayerController::Initialize(){
 	m_FloatJumpTimer = 0.0f;
 	mJump = XMVectorZero();
 	mGravity = XMVectorSet(0, -9.81f, 0,1);
+	m_UseGravity = true;
 	mVelocity = XMVectorZero();
 	m_IsGround = false;
 	m_NextAttack = -1;
@@ -168,6 +171,7 @@ void PlayerController::Initialize(){
 	AddFunc(Free);
 	AddFunc(Guard);
 	AddFunc(Dodge);
+	AddFunc(SpeedJump);
 	AddFunc(Attack);
 	AddFunc(KnockBack);
 	AddFunc(Down);
@@ -652,6 +656,12 @@ int PlayerController::GetHitComboCount()
 	return m_HitCount;
 }
 
+void PlayerController::SpeedJump(const XMVECTOR & vect)
+{
+	m_MoveVelo = vect;
+	SetPlayerState(PlayerState::SpeedJump);
+}
+
 Weapon * PlayerController::GetWeapon()
 {
 	auto weaponhand = m_WeaponHand->GetScript<WeaponHand>();
@@ -700,6 +710,9 @@ void PlayerController::FreeExcute()
 	GettingWeapon();
 
 	if (m_InputF_Time > 0.5f) {
+		if (m_IsGround) {
+			changeAnime(AnimeID::Jump);
+		}else
 		if (mJump.x == 0.0f && mJump.z == 0.0f) {
 			changeAnime(AnimeID::Idle);
 		}
@@ -1115,6 +1128,29 @@ void PlayerController::DodgeExit()
 	//});
 }
 
+void PlayerController::SpeedJumpEnter()
+{
+	m_IsInvisible = true;
+	m_UseGravity = false;
+
+}
+
+void PlayerController::SpeedJumpExcute()
+{
+	moveUpdate();
+	lockOn();
+	rotate();
+
+	changeAnime(AnimeID::SpeedJump);
+}
+
+void PlayerController::SpeedJumpExit()
+{
+	m_IsInvisible = false;
+	m_UseGravity = true;
+	m_MoveVelo = XMVectorZero();
+}
+
 void PlayerController::KnockBackEnter()
 {
 	m_IsInvisible = true;
@@ -1211,6 +1247,7 @@ void PlayerController::DeadEnter()
 {
 	m_IsInvisible = true;
 	m_IsDead = true;
+	mJump = XMVectorZero();
 }
 
 void PlayerController::DeadExcute()
@@ -1433,34 +1470,38 @@ void PlayerController::dontmove()
 }
 void PlayerController::moveUpdate()
 {
-
-	if (m_IsGround && !m_CharacterControllerComponent->IsGround() && mJump.y <= 0.0f) {
-		XMVECTOR donw = XMVectorSet(0, -m_CharacterControllerComponent->GetStepOffset(), 0, 1);
-		m_CharacterControllerComponent->Move(donw);
-		if (!m_CharacterControllerComponent->IsGround()) {
-			m_CharacterControllerComponent->Move(-donw);
-		}
-	}
-
-
 	float time = Hx::DeltaTime()->GetDeltaTime();
-	//if (m_CharacterControllerComponent->IsGround()) {
-	//	m_FloatJumpTimer = 0.0f;
-	//}
 
-	//if (m_FloatJumpTimer == 0.0f) {
-		bool up = mJump.y > 0.0f;
+	if (m_UseGravity) {
+		if (m_IsGround && !m_CharacterControllerComponent->IsGround() && mJump.y <= 0.0f) {
+			XMVECTOR donw = XMVectorSet(0, -m_CharacterControllerComponent->GetStepOffset(), 0, 1);
+			m_CharacterControllerComponent->Move(donw);
+			if (!m_CharacterControllerComponent->IsGround()) {
+				m_CharacterControllerComponent->Move(-donw);
+			}
+		}
+
+		//if (m_CharacterControllerComponent->IsGround()) {
+		//	m_FloatJumpTimer = 0.0f;
+		//}
+
+		//if (m_FloatJumpTimer == 0.0f) {
+		//bool up = mJump.y > 0.0f;
 		mJump += mGravity * time;
-		up = up && mJump.y <= 0.0f;
+		//up = up && mJump.y <= 0.0f;
 		//if (up) {
 		//	m_FloatJumpTimer = 1.0f;
 		//	mJump.y = 0.0f;
 		//}
-	//}
-	//else {
-	//	m_FloatJumpTimer -= time;
-	//	m_FloatJumpTimer = max(m_FloatJumpTimer, 0.0f);
-	//}
+		//}
+		//else {
+		//	m_FloatJumpTimer -= time;
+		//	m_FloatJumpTimer = max(m_FloatJumpTimer, 0.0f);
+		//}
+	}
+
+
+
 
 	auto p = XMVectorZero();
 	p += mJump * time;
@@ -1823,7 +1864,7 @@ void PlayerController::throwWeapon()
 						if (auto target = scr->GetHandWeapon())
 						{
 							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-								script->SetPoint(target, m_CharacterControllerComponent);
+								script->SetPoint(target, this);
 							}
 						}
 					}
@@ -1852,7 +1893,7 @@ void PlayerController::throwWeapon()
 						}
 						if (target) {
 							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-								script->SetPoint(target, m_CharacterControllerComponent);
+								script->SetPoint(target, this);
 							}
 							throwAway(camera->GetLookTarget());
 						}

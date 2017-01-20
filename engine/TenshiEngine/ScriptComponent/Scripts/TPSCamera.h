@@ -65,6 +65,8 @@ private:
 	float m_SpringStiffness;
 	SERIALIZE
 	float m_SpringDamping;
+	SERIALIZE
+		float m_CameraSpeed;
 
 	XMFLOAT2 mRotate;
 	XMVECTOR m_SpringVelocity;

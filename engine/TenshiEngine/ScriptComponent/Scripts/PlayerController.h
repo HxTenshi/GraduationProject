@@ -50,6 +50,7 @@ public:
 			Free,
 			Guard,
 			Dodge,
+			SpeedJump,
 			Attack,
 			KnockBack,
 			Down,
@@ -93,6 +94,8 @@ public:
 	void AddDelayUpdate(const std::function<void(void)>& func);
 
 	int GetHitComboCount();
+
+	void SpeedJump(const XMVECTOR& vect);
 private:
 
 	Weapon* GetWeapon();
@@ -116,6 +119,10 @@ private:
 	void DodgeEnter();
 	void DodgeExcute();
 	void DodgeExit();
+
+	void SpeedJumpEnter();
+	void SpeedJumpExcute();
+	void SpeedJumpExit();
 
 	void KnockBackEnter();
 	void KnockBackExcute();
@@ -265,6 +272,7 @@ private:
 	float m_CurrentAnime_Weight;
 
 	bool m_FreeAIMMode;
+	bool m_UseGravity;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;
 

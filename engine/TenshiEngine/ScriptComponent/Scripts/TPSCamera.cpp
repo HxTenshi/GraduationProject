@@ -113,12 +113,12 @@ void TPSCamera::Update(){
 
 		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_RStick);
 		if (XMVector2Length(ls).x > 0.05f) {
-			_mx = ls.x * 10.0f;
-			_my = ls.y * -10.0f;
+			_mx = ls.x * 15.0f;
+			_my = ls.y * -15.0f;
 		}
 
-		mRotate.y += _mx / 200.0f;
-		mRotate.x += _my / 200.0f;
+		mRotate.y += _mx / 15.0f * Hx::DeltaTime()->GetDeltaTime() * m_CameraSpeed;
+		mRotate.x += _my / 15.0f * Hx::DeltaTime()->GetDeltaTime() * m_CameraSpeed;
 
 
 		float MAX = XM_PI / 2 - 0.1f;

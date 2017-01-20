@@ -1,10 +1,11 @@
 #include "MoveAbility.h"
 #include "../h_standard.h"
 #include "../h_component.h"
+#include "PlayerController.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void MoveAbility::Initialize(){
-
+	mPC = NULL;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -45,9 +46,10 @@ void MoveAbility::Update(){
 
 		if (OnTargetDistance(targetPosition)) {
 			onMove = false;
+			mPC->SetPlayerState(PlayerController::PlayerState::Free);
 		}
 		else {
-			mCC->Move(XMVector3Normalize(targetPosition - mMoveActor->mTransform->WorldPosition()));
+			//mCC->Move(XMVector3Normalize(targetPosition - mMoveActor->mTransform->WorldPosition()));
 		}
 	}
 }
@@ -73,9 +75,9 @@ void MoveAbility::OnCollideExit(GameObject target){
 	(void)target;
 }
 
-void MoveAbility::SetPoint(GameObject target, weak_ptr<CharacterControllerComponent> cc)
+void MoveAbility::SetPoint(GameObject target, PlayerController* pc)
 {
-	mCC = cc;
+	mPC = pc;
 	mMovePoint = target;
 }
 
@@ -87,6 +89,9 @@ void MoveAbility::OnMove()
 	mMoveStartPosition += XMVectorSet(0, 1.3f, 0, 0);
 	mTime = 0;
 	onMove = true;
+	if(mPC){
+		mPC->SpeedJump(XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - mMoveActor->mTransform->WorldPosition()) * mSpeed);
+	}
 }
 
 //敵に当たった際のノックバック処理
