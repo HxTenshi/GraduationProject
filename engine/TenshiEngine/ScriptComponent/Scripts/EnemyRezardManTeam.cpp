@@ -48,8 +48,8 @@ bool EnemyRezardManTeam::Alive()
 			if (j->enemyParameter.enemy_type == ENEMY_TYPE::PARENT)parentAlive = false;
 			if (j->enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER)archerCount--;
 			//vector‚©‚çíœ
-			j = teamMember.erase(j);
 			Enemy::GetEnemy(j->enemyGameObject)->ChildFinalize();
+			j = teamMember.erase(j);
 			if (m_DrawFlag)Hx::Debug()->Log("RezardManTeam : " + std::to_string(teamMember.size()) + "l");
 			if (teamMember.size() == 0) {
 				if (m_DrawFlag)Hx::Debug()->Log("RezardManTeam‚ª‰ó–Å‚µ‚½");

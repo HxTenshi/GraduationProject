@@ -5,7 +5,7 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void EnemyArrow::Initialize(){
-
+	count = 0;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -16,6 +16,10 @@ void EnemyArrow::Start(){
 //毎フレーム呼ばれます
 void EnemyArrow::Update(){
 	gameObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition() + m_Vec * speed * Hx::DeltaTime()->GetDeltaTime());
+	count += Hx::DeltaTime()->GetDeltaTime();
+	if (count > 10.0f) {
+		Hx::DestroyObject(gameObject);
+	}
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）

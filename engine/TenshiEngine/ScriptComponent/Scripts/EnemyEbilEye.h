@@ -83,6 +83,8 @@ private:
 	SERIALIZE GameObject m_ModelObject;
 	SERIALIZE float m_TackleSpeed;
 	SERIALIZE float m_TackleTime;
+	SERIALIZE float m_TackleStartRandMin;
+	SERIALIZE float m_TackleStartRandMax;
 	SERIALIZE float m_WinceTime;
 	SERIALIZE float hp;
 

@@ -23,6 +23,7 @@ void Enemy::Initialize() {
 	m_WasAttacked = false;
 	ChildInitialize();
 	m_Forward = gameObject->mTransform->Forward();
+
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s

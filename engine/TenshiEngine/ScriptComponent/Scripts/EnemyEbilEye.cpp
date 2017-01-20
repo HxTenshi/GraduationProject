@@ -156,9 +156,10 @@ bool EnemyEbilEye::LostPlayer()
 
 void EnemyEbilEye::ChildFinalize()
 {
-	Hx::Debug()->Log("final");
 	gameObject->RemoveComponent<CharacterControllerComponent>();
-	Hx::DestroyObject(gameObject);
+	////gameObject->Disable();
+	Hx::Debug()->Log(gameObject->Name());
+	Hx::DestroyObject(this->gameObject);
 }
 
 void EnemyEbilEye::TrackingModeInitilize()
@@ -205,7 +206,7 @@ void EnemyEbilEye::BattleModeFinalize()
 
 void EnemyEbilEye::ConfrontModeInitilize()
 {
-	m_Count = (float)(rand() % 50) / 10.0f + 5.0f;
+	m_Count = (float)(rand() % (int)((m_TackleStartRandMax - m_TackleStartRandMin) * 100.0f)) / 100.0f + m_TackleStartRandMin;
 	AnimChange(ANIM_ID::ANIM_MOVE, 10.0f);
 	m_UpperdownNow = false;
 }
@@ -214,8 +215,9 @@ void EnemyEbilEye::ConfrontModeUpdate()
 {
 	SetPositionRotation(m_MovePositionCenter, m_MovePositionRadius);
 	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
+	auto canAttack = m_MovePositionCenter - gameObject->mTransform->WorldPosition();
+	if(XMVector3Length(canAttack).x < m_MovePositionRadius * 1.1f)
 	m_Count -= Hx::DeltaTime()->GetDeltaTime();
-
 	if (m_Count <= 0.0f) {
 		if (rand() % 2 == 0) {
 			ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
@@ -457,7 +459,6 @@ void EnemyEbilEye::DeadUpdate()
 
 		if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
 			m_Isend = true;
-			Hx::Debug()->Log("isEnd");
 		}
 	}
 	else {

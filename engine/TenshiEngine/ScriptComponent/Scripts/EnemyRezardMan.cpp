@@ -973,6 +973,10 @@ bool EnemyRezardMan::LostPlayer()
 
 void EnemyRezardMan::ChildFinalize()
 {
+	Hx::DestroyObject(m_MyWeapon);
+	//gameObject->Disable();
+	gameObject->RemoveComponent<CharacterControllerComponent>();
+	Hx::DestroyObject(gameObject);
 }
 
 BATTLEACTION::Enum EnemyRezardMan::GetChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability, int provocationProbability) {
