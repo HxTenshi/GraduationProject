@@ -174,7 +174,7 @@ void EnemyArcher::ShotModeUpdate()
 	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(ANIM_ID::ANIM_JUMPATTACK)) {
 		m_BattleModeParam.actionFinish = true;
 	};
 }
@@ -194,7 +194,7 @@ void EnemyArcher::BattleModeUpdate()
 	battleActionUpdate[m_BattleModeParam.id]();
 }
 
-void EnemyArcher::BattleModeFinalize()\
+void EnemyArcher::BattleModeFinalize()
 {
 	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 	ChangeActionMode(ACTIONMODE::TRACKINGMODE);
@@ -349,7 +349,7 @@ void EnemyArcher::DeadModeFinalize()
 
 //UŒ‚‚·‚é‚Æ‚«‚ÉŒÄ‚Ôˆ—
 
-void EnemyArcher::Attack(GameObject player)
+void EnemyArcher::Attack(GameObject player, COL_TYPE colType)
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("‰½‚©‚É•Ší‚ª“–‚½‚Á‚½");

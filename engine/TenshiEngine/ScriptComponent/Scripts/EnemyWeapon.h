@@ -12,9 +12,10 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
 		GameObject enemy;
+	SERIALIZE
+		int colType;
 };

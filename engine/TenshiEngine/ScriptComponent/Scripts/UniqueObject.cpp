@@ -6,6 +6,11 @@ void UniqueObject::Initialize() {
 	g_UniqueObject = this;
 }
 
+void UniqueObject::Initialize()
+{
+	g_UniqueObject = this;
+}
+
 void UniqueObject::Finish()
 {
 	g_UniqueObject = NULL;
