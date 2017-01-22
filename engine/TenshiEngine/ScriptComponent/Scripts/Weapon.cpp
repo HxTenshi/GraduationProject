@@ -77,24 +77,34 @@ void Weapon::OnCollideBegin(GameObject target){
 
 	if (mIsEnemyThrow) {
 		if (mWeaponControl) {
-			if (target->GetLayer() == 3)
+			if (target->GetLayer() == 3) {
 				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
 					//Hx::Debug()->Log("“G‚É“Š‚°‚Ä“–‚½‚Á‚½");
 					//Hx::Debug()->Log(target->Name());
 					//Hx::Debug()->Log(gameObject->Name());
 					weapon->HitActor(target, gameObject);
 				}
-		}
-	}
+			}
 
-	if (target->GetLayer() == 4) {
-		//Hx::Debug()->Log("Stage‚É“–‚½‚Á‚½");
-		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
-			//Hx::Debug()->Log("ˆÚ“®‰Â”\");
-			WeaponUsePhysX();
-			weapon->Hit();
-			//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
+			if (target->GetLayer() == 4) {
+				//Hx::Debug()->Log("Stage‚É“–‚½‚Á‚½");
+				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+					//Hx::Debug()->Log("ˆÚ“®‰Â”\");
+					WeaponUsePhysX();
+					weapon->Hit();
+					//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
+				}
+			}
+
+			if (target->GetLayer() == 6) {
+				WeaponUsePhysX();
+
+				//auto wpos = gameObject->mTransform->WorldPosition();
+				//gameObject->mTransform->WorldPosition(wpos - m_Vector);
+				//ThrowAway();
+			}
 		}
+
 	}
 
 	if (target->GetLayer() == 3 && is_hand) {
@@ -261,6 +271,13 @@ void Weapon::GetWeapon()
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	gameObject->GetComponent<PhysXComponent>()->SetKinematic(false);
 	//Hx::Debug()->Log("get");
+
+
+	if (auto mirror = gameObject->GetComponent<BoneMirrorComponent>()) {
+		mirror->ChangeTargetBone(NULL);
+		mirror->SetTargetBoneID(-1);
+		mirror->Disable();
+	}
 }
 
 float Weapon::GetAttackPower()

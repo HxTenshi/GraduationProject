@@ -69,6 +69,7 @@ void WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::str
 {
 		//‚±‚±‚Å‘ÎÛ‚Ì“G‚Ì•R•t‚¯
 		auto mirrer = weapon->GetComponent<BoneMirrorComponent>();
+		if (!mirrer)return;
 		std::list<GameObject> targetObject;
 		if (target->GetLayer() == 3){
 			targetObject = target->mTransform->Children();
@@ -86,9 +87,9 @@ void WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::str
 
 		auto vector = mirrer->GetBoneNames();
 		int id = 0;
-		for (auto name : vector)
+		for (auto& _name : vector)
 		{
-			if (name == name)
+			if (_name == name)
 			{
 				break;
 			}

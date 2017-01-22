@@ -17,7 +17,7 @@ public:
 	void SetPoint(GameObject target, PlayerController* pc);
 	void OnMove();
 
-	void KnockBack(std::function<void(void)> function,GameObject target);
+	void KnockBack(GameObject target);
 
 	bool OnTargetDistance(XMVECTOR target);
 
@@ -28,6 +28,8 @@ private:
 	GameObject mMoveActor;
 	bool onMove;
 	float mTime;
+	int mDown;
+	float mDownTime;
 	SERIALIZE float mSpeed;
 	XMVECTOR mMoveStartPosition;
 

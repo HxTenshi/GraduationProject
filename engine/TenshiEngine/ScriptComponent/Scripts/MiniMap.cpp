@@ -28,6 +28,14 @@ void MiniMap::Update(){
 	auto p = m_Player->mTransform->WorldPosition() + XMVectorSet(10000.0f, 10000.0f, 10000.0f, 1.0f);
 	auto l = m_LU_Point->mTransform->WorldPosition() + XMVectorSet(10000.0f, 10000.0f, 10000.0f, 1.0f);
 	auto r = m_RD_Point->mTransform->WorldPosition() + XMVectorSet(10000.0f, 10000.0f, 10000.0f, 1.0f);
+
+	auto v = r - l;
+	if ((v.x > 0 && v.z > 0) || (v.x < 0 && v.z < 0)) {
+		r = XMVectorSet(r.z, 0, r.x, 0);
+		l = XMVectorSet(l.z, 0, l.x, 0);
+		p = XMVectorSet(p.z, 0, p.x, 0);
+		//Hx::Debug()->Log("a");
+	}
 	
 	p -= l;
 	r -= l;

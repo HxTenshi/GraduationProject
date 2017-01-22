@@ -96,6 +96,7 @@ public:
 	int GetHitComboCount();
 
 	void SpeedJump(const XMVECTOR& vect);
+	void SpeedJumpWeaponCatch(GameObject weapon);
 private:
 
 	Weapon* GetWeapon();
@@ -151,6 +152,7 @@ private:
 	void lockOn();
 	void GettingWeapon();
 	void throwWeapon();
+	void setWeapon(GameObject weapon);
 
 	float GetMovementSpeed();
 
@@ -178,6 +180,7 @@ private:
 	float m_InvisibleTime;
 	bool m_IsInvisible;
 	bool m_IsDead;
+	bool m_IsSlopeLimited;
 	SERIALIZE
 	float m_MaxHP;
 	SERIALIZE
