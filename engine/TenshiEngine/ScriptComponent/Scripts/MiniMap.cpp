@@ -31,14 +31,17 @@ void MiniMap::Update(){
 	
 	p -= l;
 	r -= l;
+
+	XMFLOAT2 off(0.0f,0.0f);
+	auto scale = mate->GetTextureScale();
 	
-	mate->mOffset.x = p.x / r.x - mate->mTexScale.x / 2.0f;
-	mate->mOffset.y = p.z / r.z - mate->mTexScale.y / 2.0f;
+	off.x = p.x / r.x - scale.x / 2.0f;
+	off.y = p.z / r.z - scale.y / 2.0f;
+	mate->SetOffset(off);
 	
 	//mate->mDiffuse.x = 0;
 	//mate->mDiffuse.y = 0;
 	//mate->mDiffuse.z = 0;
-	mate->ParamUpdate();
 
 
 	//material->SetMaterial(0, *mate);
@@ -76,8 +79,7 @@ void MiniMap::Change(TextureAsset map, float scale, GameObject lu, GameObject rd
 	if (scale == 0.0f) {
 		scale = 1.0f;
 	}
-	mate->mTexScale.x = 1.0f / scale;
-	mate->mTexScale.y = 1.0f / scale;
+	mate->SetTextureScale(XMFLOAT2(1.0f / scale, 1.0f / scale));
 	
 	mate->SetTexture(map, 0);
 

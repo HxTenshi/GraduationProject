@@ -20,10 +20,10 @@ void TextureScroll::Update(){
 	if (!mate)return;
 	auto m = mate->GetMaterialPtr(0);
 	if (!m)return;
-	m->mOffset.x += m_Speed.x * Hx::DeltaTime()->GetDeltaTime();
-	m->mOffset.y += m_Speed.y * Hx::DeltaTime()->GetDeltaTime();
-	m->ParamUpdate();
-
+	auto off = m->GetOffset();
+	off.x += m_Speed.x * Hx::DeltaTime()->GetDeltaTime();
+	off.y += m_Speed.y * Hx::DeltaTime()->GetDeltaTime();
+	m->SetOffset(off);
 	//auto m = mate->GetMaterial(0);
 	//mate->SetMaterial(0,m);
 }
