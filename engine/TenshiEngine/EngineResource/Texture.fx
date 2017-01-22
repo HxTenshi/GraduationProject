@@ -61,5 +61,5 @@ float4 PS(PS_INPUT input) : SV_Target
 {
 	float4 col = txDiffuse.Sample(samLinear, input.Tex);
 	if (col.a <= 0.001f)discard;
-	return col * MDiffuse;
+	return col * MDiffuse * MHightPower.y;
 }
