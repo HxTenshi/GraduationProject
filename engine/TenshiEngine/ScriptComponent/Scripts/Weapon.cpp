@@ -10,6 +10,7 @@ void Weapon::Initialize(){
 	is_fly = false;
 	is_attack = 0;
 	m_weapon_rot = 0.0f;
+	break_time = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
 	m_Vector = XMVectorZero();
@@ -52,7 +53,10 @@ void Weapon::Update(){
 			auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
 			scr->Action();
 		}
+	
+
 	}
+	BreakWeapon();
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
@@ -150,6 +154,7 @@ bool Weapon::isBreak()
 /// </summary>
 void Weapon::ThrowAway()
 {
+	break_time = 0.0f;
 	SetHitCollback([](auto o,auto w,auto t) {});
 	is_fly = true;
 	is_hand = false;
@@ -245,6 +250,8 @@ void Weapon::SetHitCollback(const HitCollbackType & collback)
 /// </summary>
 void Weapon::GetWeapon()
 {
+	break_time = 0.0f;
+
 	is_ground_hit = false;
 	is_hand = true;
 	is_fly = false;
@@ -350,6 +357,21 @@ void Weapon::PierceSupport(GameObject obj)
 	XMVECTOR rot = obj->mTransform->DegreeRotate();
 	if (rot.x<120&&rot.x>-120) {
 		//obj->mTransform->DegreeRotate(XMVectorSet(180,0,0,1));
+	}
+}
+//Ž©•ªŽ©g‚ðÁ‚·
+void Weapon::BreakWeapon()
+{
+	if (is_break_weapon) {
+		Hx::Debug()->Log("isbreakweapon");
+		if (!is_hand) {
+			break_time += Hx::DeltaTime()->GetDeltaTime();
+			Hx::Debug()->Log("ishand");
+			if (break_time > weapon_break) {
+				Hx::DestroyObject(gameObject);
+				Hx::Debug()->Log("break");
+			}
+		}
 	}
 }
 

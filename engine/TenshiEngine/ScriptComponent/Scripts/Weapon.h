@@ -110,7 +110,8 @@ private:
 	void PierceSupport(GameObject obj);
 //演出関係
 private:
-	void Break();
+	//武器が完全に消失する
+	void BreakWeapon();
 	void Effect();
 private:
 	//メンバ変数
@@ -137,6 +138,10 @@ private:
 	//テスト用
 	SERIALIZE
 	GameObject mSwapTarget;
+	SERIALIZE
+	bool is_break_weapon;
+	SERIALIZE
+	float weapon_break;
 private:
 	float m_weapon_rot;
 	bool is_hand;
@@ -146,4 +151,10 @@ private:
 	int is_attack;
 
 	HitCollbackType m_HitCollback;
+
+	
+
+	float break_time;
+
+	
 };

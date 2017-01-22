@@ -37,9 +37,7 @@ void Enemy::Update() {
 	if (!m_Player)return;
 	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
 
-	if (gameObject->mTransform->WorldPosition().y < -10) {
-		gameObject->RemoveComponent<CharacterControllerComponent>();
-		Hx::DestroyObject(gameObject);
+	if (gameObject->mTransform->WorldPosition().y < -100) {
 		m_Isend = true;
 	}
 
