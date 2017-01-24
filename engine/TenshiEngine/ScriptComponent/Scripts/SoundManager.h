@@ -2,12 +2,16 @@
 #pragma once
 #include "main.h"
 
-
 class SoundManager :public IDllScriptComponent{
 public:
-	struct  SoundID{
+	struct  SoundSE_ID{
 		enum Enum {
 			kiru = 0
+		};
+	};
+	struct SoundBGM_ID {
+		enum Enum {
+			test = 0
 		};
 	};
 
@@ -18,14 +22,17 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	void GetSound(SoundID::Enum key,XMVECTOR pos);
-
-
+	void GetSoundSE(SoundSE_ID::Enum key,XMVECTOR pos);
+	void GetSoundBGM(SoundBGM_ID::Enum key);
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
 	SoundAsset sound;
 	SERIALIZE
 	PrefabAsset soundBox;
-	std::map<SoundID::Enum , SoundAsset> m_SoundMap;
+
+	float se_master_volume;
+	float bgm_master_volume;
+	std::map<SoundSE_ID::Enum, SoundAsset> m_SoundSEMap;
+	std::map<SoundBGM_ID::Enum, SoundAsset> m_SoundBGMMap;
 };
