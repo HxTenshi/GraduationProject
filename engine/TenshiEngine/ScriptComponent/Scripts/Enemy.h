@@ -91,30 +91,6 @@ struct BattleModeParameter{
 	XMVECTOR battlePosition = XMVectorSet(0, 0, 0, 0);
 };
 
-
-enum ANIM_ID{
-	ANIM_IDLE,
-	ANIM_WALK_FORWARD,
-	ANIM_BACKSTEP,
-	ANIM_ATTACK_DOWN,
-	ANIM_GUARD,
-	ANIM_JUMPATTACK,
-	ANIM_WINCE,
-	ANIM_HITINGUARD,
-	ANIM_ATTACK_MONCKEY,
-	ANIM_PROVOCATION,
-	ANIM_UPPERDOWN,
-	ANIM_BEATDOWN,
-	ANIM_UPPERDOWNAFTER,
-	ANIM_BEATDOWNAFTER,
-	ANIM_ATTACK_SIDE,
-	ANIM_RUSH,
-	ANIM_SIDESTEPLEFT,
-	ANIM_SIDESTEPRIGHT,
-	ANIM_THRUST,
-	ANIM_THRUSTRUN,
-};
-
 enum ACTIONMODE{
 	TRACKINGMODE,
 	BATTLEMODE
@@ -136,6 +112,13 @@ enum ENEMY_TYPE {
 	CHILD_ARCHER,
 };
 
+
+enum COL_TYPE {
+	NORMAL,
+	ROTATE,
+};
+
+
 template<class T>
 const T& clamp(const T& v, const T& min, const T& max) {
 	if (v <= min)return min;
@@ -156,8 +139,9 @@ public:
 	virtual void SoloAction() {}
 	virtual ENEMY_TYPE GetEnemyType() { return ENEMY_TYPE::CHILD; };
 	virtual float GetOnBattleRange() { return 0.0f; };
-	virtual void Attack(GameObject player) {};
+	virtual void Attack(GameObject player,COL_TYPE colType) {};
 	virtual bool Damage(float damage_, BATTLEACTION::Enum winceType_,XMVECTOR accelPower_) { return false; };
+	virtual void ChildFinalize() {}
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};
 	bool IsEnd() { return m_Isend; }
@@ -186,7 +170,6 @@ public:
 		return eap;
 	}
 	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
-	void SetPlayer(GameObject player) { m_Player = player; }
 	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
 	float GetNowAnimTime();
 

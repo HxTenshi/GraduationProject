@@ -9,12 +9,35 @@ public:
 	void SoloAction() override;
 	ENEMY_TYPE GetEnemyType() override;
 	float GetOnBattleRange() override;
-	void Attack(GameObject player) override;
+	void Attack(GameObject player, COL_TYPE colType) override;
 	bool Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_) override;
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
+	void ChildFinalize() override;
 
 private:
+	enum ANIM_ID {
+		ANIM_IDLE,
+		ANIM_WALK_FORWARD,
+		ANIM_BACKSTEP,
+		ANIM_ATTACK_DOWN,
+		ANIM_GUARD,
+		ANIM_JUMPATTACK,
+		ANIM_WINCE,
+		ANIM_HITINGUARD,
+		ANIM_ATTACK_MONCKEY,
+		ANIM_PROVOCATION,
+		ANIM_UPPERDOWN,
+		ANIM_BEATDOWN,
+		ANIM_UPPERDOWNAFTER,
+		ANIM_BEATDOWNAFTER,
+		ANIM_ATTACK_SIDE,
+		ANIM_RUSH,
+		ANIM_SIDESTEPLEFT,
+		ANIM_SIDESTEPRIGHT,
+		ANIM_THRUST,
+		ANIM_THRUSTRUN,
+	};
 	//ÉÅÉìÉoïœêî
 	SERIALIZE float m_TrackingSpeed;
 	SERIALIZE float m_TrackingRange;

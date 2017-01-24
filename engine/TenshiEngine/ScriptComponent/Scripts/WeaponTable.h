@@ -39,6 +39,8 @@ public:
 		return LoaderValueType<check>::isType(param);
 	}
 	std::string IDtoName(int id);
+
+	static WeaponTable* GetWeaponTable();
 private:
 	//•Ší‚Ìƒpƒ‰ƒ[ƒ^
 	std::map<std::string, funifuni::WeaponParametor> m_Param;

@@ -4,6 +4,8 @@
 #include "../h_standard.h"
 #include "../h_component.h"
 
+#include "Game/Component/CharacterControllerComponent.h"
+
 void EnemyOneTeam::TeamInitialize()
 {
 	auto enemyTeamChild = gameObject->mTransform->Children();
@@ -12,7 +14,6 @@ void EnemyOneTeam::TeamInitialize()
 		if (!i)return;
 		auto iScript = Enemy::GetEnemy(i);
 		if (!iScript)return;
-		iScript->SetPlayer(m_Player);
 
 		EnemyOne eo;
 		eo.enemyParameter.enemy_type = iScript->GetEnemyType();
@@ -31,6 +32,7 @@ bool EnemyOneTeam::Alive()
 		if (!jScript)return false;
 		if (jScript->IsEnd()) {
 			//vector‚©‚çíœ
+			Enemy::GetEnemy(j->enemyGameObject)->ChildFinalize();
 			j = teamMember.erase(j);
 			if (teamMember.size() == 0) {
 				return false;
@@ -48,11 +50,11 @@ void EnemyOneTeam::DiscoveryOrLostPlayerSet()
 	for (auto j = teamMember.begin(); j != teamMember.end(); j++) {
 		auto jScript = Enemy::GetEnemy(j->enemyGameObject);
 		if (!jScript)return;
-		if (!m_DiscoveryPlayer) {
-			m_DiscoveryPlayer =	jScript->DiscoveryPlayer();
+		if (!j->enemyParameter.m_ArcharAttackStart) {
+			j->enemyParameter.m_ArcharAttackStart =	jScript->DiscoveryPlayer();
 		}
 		else {
-			m_DiscoveryPlayer = !jScript->LostPlayer();
+			j->enemyParameter.m_ArcharAttackStart = !jScript->LostPlayer();
 		}
 	}
 }

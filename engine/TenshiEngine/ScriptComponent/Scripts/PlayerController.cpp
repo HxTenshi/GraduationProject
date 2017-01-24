@@ -54,6 +54,10 @@ struct AnimeID {
 		AttackLow1End,
 		AttackLow2End,
 		AttackHigh1End,
+		Jump,
+		SpeedJump,
+		Fall,
+		FallGround,
 		Count,
 	};
 };
@@ -132,12 +136,14 @@ void PlayerController::Initialize(){
 	m_FloatJumpTimer = 0.0f;
 	mJump = XMVectorZero();
 	mGravity = XMVectorSet(0, -9.81f, 0,1);
+	m_UseGravity = true;
 	mVelocity = XMVectorZero();
 	m_IsGround = false;
 	m_NextAttack = -1;
 	m_LockOnEnabled = false;
 	m_InvisibleTime = 0.0f;
 	m_IsInvisible = false;
+	m_IsSlopeLimited = false;
 	m_IsDead = false;
 	m_IsGuard = false;
 	m_RotateLimit = Init::RotateLimit_default;
@@ -168,6 +174,7 @@ void PlayerController::Initialize(){
 	AddFunc(Free);
 	AddFunc(Guard);
 	AddFunc(Dodge);
+	AddFunc(SpeedJump);
 	AddFunc(Attack);
 	AddFunc(KnockBack);
 	AddFunc(Down);
@@ -506,12 +513,12 @@ void PlayerController::PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum
 	case PlayerController::KnockBack::None_NoInvisible:
 		break;
 	case PlayerController::KnockBack::Low:
-		m_InvisibleTime = 0.5f;
+		//m_InvisibleTime = 0.5f;
 		mVelocity = attackVect;
 		SetPlayerState(PlayerState::KnockBack);
 		break;
 	case PlayerController::KnockBack::Down:
-		m_InvisibleTime = 2.0f;
+		//m_InvisibleTime = 2.0f;
 		mVelocity = attackVect;
 		SetPlayerState(PlayerState::Down);
 		break;
@@ -533,7 +540,7 @@ void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBac
 		return;
 	} 
 	//回避不可能技か
-	if (!DodgeInevitable || this->GetPlayerState() != PlayerState::Dodge) {
+	if (!(DodgeInevitable && this->GetPlayerState() == PlayerState::Dodge)) {
 		if (IsInvisible()) {
 			return;
 		}
@@ -548,7 +555,7 @@ void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBac
 		particle->mTransform->SetParent(gameObject);
 		particle->mTransform->Position(addpos);
 	}
-	
+
 }
 
 bool PlayerController::IsInvisible()
@@ -652,6 +659,19 @@ int PlayerController::GetHitComboCount()
 	return m_HitCount;
 }
 
+void PlayerController::SpeedJump(const XMVECTOR & vect)
+{
+	m_MoveVelo = vect;
+	SetPlayerState(PlayerState::SpeedJump);
+}
+
+void PlayerController::SpeedJumpWeaponCatch(GameObject weapon)
+{
+	mJump.y += m_JumpPower * 3;
+	setWeapon(weapon);
+	SetPlayerState(PlayerState::Free);
+}
+
 Weapon * PlayerController::GetWeapon()
 {
 	auto weaponhand = m_WeaponHand->GetScript<WeaponHand>();
@@ -700,6 +720,9 @@ void PlayerController::FreeExcute()
 	GettingWeapon();
 
 	if (m_InputF_Time > 0.5f) {
+		if (!m_IsGround) {
+			changeAnime(AnimeID::Jump);
+		}else
 		if (mJump.x == 0.0f && mJump.z == 0.0f) {
 			changeAnime(AnimeID::Idle);
 		}
@@ -731,12 +754,16 @@ void PlayerController::FreeExcute()
 	}
 
 	{
-		if (mJump.x == 0.0f && mJump.z == 0.0f) {
-			changeAnime(AnimeID::Idle);
+		if (!m_IsGround) {
+			changeAnime(AnimeID::Jump);
 		}
-		else {
-			changeAnime(AnimeID::Move);
-		}
+		else
+			if (mJump.x == 0.0f && mJump.z == 0.0f) {
+				changeAnime(AnimeID::Idle);
+			}
+			else {
+				changeAnime(AnimeID::Move);
+			}
 	}
 	if (attack()) {
 		SetPlayerState(PlayerState::Attack);
@@ -1115,6 +1142,31 @@ void PlayerController::DodgeExit()
 	//});
 }
 
+void PlayerController::SpeedJumpEnter()
+{
+	//m_IsInvisible = true;
+	m_UseGravity = false;
+	mJump = XMVectorZero();
+
+	mVelocity = m_MoveVelo;
+}
+
+void PlayerController::SpeedJumpExcute()
+{
+	moveUpdate();
+	lockOn();
+	rotate();
+
+	changeAnime(AnimeID::SpeedJump);
+}
+
+void PlayerController::SpeedJumpExit()
+{
+	//m_IsInvisible = false;
+	m_UseGravity = true;
+	m_MoveVelo = XMVectorZero();
+}
+
 void PlayerController::KnockBackEnter()
 {
 	m_IsInvisible = true;
@@ -1128,6 +1180,12 @@ void PlayerController::KnockBackEnter()
 	mJump = XMVectorZero();
 	m_MoveVelo = XMVectorZero();
 	rotate();
+
+	m_InvisibleTime = 0.0f;
+	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
+	if (anime) {
+		m_InvisibleTime = anime->GetTotalTime(AnimeID::KnockBack) / 60.0f;
+	}
 
 }
 
@@ -1166,7 +1224,7 @@ void PlayerController::DownEnter()
 	m_InvisibleTime = 0.0f;
 	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
 	if (anime){
-		m_InvisibleTime = anime->GetTotalTime(AnimeID::Down) / 30.0f;
+		m_InvisibleTime = anime->GetTotalTime(AnimeID::Down)/60.0f + 5.0f;
 	}
 
 	mJump = XMVectorZero();
@@ -1182,7 +1240,12 @@ void PlayerController::DownExcute()
 
 	float time = Hx::DeltaTime()->GetDeltaTime();
 	m_InvisibleTime -= time;
-	if (m_InvisibleTime <= 0.0f && m_IsGround) {
+	bool move = false;
+	if (BindInput(PlayerInput::Move_F) || BindInput(PlayerInput::Move_D) || BindInput(PlayerInput::Move_L) || BindInput(PlayerInput::Move_R)) {
+		move = true;
+	}
+
+	if (m_InvisibleTime <= 5.0f && m_IsGround && (move || m_InvisibleTime<=0.0f)) {
 		SetPlayerState(PlayerState::Free);
 	}
 	changeAnime(AnimeID::Down);
@@ -1211,6 +1274,7 @@ void PlayerController::DeadEnter()
 {
 	m_IsInvisible = true;
 	m_IsDead = true;
+	mJump = XMVectorZero();
 }
 
 void PlayerController::DeadExcute()
@@ -1297,32 +1361,32 @@ void PlayerController::move()
 		xy = XMVectorZero();
 	}
 
-	m_IsGround = m_CharacterControllerComponent->IsGround();
+	//m_IsGround = m_CharacterControllerComponent->IsGround();
 
-	XMVECTOR pos = gameObject->mTransform->WorldPosition();
-	if (m_IsGround) {
-		auto d = XMVectorSet(0, -1, 0, 1);
-		RaycastHit hit;
-		if (Hx::PhysX()->RaycastHit(pos, d, 100.0f, &hit)) {
-			auto dot = XMVector3Dot(hit.normal, XMVectorSet(0, 1, 0, 1)).x;
-			auto angle = dot;
+	//XMVECTOR pos = gameObject->mTransform->WorldPosition();
+	//if (m_IsGround) {
+	//	auto d = XMVectorSet(0, -1, 0, 1);
+	//	RaycastHit hit;
+	//	if (Hx::PhysX()->RaycastHit(pos, d, 100.0f, &hit,Layer::UserTag4)) {
+	//		auto dot = XMVector3Dot(hit.normal, XMVectorSet(0, 1, 0, 1)).x;
+	//		auto angle = dot;
 
-			auto deg = m_CharacterControllerComponent->GetSlopeLimit();
-			float slopeLimit = cosf(XM_PI / 180.0f * deg);
-			if (slopeLimit > angle) {
-				m_IsGround = false;
+	//		auto deg = m_CharacterControllerComponent->GetSlopeLimit();
+	//		float slopeLimit = cosf(XM_PI / 180.0f * deg);
+	//		if (slopeLimit > angle) {
+	//			m_IsGround = false;
 
-				hit.normal.y = 0.0f;
-				hit.normal = XMVector3Normalize(hit.normal);
-				auto v2 = mJump + hit.normal * speed * 0.2f;
-				v2.y = 0.0f;
-				auto s = min(max(XMVector3Length(v2).x, -speed), speed);
-				v2 = XMVector3Normalize(v2)*s;
-				mJump.x = v2.x;
-				mJump.z = v2.z;
-			}
-		}
-	}
+	//			hit.normal.y = 0.0f;
+	//			hit.normal = XMVector3Normalize(hit.normal);
+	//			auto v2 = mJump + hit.normal * speed * 0.2f;
+	//			v2.y = 0.0f;
+	//			auto s = min(max(XMVector3Length(v2).x, -speed), speed);
+	//			v2 = XMVector3Normalize(v2)*s;
+	//			mJump.x = v2.x;
+	//			mJump.z = v2.z;
+	//		}
+	//	}
+	//}
 	auto v = XMVectorZero();
 
 	if (m_Camera) {
@@ -1359,34 +1423,19 @@ void PlayerController::move()
 		}
 	}
 
+	if (!m_IsSlopeLimited) {
 
-	if (m_IsGround) {
-		mJump = XMVectorZero();
-		if (BindInput(PlayerInput::Jump)) {
-			mJump.y += m_JumpPower;
+		if (m_IsGround) {
+			if (BindInput(PlayerInput::Jump)) {
+				mJump.y += m_JumpPower;
+			}
 		}
-		//v *= speed;
-		//mJump.x = v.x;
-		//mJump.z = v.z;
+
+		v *= speed;
+
+		mJump.x = v.x;
+		mJump.z = v.z;
 	}
-
-	//慣性移動
-	//else{
-	//	//mJump.x -= mJump.x * 6.0f * time;
-	//	//mJump.z -= mJump.z * 6.0f * time;
-	//	auto v2 = mJump + v * speed * 1.5f * time;
-	//	v2.y = 0.0f;
-	//	auto s = min(max(XMVector3Length(v2).x, -speed), speed);
-	//	v2 = XMVector3Normalize(v2)*s;
-	//	mJump.x = v2.x;
-	//	mJump.z = v2.z;
-
-	//}
-
-	v *= speed;
-
-	mJump.x = v.x;
-	mJump.z = v.z;
 
 }
 
@@ -1433,44 +1482,91 @@ void PlayerController::dontmove()
 }
 void PlayerController::moveUpdate()
 {
+	float time = Hx::DeltaTime()->GetDeltaTime();
 
-	if (m_IsGround && !m_CharacterControllerComponent->IsGround() && mJump.y <= 0.0f) {
-		XMVECTOR donw = XMVectorSet(0, -m_CharacterControllerComponent->GetStepOffset(), 0, 1);
-		m_CharacterControllerComponent->Move(donw);
-		if (!m_CharacterControllerComponent->IsGround()) {
-			m_CharacterControllerComponent->Move(-donw);
-		}
+	if (m_UseGravity) {
+
+		mJump += mGravity * time;
 	}
 
 
-	float time = Hx::DeltaTime()->GetDeltaTime();
-	//if (m_CharacterControllerComponent->IsGround()) {
-	//	m_FloatJumpTimer = 0.0f;
-	//}
+	XMVECTOR pos = gameObject->mTransform->WorldPosition();
+	if (m_IsSlopeLimited && m_UseGravity) {
+		auto d = XMVectorSet(0, -1, 0, 1);
+		RaycastHit hit;
+		if (Hx::PhysX()->RaycastHit(pos, d, 10.0f, &hit, Layer::UserTag4)) {
 
-	//if (m_FloatJumpTimer == 0.0f) {
-		bool up = mJump.y > 0.0f;
-		mJump += mGravity * time;
-		up = up && mJump.y <= 0.0f;
-		//if (up) {
-		//	m_FloatJumpTimer = 1.0f;
-		//	mJump.y = 0.0f;
-		//}
-	//}
-	//else {
-	//	m_FloatJumpTimer -= time;
-	//	m_FloatJumpTimer = max(m_FloatJumpTimer, 0.0f);
-	//}
+			auto dot = XMVector3Dot(hit.normal, XMVectorSet(0, 1, 0, 1)).x;
+			auto angle = dot;
 
-	auto p = XMVectorZero();
-	p += mJump * time;
-	p += m_MoveVelo * time;
+			auto deg = m_CharacterControllerComponent->GetSlopeLimit();
+			float slopeLimit = cosf(XM_PI / 180.0f * deg);
+			if (slopeLimit > angle) {
+				m_IsGround = false;
+				m_IsSlopeLimited = true;
 
-	m_CharacterControllerComponent->Move(p);
+				auto y = hit.normal.y;
+				hit.normal.y = 0.0f;
+				hit.normal = XMVector3Normalize(hit.normal);
+				float speed = GetMovementSpeed();
+				auto v2 = mJump + hit.normal * speed * 0.2f;
+				v2.y = 0.0f;
+				auto s = min(max(XMVector3Length(v2).x, -speed), speed);
+				v2 = XMVector3Normalize(v2)*s;
+				mJump.x = v2.x;
+				mJump.z = v2.z;
+				mJump.y -= y;
+			}
+			else {
+				m_IsSlopeLimited = false;
+			}
+		}
 
-	m_IsGround = m_CharacterControllerComponent->IsGround();
-	if (m_IsGround) {
-		mJump.y = 0.0f;
+		m_CharacterControllerComponent->Move(mJump * time);
+	}
+	else{
+		m_IsSlopeLimited = false;
+		auto p = XMVectorZero();
+		p += mJump * time;
+		p += m_MoveVelo * time;
+
+		m_CharacterControllerComponent->Move(p);
+
+
+		if (m_CharacterControllerComponent->IsGround() && m_UseGravity) {
+			auto d = XMVectorSet(0, -1, 0, 1);
+			RaycastHit hit;
+			if (Hx::PhysX()->RaycastHit(pos, d, 10.0f, &hit, Layer::UserTag4)) {
+
+				auto dot = XMVector3Dot(hit.normal, XMVectorSet(0, 1, 0, 1)).x;
+				auto angle = dot;
+
+				auto deg = m_CharacterControllerComponent->GetSlopeLimit();
+				float slopeLimit = cosf(XM_PI / 180.0f * deg);
+				if (slopeLimit > angle) {
+					m_IsGround = false;
+					m_IsSlopeLimited = true;
+				}
+			}
+		}
+	}
+
+	if (!m_IsSlopeLimited) {
+		if (m_UseGravity) {
+			if (m_IsGround && !m_CharacterControllerComponent->IsGround() && mJump.y <= 0.0f) {
+				XMVECTOR donw = XMVectorSet(0, -m_CharacterControllerComponent->GetStepOffset() * 2, 0, 1);
+				m_CharacterControllerComponent->Move(donw);
+				if (!m_CharacterControllerComponent->IsGround()) {
+					m_CharacterControllerComponent->Move(-donw);
+				}
+			}
+		}
+
+		m_IsGround = m_CharacterControllerComponent->IsGround();
+
+		if (m_IsGround) {
+			mJump.y = 0.0f;
+		}
 	}
 
 }
@@ -1764,21 +1860,7 @@ void PlayerController::GettingWeapon(){
 		throwAway();
 		if (m_tempWeapon) { 
 		//選択した武器をセット
-			weaponHand->SetWeapon(m_tempWeapon, [&](auto o,Weapon* w, auto t) {
-				if (Enemy* scr = Enemy::GetEnemy(o)) {
-					if (w->isAttack()) {
-
-						scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(), m_CurrentAttack.KnockbackEffect,XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower,0,1));
-						if (t == Weapon::HitState::Damage) {
-							AddSpecial(m_CurrentAttack.AddSpecial);
-							AddCombo();
-						}
-						w->Damage(m_CurrentAttack.DamageType,m_WeaponResist_ComboAdd);
-						WeaponType t = w->GetWeaponType();
-						
-					}
-				}
-			});
+			setWeapon(m_tempWeapon);
 		}
 		//カウントをリセット
 		m_InputF_Time = 0.0f;
@@ -1823,7 +1905,7 @@ void PlayerController::throwWeapon()
 						if (auto target = scr->GetHandWeapon())
 						{
 							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-								script->SetPoint(target, m_CharacterControllerComponent);
+								script->SetPoint(target, this);
 							}
 						}
 					}
@@ -1840,6 +1922,9 @@ void PlayerController::throwWeapon()
 					if (weaponHand) {
 						weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
 					}
+					if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+						weaponCtr->DeleteHitPoint();
+					}
 					//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
 				}
 				else if (BindInput(PlayerInput::ThrowWeapon)) {
@@ -1852,9 +1937,12 @@ void PlayerController::throwWeapon()
 						}
 						if (target) {
 							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
-								script->SetPoint(target, m_CharacterControllerComponent);
+								script->SetPoint(target, this);
 							}
 							throwAway(camera->GetLookTarget());
+							if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+								weaponCtr->DeleteHitPoint();
+							}
 						}
 					}
 				}
@@ -1863,6 +1951,28 @@ void PlayerController::throwWeapon()
 		}
 
 	}
+}
+
+void PlayerController::setWeapon(GameObject weapon)
+{
+	//WeaponHandのスクリプトの取得
+	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+	if (!weaponHand) return;
+	weaponHand->SetWeapon(weapon, [&](auto o, Weapon* w, auto t) {
+		if (Enemy* scr = Enemy::GetEnemy(o)) {
+			if (w->isAttack()) {
+
+				scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(), m_CurrentAttack.KnockbackEffect, XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower, 0, 1));
+				if (t == Weapon::HitState::Damage) {
+					AddSpecial(m_CurrentAttack.AddSpecial);
+					AddCombo();
+				}
+				w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
+				WeaponType t = w->GetWeaponType();
+
+			}
+		}
+	});
 }
 
 float PlayerController::GetMovementSpeed()

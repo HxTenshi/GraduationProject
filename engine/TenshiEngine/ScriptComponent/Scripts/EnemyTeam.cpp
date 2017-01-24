@@ -1,6 +1,7 @@
 #include "EnemyTeam.h"
 #include "EnemyRezardManTeam.h"
 #include "EnemyOneTeam.h"
+#include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void EnemyTeam::Initialize(){
@@ -23,16 +24,23 @@ void EnemyTeam::Initialize(){
 	parentAlive = true;
 
 	battlePosFirst = 0;
+
+	TeamInitialize();
+
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void EnemyTeam::Start(){
-
+	m_Player = UniqueObject::GetPlayer();
 }
 
 //毎フレーム呼ばれます
 void EnemyTeam::Update(){
-
+	if (!Alive()) {
+		Hx::DestroyObject(gameObject);
+	}
+	DiscoveryOrLostPlayerSet();
+	TeamUpdate();
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）

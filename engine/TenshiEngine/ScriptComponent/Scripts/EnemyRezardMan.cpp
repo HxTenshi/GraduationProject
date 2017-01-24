@@ -264,6 +264,7 @@ void EnemyRezardMan::ParentTrackingModeUpdate()
 
 void EnemyRezardMan::ParentTrackingModeFinalize()
 {
+
 }
 
 void EnemyRezardMan::ChildTrackingModeInitilize()
@@ -862,10 +863,7 @@ void EnemyRezardMan::DeadModeUpdate()
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
 		if (!m_MyWeapon)return;
 		//gameObject->Enable();
-		gameObject->RemoveComponent<CharacterControllerComponent>();
 		m_Isend = true;
-		Hx::DestroyObject(m_MyWeapon);
-		Hx::DestroyObject(gameObject);
 	};
 }
 
@@ -875,7 +873,7 @@ void EnemyRezardMan::DeadModeFinalize()
 
 //UŒ‚‚·‚é‚Æ‚«‚ÉŒÄ‚Ôˆ—
 
-void EnemyRezardMan::Attack(GameObject player)
+void EnemyRezardMan::Attack(GameObject player, COL_TYPE colType)
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("‰½‚©‚É•Ší‚ª“–‚½‚Á‚½");
@@ -969,6 +967,14 @@ bool EnemyRezardMan::LostPlayer()
 		return true;
 	}
 	return false;
+}
+
+void EnemyRezardMan::ChildFinalize()
+{
+	Hx::DestroyObject(m_MyWeapon);
+	//gameObject->Disable();
+	gameObject->RemoveComponent<CharacterControllerComponent>();
+	Hx::DestroyObject(gameObject);
 }
 
 BATTLEACTION::Enum EnemyRezardMan::GetChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability, int provocationProbability) {

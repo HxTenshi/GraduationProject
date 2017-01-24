@@ -10,19 +10,15 @@ void Weapon::Initialize(){
 	is_fly = false;
 	is_attack = 0;
 	m_weapon_rot = 0.0f;
+	break_time = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
-	if (m_table) {
-		m_param=m_table->GetScript<WeaponTable>()->GetWeaponParametor(m_name);
-	}else{
+	m_Vector = XMVectorZero();
 		m_param.SetAttack(5);
 		m_param.SetDurableDamage(1, 10);
 		m_param.SetDurable(400);
 		m_param.SetName("DebugWeapon");
 		m_param.SetWeaponType(WeaponType::Sword);
-
-	}
-	m_param.DebugLog();
 	
 	SetHitCollback([](auto o,auto w, auto t) {});
 	//auto child = gameObject->mTransform->Children();
@@ -38,6 +34,12 @@ void Weapon::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void Weapon::Start(){
+
+	auto m_table = WeaponTable::GetWeaponTable();
+	if (m_table) {
+		m_param = m_table->GetWeaponParametor(m_name);
+	}
+	m_param.DebugLog();
 }
 
 //毎フレーム呼ばれます
@@ -50,12 +52,16 @@ void Weapon::Update(){
 			auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
 			scr->Action();
 		}
+	
+
 	}
+	BreakWeapon();
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
 	//PierceSupport(gameObject);
 	//Hx::Debug()->Log(std::to_string(gameObject->mTransform->DegreeRotate().x));
+
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -70,24 +76,38 @@ void Weapon::OnCollideBegin(GameObject target){
 
 	if (mIsEnemyThrow) {
 		if (mWeaponControl) {
-			if (target->GetLayer() == 3)
+			if (target->GetLayer() == 3) {
 				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
 					//Hx::Debug()->Log("敵に投げて当たった");
 					//Hx::Debug()->Log(target->Name());
 					//Hx::Debug()->Log(gameObject->Name());
 					weapon->HitActor(target, gameObject);
 				}
-		}
-	}
+				mIsEnemyThrow = false;
+			}
 
-	if (target->GetLayer() == 4) {
-		//Hx::Debug()->Log("Stageに当たった");
-		if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
-			//Hx::Debug()->Log("移動可能");
-			WeaponUsePhysX();
-			weapon->Hit();
-			//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
+			if (target->GetLayer() == 4) {
+				//Hx::Debug()->Log("Stageに当たった");
+				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
+					//Hx::Debug()->Log("移動可能");
+					WeaponUsePhysX();
+					weapon->Hit();
+					//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
+				}
+				mIsEnemyThrow = false;
+			}
+
+			if (target->GetLayer() == 6) {
+				WeaponUsePhysX();
+
+				//auto wpos = gameObject->mTransform->WorldPosition();
+				//gameObject->mTransform->WorldPosition(wpos - m_Vector);
+				//ThrowAway();
+				mIsEnemyThrow = false;
+			}
+
 		}
+
 	}
 
 	if (target->GetLayer() == 3 && is_hand) {
@@ -99,8 +119,8 @@ void Weapon::OnCollideBegin(GameObject target){
 				m_HitCollback(target,this,HitState::Damage);
 			}
 		}
+		mIsEnemyThrow = false;
 	}
-	mIsEnemyThrow = false;
 } 
 
 //コライダーとのヒット中に呼ばれます
@@ -147,6 +167,7 @@ bool Weapon::isBreak()
 /// </summary>
 void Weapon::ThrowAway()
 {
+	break_time = 0.0f;
 	SetHitCollback([](auto o,auto w,auto t) {});
 	is_fly = true;
 	is_hand = false;
@@ -158,6 +179,25 @@ void Weapon::ThrowAway()
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	//gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
+
+	m_Vector = XMVectorSet(0,-1,0,1);
+
+	if (XMVector3Length(m_Vector).x != 0.0f) {
+		auto m = gameObject->mTransform->GetMatrix();
+		auto s = gameObject->mTransform->Scale();
+		//auto fl = XMVector3Length(m.r[0]).x;
+		//auto ul = XMVector3Length(m.r[1]).x;
+		//auto ll = XMVector3Length(m.r[2]).x;
+		auto f = XMVector3Normalize(m.r[0]);
+		auto u = XMVector3Normalize(m_Vector);
+		auto l = XMVector3Cross(f, u);
+		f = XMVector3Cross(u, l);
+		m.r[0] = XMVector3Normalize(f);// * fl;
+		m.r[1] = XMVector3Normalize(u);// * ul;
+		m.r[2] = XMVector3Normalize(l);// * ll;
+		gameObject->mTransform->WorldMatrix(m);
+		gameObject->mTransform->Scale(s);
+	}
 }
 void Weapon::ThrowAttack()
 {
@@ -176,6 +216,26 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 	is_attack = 1;
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
+
+	m_Vector = throwdir;
+
+
+	if (XMVector3Length(m_Vector).x != 0.0f) {
+		auto m = gameObject->mTransform->GetMatrix();
+		auto s = gameObject->mTransform->Scale();
+		//auto fl = XMVector3Length(m.r[0]).x;
+		//auto ul = XMVector3Length(m.r[1]).x;
+		//auto ll = XMVector3Length(m.r[2]).x;
+		auto f = XMVector3Normalize(m.r[0]);
+		auto u = XMVector3Normalize(m_Vector);
+		auto l = XMVector3Cross(f, u);
+		f = XMVector3Cross(u, l);
+		m.r[0] = XMVector3Normalize(f);// * fl;
+		m.r[1] = XMVector3Normalize(u);// * ul;
+		m.r[2] = XMVector3Normalize(l);// * ll;
+		gameObject->mTransform->WorldMatrix(m);
+		gameObject->mTransform->Scale(s);
+	}
 }
 void Weapon::WeaponUsePhysX()
 {
@@ -203,6 +263,8 @@ void Weapon::SetHitCollback(const HitCollbackType & collback)
 /// </summary>
 void Weapon::GetWeapon()
 {
+	break_time = 0.0f;
+
 	is_ground_hit = false;
 	is_hand = true;
 	is_fly = false;
@@ -212,6 +274,13 @@ void Weapon::GetWeapon()
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	gameObject->GetComponent<PhysXComponent>()->SetKinematic(false);
 	//Hx::Debug()->Log("get");
+
+
+	if (auto mirror = gameObject->GetComponent<BoneMirrorComponent>()) {
+		mirror->ChangeTargetBone(NULL);
+		mirror->SetTargetBoneID(-1);
+		mirror->Disable();
+	}
 }
 
 float Weapon::GetAttackPower()
@@ -308,6 +377,21 @@ void Weapon::PierceSupport(GameObject obj)
 	XMVECTOR rot = obj->mTransform->DegreeRotate();
 	if (rot.x<120&&rot.x>-120) {
 		//obj->mTransform->DegreeRotate(XMVectorSet(180,0,0,1));
+	}
+}
+//自分自身を消す
+void Weapon::BreakWeapon()
+{
+	if (is_break_weapon) {
+		Hx::Debug()->Log("isbreakweapon");
+		if (!is_hand) {
+			break_time += Hx::DeltaTime()->GetDeltaTime();
+			Hx::Debug()->Log("ishand");
+			if (break_time > weapon_break) {
+				Hx::DestroyObject(gameObject);
+				Hx::Debug()->Log("break");
+			}
+		}
 	}
 }
 

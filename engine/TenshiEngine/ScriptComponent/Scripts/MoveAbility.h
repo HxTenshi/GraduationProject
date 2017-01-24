@@ -3,7 +3,7 @@
 #include "main.h"
 # include "Game/Component/CharacterControllerComponent.h"
 # include "WeaponControl.h"
-
+class PlayerController;
 class MoveAbility :public IDllScriptComponent{
 public:
 	void Initialize()override;
@@ -14,20 +14,22 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
-	void SetPoint(GameObject target, weak_ptr<CharacterControllerComponent> cc);
+	void SetPoint(GameObject target, PlayerController* pc);
 	void OnMove();
 
-	void KnockBack(std::function<void(void)> function,GameObject target);
+	void KnockBack(GameObject target);
 
 	bool OnTargetDistance(XMVECTOR target);
 
 private:
 	//ÉÅÉìÉoïœêî
-	weak_ptr<CharacterControllerComponent> mCC;
+	PlayerController* mPC;
 	GameObject mMovePoint;
 	GameObject mMoveActor;
 	bool onMove;
 	float mTime;
+	int mDown;
+	float mDownTime;
 	SERIALIZE float mSpeed;
 	XMVECTOR mMoveStartPosition;
 

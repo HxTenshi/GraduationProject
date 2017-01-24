@@ -1,10 +1,13 @@
 #include "MoveAbility.h"
 #include "../h_standard.h"
 #include "../h_component.h"
+#include "PlayerController.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void MoveAbility::Initialize(){
-
+	mPC = NULL;
+	mDown = 0;
+	mDownTime = 0.0f;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -16,7 +19,7 @@ void MoveAbility::Start(){
 void MoveAbility::Update(){
 
 	//投げたところへの移動
-	if (onMove == true && mMovePoint)
+	if (onMove == true && mMovePoint && mPC)
 	{
 		XMVECTOR targetPosition = mMovePoint->mTransform->WorldPosition();
 		//ここの1はキャラのYのサイズにしないと・・・。
@@ -45,10 +48,18 @@ void MoveAbility::Update(){
 
 		if (OnTargetDistance(targetPosition)) {
 			onMove = false;
+				mPC->SpeedJumpWeaponCatch(mMovePoint);
 		}
 		else {
-			mCC->Move(XMVector3Normalize(targetPosition - mMoveActor->mTransform->WorldPosition()));
+			mMoveActor = gameObject->mTransform->GetParent();
+				mPC->SpeedJump(XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - mMoveActor->mTransform->WorldPosition()) * mSpeed);
 		}
+
+		if (mDown == 0) {
+			mDownTime = 0.0f;
+		}
+		mDown = 0;
+
 	}
 }
 
@@ -64,7 +75,8 @@ void MoveAbility::OnCollideBegin(GameObject target){
 
 //コライダーとのヒット中に呼ばれます
 void MoveAbility::OnCollideEnter(GameObject target){
-	(void)target;
+
+	KnockBack(target);
 
 }
 
@@ -73,9 +85,9 @@ void MoveAbility::OnCollideExit(GameObject target){
 	(void)target;
 }
 
-void MoveAbility::SetPoint(GameObject target, weak_ptr<CharacterControllerComponent> cc)
+void MoveAbility::SetPoint(GameObject target, PlayerController* pc)
 {
-	mCC = cc;
+	mPC = pc;
 	mMovePoint = target;
 }
 
@@ -86,18 +98,51 @@ void MoveAbility::OnMove()
 	mMoveStartPosition = mMoveActor->mTransform->WorldPosition();
 	mMoveStartPosition += XMVectorSet(0, 1.3f, 0, 0);
 	mTime = 0;
+	mDown = 0;
+	mDownTime = 0.0f;
 	onMove = true;
+	if(mPC){
+		mPC->SpeedJump(XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - mMoveActor->mTransform->WorldPosition()) * mSpeed);
+	}
 }
 
 //敵に当たった際のノックバック処理
-void MoveAbility::KnockBack(std::function<void(void)> function,GameObject target)
+void MoveAbility::KnockBack(GameObject target)
 {
 	if (!onMove)return;
+
+	mDown = 1;
+	if (mDownTime < 0.3f) {
+		mDownTime += Hx::DeltaTime()->GetDeltaTime();
+		return;
+	}
+
 	if (target->GetLayer() == 3) {
-		Hx::Debug()->Log("移動中に敵に当たってしまった。");
-		function();
+		//Hx::Debug()->Log("移動中に敵に当たってしまった。");
 		mTime = 0;
 		onMove = false;
+		if (mPC) {
+			auto v = XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - mMoveActor->mTransform->WorldPosition()) * -1;
+			mPC->Damage(0.0f, v, PlayerController::KnockBack::Down, true, true);
+		}
+	}
+	if (target->GetLayer() == 4) {
+		//Hx::Debug()->Log("移動中にステージに当たってしまった。");
+		mTime = 0;
+		onMove = false;
+		if (mPC) {
+			auto v = XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - mMoveActor->mTransform->WorldPosition()) * -1;
+			mPC->Damage(0.0f, v, PlayerController::KnockBack::Down, true, true);
+		}
+	}
+	{
+		//Hx::Debug()->Log("何かに当たってしまった。");
+		mTime = 0;
+		onMove = false;
+		if (mPC) {
+			auto v = XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - mMoveActor->mTransform->WorldPosition()) * -1;
+			mPC->Damage(0.0f, v, PlayerController::KnockBack::Down, true, true);
+		}
 	}
 }
 

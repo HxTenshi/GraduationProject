@@ -3,6 +3,10 @@
 #include "h_standard.h"
 #include "h_component.h"
 
+#include "OutputGimic.h"
+
+#include "UniqueObject.h"
+
 Matinee::Matinee()
 {
 }
@@ -25,7 +29,9 @@ void Matinee::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void Matinee::Start(){
-
+	if (!m_Camera) {
+		m_Camera = UniqueObject::GetCamera();
+	}
 }
 
 //毎フレーム呼ばれます
@@ -169,24 +175,45 @@ void Matinee::next()
 
 	if (m_CurrentPos == 0) {
 		m_Timer = m_Point_0_EndWaitTime;
+		if (auto gimick = OutputGimic::GetOutputGimic(m_Point_0_EndTriggerGimmick)) {
+			gimick->OnStart(gameObject);
+		}
 	}
 	if (m_CurrentPos == 1) {
 		m_Timer = m_Point_1_EndWaitTime;
+		if (auto gimick = OutputGimic::GetOutputGimic(m_Point_1_EndTriggerGimmick)) {
+			gimick->OnStart(gameObject);
+		}
 	}
 	if (m_CurrentPos == 2) {
 		m_Timer = m_Point_2_EndWaitTime;
+		if (auto gimick = OutputGimic::GetOutputGimic(m_Point_2_EndTriggerGimmick)) {
+			gimick->OnStart(gameObject);
+		}
 	}
 	if (m_CurrentPos == 3) {
 		m_Timer = m_Point_3_EndWaitTime;
+		if (auto gimick = OutputGimic::GetOutputGimic(m_Point_3_EndTriggerGimmick)) {
+			gimick->OnStart(gameObject);
+		}
 	}
 	if (m_CurrentPos == 4) {
 		m_Timer = m_Point_4_EndWaitTime;
+		if (auto gimick = OutputGimic::GetOutputGimic(m_Point_4_EndTriggerGimmick)) {
+			gimick->OnStart(gameObject);
+		}
 	}
 	if (m_CurrentPos == 5) {
 		m_Timer = m_Point_5_EndWaitTime;
+		if (auto gimick = OutputGimic::GetOutputGimic(m_Point_5_EndTriggerGimmick)) {
+			gimick->OnStart(gameObject);
+		}
 	}
 	if (m_CurrentPos == 6) {
 		m_Timer = m_Point_6_EndWaitTime;
+		if (auto gimick = OutputGimic::GetOutputGimic(m_Point_6_EndTriggerGimmick)) {
+			gimick->OnStart(gameObject);
+		}
 	}
 
 	if (m_CurrentPos == 0) {

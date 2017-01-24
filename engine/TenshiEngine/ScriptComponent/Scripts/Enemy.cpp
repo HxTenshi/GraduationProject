@@ -7,6 +7,7 @@
 #include "EnemyRezardMan.h"
 #include "EnemyArcher.h"
 #include "EnemyEbilEye.h"
+#include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
@@ -18,17 +19,16 @@ void Enemy::Initialize() {
 	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
 	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 
-	if (!m_Player) {
-		m_Player = Hx::FindActor("Player");
-	}
 	m_Isend = false;
 	m_WasAttacked = false;
 	ChildInitialize();
 	m_Forward = gameObject->mTransform->Forward();
+
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
 void Enemy::Start() {
+	m_Player = UniqueObject::GetPlayer();
 }
 
 //毎フレーム呼ばれます
@@ -36,19 +36,8 @@ void Enemy::Update() {
 	m_Vec = XMVectorZero();
 	if (!m_Player)return;
 	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
-	if (Input::Trigger(KeyCode::Key_1)) {
-		Damage(1.0f,BATTLEACTION::WINCEACTION, XMVectorSet(0, 2, 0, 1));
-	}
-	else if (Input::Trigger(KeyCode::Key_2)) {
-		Damage(1.0f, BATTLEACTION::UPPERDOWNACTION,XMVectorSet(0,10,0,1));
-	}
-	else if (Input::Trigger(KeyCode::Key_3)) {
-		Damage(1.0f, BATTLEACTION::BEATDOWNACTION,XMVectorSet(0, -20, 0, 1));
-	}
 
-	if (gameObject->mTransform->WorldPosition().y < -10) {
-		gameObject->RemoveComponent<CharacterControllerComponent>();
-		Hx::DestroyObject(gameObject);
+	if (gameObject->mTransform->WorldPosition().y < -100) {
 		m_Isend = true;
 	}
 
@@ -138,7 +127,6 @@ void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
 			m_Animparam.animLerpFlag = true;
 			m_Animparam.lerpSpeed = speed;
 			m_Animparam.afterAnimLoop = roop;
-
 			AnimeParam ap;
 			if (!ModelObject)return;
 			auto anim = ModelObject->GetComponent<AnimationComponent>();

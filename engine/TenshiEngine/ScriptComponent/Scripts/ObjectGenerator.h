@@ -22,7 +22,11 @@ private:
 	SERIALIZE PrefabAsset m_Object;
 	SERIALIZE bool m_UniqueGeneratMode;
 	SERIALIZE bool m_RotateCopy;
+
+	SERIALIZE GameObject m_OutputGimick;
+	SERIALIZE GameObject m_DestroyOutputGimick;
 	GameObject m_GeneratObject;
 	float m_Timer;
 	int m_Count;
+	bool m_GeneratFlag;
 };

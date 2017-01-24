@@ -110,14 +110,13 @@ private:
 	void PierceSupport(GameObject obj);
 //演出関係
 private:
-	void Break();
+	//武器が完全に消失する
+	void BreakWeapon();
 	void Effect();
 private:
 	//メンバ変数
 	SERIALIZE
 	std::string m_name;
-	SERIALIZE
-	GameObject m_table;
 	SERIALIZE
 	float m_Recast;
 	SERIALIZE
@@ -130,12 +129,19 @@ private:
 	bool mIsEnemyThrow;
 	AttackType m_attack_type;
 
+	//向くべき方向
+	XMVECTOR m_Vector;
+
 	//武器のパラメータ
 	funifuni::WeaponParametor m_param;
 private:
 	//テスト用
 	SERIALIZE
 	GameObject mSwapTarget;
+	SERIALIZE
+	bool is_break_weapon;
+	SERIALIZE
+	float weapon_break;
 private:
 	float m_weapon_rot;
 	bool is_hand;
@@ -145,4 +151,10 @@ private:
 	int is_attack;
 
 	HitCollbackType m_HitCollback;
+
+	
+
+	float break_time;
+
+	
 };
