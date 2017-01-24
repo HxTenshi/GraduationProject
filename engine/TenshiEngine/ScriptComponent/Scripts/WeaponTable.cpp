@@ -8,7 +8,6 @@ static WeaponTable* g_WeaponTable = NULL;
 WeaponTable::WeaponTable()
 {
 
-	g_WeaponTable = this;
 
 
 	std::vector<std::string> type;
@@ -45,6 +44,7 @@ void WeaponTable::Initialize() {
 	//[&](int a,int b,float c,std::string d) {
 	//	Hx::Debug()->Log(d);
 	//});
+	g_WeaponTable = this;
 
 }
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）

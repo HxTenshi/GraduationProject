@@ -11,6 +11,7 @@ void ObjectGenerator::Initialize(){
 	m_GeneratObject = NULL;
 	m_Timer = m_Time;
 	m_Count = 0;
+	m_GeneratFlag = false;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -26,6 +27,12 @@ void ObjectGenerator::Update(){
 	}
 	if (m_UniqueGeneratMode) {
 		if (m_GeneratObject)return;
+		if (m_GeneratFlag) {
+			if (auto gimick = OutputGimic::GetOutputGimic(m_DestroyOutputGimick)) {
+				gimick->OnStart(gameObject);
+			}
+			m_GeneratFlag = false;
+		}
 	}
 
 	m_Timer -= Hx::DeltaTime()->GetDeltaTime();
@@ -55,6 +62,7 @@ void ObjectGenerator::Update(){
 
 	if (m_UniqueGeneratMode) {
 		m_GeneratObject = obj;
+		m_GeneratFlag = true;
 	}
 	if (auto gimick = OutputGimic::GetOutputGimic(m_OutputGimick)) {
 		gimick->OnStart(gameObject);

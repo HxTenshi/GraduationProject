@@ -14,18 +14,11 @@ void Weapon::Initialize(){
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
 	m_Vector = XMVectorZero();
-	auto m_table = WeaponTable::GetWeaponTable();
-	if (m_table) {
-		m_param=m_table->GetWeaponParametor(m_name);
-	}else{
 		m_param.SetAttack(5);
 		m_param.SetDurableDamage(1, 10);
 		m_param.SetDurable(400);
 		m_param.SetName("DebugWeapon");
 		m_param.SetWeaponType(WeaponType::Sword);
-
-	}
-	m_param.DebugLog();
 	
 	SetHitCollback([](auto o,auto w, auto t) {});
 	//auto child = gameObject->mTransform->Children();
@@ -41,6 +34,12 @@ void Weapon::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void Weapon::Start(){
+
+	auto m_table = WeaponTable::GetWeaponTable();
+	if (m_table) {
+		m_param = m_table->GetWeaponParametor(m_name);
+	}
+	m_param.DebugLog();
 }
 
 //毎フレーム呼ばれます
@@ -84,6 +83,7 @@ void Weapon::OnCollideBegin(GameObject target){
 					//Hx::Debug()->Log(gameObject->Name());
 					weapon->HitActor(target, gameObject);
 				}
+				mIsEnemyThrow = false;
 			}
 
 			if (target->GetLayer() == 4) {
@@ -94,6 +94,7 @@ void Weapon::OnCollideBegin(GameObject target){
 					weapon->Hit();
 					//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
 				}
+				mIsEnemyThrow = false;
 			}
 
 			if (target->GetLayer() == 6) {
@@ -102,7 +103,9 @@ void Weapon::OnCollideBegin(GameObject target){
 				//auto wpos = gameObject->mTransform->WorldPosition();
 				//gameObject->mTransform->WorldPosition(wpos - m_Vector);
 				//ThrowAway();
+				mIsEnemyThrow = false;
 			}
+
 		}
 
 	}
@@ -116,8 +119,8 @@ void Weapon::OnCollideBegin(GameObject target){
 				m_HitCollback(target,this,HitState::Damage);
 			}
 		}
+		mIsEnemyThrow = false;
 	}
-	mIsEnemyThrow = false;
 } 
 
 //コライダーとのヒット中に呼ばれます
