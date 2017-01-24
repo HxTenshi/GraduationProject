@@ -154,6 +154,8 @@ private:
 	void throwWeapon();
 	void setWeapon(GameObject weapon);
 
+	void freeAnimeUpdate();
+
 	float GetMovementSpeed();
 
 	void changeAnime(int id);

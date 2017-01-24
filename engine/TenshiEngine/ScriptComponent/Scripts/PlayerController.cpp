@@ -58,6 +58,9 @@ struct AnimeID {
 		SpeedJump,
 		Fall,
 		FallGround,
+		FreeAIM,
+		Throw,
+		AttackSP,
 		Count,
 	};
 };
@@ -290,10 +293,10 @@ void PlayerController::Initialize(){
 		attack.ID = AttackID::Special;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
-		attack.MoutionID = AnimeID::AttackHigh1;
+		attack.MoutionID = AnimeID::AttackSP;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.DamageScale = 2.0f;
-		attack.AttackMove = 10.0f;
+		attack.AttackMove = 0.0f;
 		attack.AddSpecial = 0.0f;
 		attack.DamageType = DamageType::DethBrowDamage;
 		attacklist[attack.ID] = attack;
@@ -708,7 +711,18 @@ void PlayerController::FreeEnter()
 void PlayerController::FreeExcute()
 {
 
-	move();
+
+	if (m_CurrentAnimeID == AnimeID::Throw) {
+		if (auto anime = m_AnimeModel->GetComponent<AnimationComponent>()) {
+			if (anime->IsAnimationEnd(AnimeID::Throw)) {
+				changeAnime(AnimeID::Idle);
+			}
+		}
+	}
+	else {
+		move();
+		freeAnimeUpdate();
+	}
 
 	moveUpdate();
 
@@ -719,18 +733,10 @@ void PlayerController::FreeExcute()
 	//Žü‚è‚Ì•Ší‚ÌŽæ“¾,‘I‘ðŠÖ˜A
 	GettingWeapon();
 
-	if (m_InputF_Time > 0.5f) {
-		if (!m_IsGround) {
-			changeAnime(AnimeID::Jump);
-		}else
-		if (mJump.x == 0.0f && mJump.z == 0.0f) {
-			changeAnime(AnimeID::Idle);
-		}
-		else {
-			changeAnime(AnimeID::Move);
-		}
-		return;
-	}
+	//if (m_InputF_Time > 0.5f) {
+	//	freeAnimeUpdate();
+	//	return;
+	//}
 
 	throwWeapon();
 
@@ -753,18 +759,9 @@ void PlayerController::FreeExcute()
 		SetPlayerState(PlayerState::Guard);
 	}
 
-	{
-		if (!m_IsGround) {
-			changeAnime(AnimeID::Jump);
-		}
-		else
-			if (mJump.x == 0.0f && mJump.z == 0.0f) {
-				changeAnime(AnimeID::Idle);
-			}
-			else {
-				changeAnime(AnimeID::Move);
-			}
-	}
+	//{
+	//	freeAnimeUpdate();
+	//}
 	if (attack()) {
 		SetPlayerState(PlayerState::Attack);
 	}
@@ -1554,7 +1551,7 @@ void PlayerController::moveUpdate()
 	if (!m_IsSlopeLimited) {
 		if (m_UseGravity) {
 			if (m_IsGround && !m_CharacterControllerComponent->IsGround() && mJump.y <= 0.0f) {
-				XMVECTOR donw = XMVectorSet(0, -m_CharacterControllerComponent->GetStepOffset() * 2, 0, 1);
+				XMVECTOR donw = XMVectorSet(0, -m_CharacterControllerComponent->GetStepOffset() , 0, 1);
 				m_CharacterControllerComponent->Move(donw);
 				if (!m_CharacterControllerComponent->IsGround()) {
 					m_CharacterControllerComponent->Move(-donw);
@@ -1901,6 +1898,8 @@ void PlayerController::throwWeapon()
 		if (camera) {
 			if (auto aim = mAimController->GetScript<AimController>()) {
 				if (BindInput(PlayerInput::FreeAIM) && !m_FreeAIMMode) {
+					changeAnime(AnimeID::FreeAIM);
+
 					if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
 						if (auto target = scr->GetHandWeapon())
 						{
@@ -1913,6 +1912,9 @@ void PlayerController::throwWeapon()
 					m_FreeAIMMode = true;
 				}
 				else if (BindInput(PlayerInput::ThrowWeapon) && m_FreeAIMMode) {
+					mJump.x=0.0f;
+					mJump.z=0.0f;
+					changeAnime(AnimeID::Throw);
 					m_FreeAIMMode = false;
 					aim->ChangeAimMode(camera, gameObject, false);
 					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
@@ -1946,6 +1948,9 @@ void PlayerController::throwWeapon()
 						}
 					}
 				}
+				else if(m_FreeAIMMode){
+					changeAnime(AnimeID::FreeAIM);
+				}
 
 			}
 		}
@@ -1973,6 +1978,42 @@ void PlayerController::setWeapon(GameObject weapon)
 			}
 		}
 	});
+}
+
+void PlayerController::freeAnimeUpdate()
+{
+	if (m_FreeAIMMode) {
+		return;
+	}
+	if (!m_IsGround) {
+		if (mJump.y > 0.0f) {
+			changeAnime(AnimeID::Jump);
+		}
+		else {
+			changeAnime(AnimeID::Fall);
+		}
+	}
+	else {
+		if (m_CurrentAnimeID == AnimeID::Fall) {
+			changeAnime(AnimeID::FallGround);
+		}
+		else {
+			if (m_CurrentAnimeID == AnimeID::FallGround) {
+				if (auto anime = m_AnimeModel->GetComponent<AnimationComponent>()) {
+					if (!anime->IsAnimationEnd(AnimeID::FallGround)) {
+						return;
+					}
+				}
+			}
+
+			if (mJump.x == 0.0f && mJump.z == 0.0f) {
+				changeAnime(AnimeID::Idle);
+			}
+			else {
+				changeAnime(AnimeID::Move);
+			}
+		}
+	}
 }
 
 float PlayerController::GetMovementSpeed()
@@ -2026,6 +2067,10 @@ void PlayerController::animeFlip()
 			}
 		}
 
+	}
+
+	if (m_CurrentAnimeID == m_CurrentAnimeID_Stack) {
+		m_ChangeAnime = false;
 	}
 
 	if (!m_ChangeAnime)return;
