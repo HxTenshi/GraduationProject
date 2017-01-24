@@ -63,5 +63,15 @@ private:
 	SERIALIZE
 		TextureAsset m_rance_break_ui;
 
+	//rance
+	SERIALIZE
+		TextureAsset m_sworddh_ui;
+	SERIALIZE
+		TextureAsset m_sworddh_damage_ui;
+	SERIALIZE
+		TextureAsset m_sworddh_danger_ui;
+	SERIALIZE
+		TextureAsset m_sworddh_break_ui;
+
 	
 };

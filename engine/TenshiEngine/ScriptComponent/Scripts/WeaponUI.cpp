@@ -27,9 +27,6 @@ void WeaponUI::Update(){
 	//time += Hx::DeltaTime()->GetDeltaTime();
 	if (weapon=whand->GetScript<WeaponHand>()->GetHandWeapon()) {
 		UIMix->Enable();
-		if (Input::Trigger(KeyCode::Key_7)) {
-			weapon->GetScript<Weapon>()->Damage(DamageType::LowDamage, 1);
-		}
 			DurableGage(weapon);
 	}
 	else {
@@ -112,6 +109,12 @@ void WeaponUI::SetWeaponIcon(WeaponType wtype,WeaponDamageType wdtype)
 		if (wdtype == WeaponDamageType::Damage)result = m_axe_damage_ui;
 		if (wdtype == WeaponDamageType::Danger)result = m_axe_danger_ui;
 		if (wdtype == WeaponDamageType::Break)result = m_axe_break_ui;
+	}
+	if (wtype == WeaponType::SwordDH) {
+		if (wdtype == WeaponDamageType::Normal)result = m_sworddh_ui;
+		if (wdtype == WeaponDamageType::Damage)result = m_sworddh_damage_ui;
+		if (wdtype == WeaponDamageType::Danger)result = m_sworddh_danger_ui;
+		if (wdtype == WeaponDamageType::Break)result = m_sworddh_break_ui;
 	}
 
 	UI->GetComponent<TextureModelComponent>()->SetTexture(result);
