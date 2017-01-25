@@ -72,7 +72,6 @@ private:
 	void SetPositionRotation(XMVECTOR pos_,float radius_);
 	void LookPosition(XMVECTOR position_);
 
-	SERIALIZE XMVECTOR m_MovePositionCenter;
 	SERIALIZE float m_MovePositionRadius;
 	SERIALIZE float m_MoveRotateSpeed;
 	SERIALIZE float m_Speed;
@@ -88,6 +87,7 @@ private:
 	SERIALIZE float m_WinceTime;
 	SERIALIZE float hp;
 
+	XMVECTOR m_MovePositionCenter;
 	float m_RotateAngle;
 	float m_Count;
 	bool m_RotateStart;
