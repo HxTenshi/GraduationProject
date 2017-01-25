@@ -49,7 +49,7 @@ struct AnimeID {
 		AttackLow1,
 		AttackLow2,
 		AttackLow3,
-		AttackHigh1,
+		AttackHigh1___,//10番は使えない？
 		AttackHigh2,
 		AttackLow1End,
 		AttackLow2End,
@@ -61,6 +61,7 @@ struct AnimeID {
 		FreeAIM,
 		Throw,
 		AttackSP,
+		AttackHigh1,
 		Count,
 	};
 };
@@ -193,6 +194,15 @@ void PlayerController::Initialize(){
 	m_CurrentAnimeID_Back = -1;
 	m_CurrentAnime_Weight = 1.0f;
 
+	
+}
+
+//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
+void PlayerController::Start(){
+
+	m_CharacterControllerComponent = gameObject->GetComponent<CharacterControllerComponent>();
+
+
 	m_AttackStateList.resize(WeaponType::Count);
 	for (auto& list : m_AttackStateList) {
 		list.resize(AttackID::Count);
@@ -216,8 +226,8 @@ void PlayerController::Initialize(){
 		attack.KnockbackEffectPower = 1.0f;
 
 		attack.DamageScale = 1.0f;
-		attack.AttackTime = 18.0f/60.0f;//getMoutionTime(attack.MoutionID);
-		attack.OnDamageStart = 9.0f/60.0f;
+		attack.AttackTime = 18.0f / 60.0f;//getMoutionTime(attack.MoutionID);
+		attack.OnDamageStart = 9.0f / 60.0f;
 		attack.AttackMove = 0.0f;
 		attack.AttackFunc = [&]() {};
 		attack.DamageType = DamageType::LowDamage;
@@ -431,12 +441,6 @@ void PlayerController::Initialize(){
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 	}
-}
-
-//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
-void PlayerController::Start(){
-
-	m_CharacterControllerComponent = gameObject->GetComponent<CharacterControllerComponent>();
 }
 
 //毎フレーム呼ばれます
