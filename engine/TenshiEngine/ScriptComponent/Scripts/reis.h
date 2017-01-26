@@ -30,6 +30,7 @@ private:
 
 	SERIALIZE GameObject m_AnimeModel;
 	SERIALIZE float m_MoveSpeed;
+	SERIALIZE PrefabAsset m_Bullets;
 
 
 	GameObject m_Player;

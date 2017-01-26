@@ -13,6 +13,7 @@ struct ReisMode {
 		Idle,
 		Move,
 		Attack,
+		Attack_Bullet,
 	};
 };
 
@@ -21,6 +22,7 @@ struct AnimeID {
 		Idle,
 		Move,
 		Attack,
+		Attack_Bullet,
 	};
 };
 
@@ -55,16 +57,32 @@ void reis::Update(){
 			m_ReisMode = ReisMode::Attack;
 		}
 
+		if (GetPlayerLen() > 10.0f) {
+			m_ReisMode = ReisMode::Attack_Bullet;
+		}
+
 	}else if (m_ReisMode == ReisMode::Attack) {
 		ChangeAnime(AnimeID::Attack);
 		if (IsCurrentAnimeEnd()) {
 			m_ReisMode = ReisMode::Idle;
 		}
 	}
+	else if (m_ReisMode == ReisMode::Attack_Bullet) {
+		Rotate(GetPlayerVect());
+		if (m_CurrentAnimeID != AnimeID::Attack_Bullet) {
+			if (auto obj = Hx::Instance(m_Bullets)) {
+				obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+				obj->mTransform->WorldQuaternion(gameObject->mTransform->WorldQuaternion());
+			}
+		}
 
-
-
+		ChangeAnime(AnimeID::Attack_Bullet);
+		if (IsCurrentAnimeEnd()) {
+			m_ReisMode = ReisMode::Idle;
+		}
+	}
 }
+
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void reis::Finish(){
