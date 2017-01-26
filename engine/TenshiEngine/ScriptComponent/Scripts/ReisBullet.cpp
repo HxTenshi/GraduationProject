@@ -32,6 +32,9 @@ void ReisBullet::Update(){
 			if (auto col = gameObject->GetComponent<PhysXColliderComponent>()) {
 				col->Disable();
 			}
+			if (m_BulletModel) {
+				m_BulletModel->Disable();
+			}
 		}
 		m_DestroyWaitTimer += time;
 		if (m_DestroyWaitTime < m_DestroyWaitTimer) {
@@ -70,7 +73,6 @@ void ReisBullet::OnCollideBegin(GameObject target){
 		if (auto scr = m_BulletModel->GetScript<BurstDamageArea>()) {
 			scr->OnCollideEnter(target);
 		}
-		m_BulletModel->Disable();
 	}
 }
 

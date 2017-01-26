@@ -8,12 +8,16 @@
 #include "h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
 
+#include "ReisCitrusBullet.h"
+
+
 struct ReisMode {
 	enum Enum {
 		Idle,
 		Move,
 		Attack,
 		Attack_Bullet,
+		Attack_CitrusBullet,
 	};
 };
 
@@ -31,6 +35,9 @@ struct AnimeID {
 void reis::Initialize(){
 	m_Player = NULL;
 	m_ReisMode = ReisMode::Idle;
+	m_CitrusBulletObject = NULL;
+	m_CitrusBulletCount = 0;
+	m_CitrusBulletCollDown = 0.0f;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -41,6 +48,8 @@ void reis::Start(){
 
 //毎フレーム呼ばれます
 void reis::Update(){
+
+	m_CitrusBulletCollDown -= Hx::DeltaTime()->GetDeltaTime();
 
 	if (m_ReisMode == ReisMode::Idle) {
 		ChangeAnime(AnimeID::Idle);
@@ -58,7 +67,13 @@ void reis::Update(){
 		}
 
 		if (GetPlayerLen() > 10.0f) {
-			m_ReisMode = ReisMode::Attack_Bullet;
+
+			auto r = rand() / (float)RAND_MAX;
+			if (r < 0.5f && m_CitrusBulletCollDown<=0.0f) {
+				m_ReisMode = ReisMode::Attack_CitrusBullet;
+			}else {
+				m_ReisMode = ReisMode::Attack_Bullet;
+			}
 		}
 
 	}else if (m_ReisMode == ReisMode::Attack) {
@@ -79,6 +94,43 @@ void reis::Update(){
 		ChangeAnime(AnimeID::Attack_Bullet);
 		if (IsCurrentAnimeEnd()) {
 			m_ReisMode = ReisMode::Idle;
+		}
+	}
+	else if (m_ReisMode == ReisMode::Attack_CitrusBullet) {
+		Rotate(GetPlayerVect());
+		m_CitrusBulletCollDown = 5.0f;
+		if (m_CurrentAnimeID != AnimeID::Attack_Bullet) {
+			if (m_CitrusBulletObject = Hx::Instance(m_CitrusBullet)) {
+				auto pos = gameObject->mTransform->WorldPosition();
+				pos.y += 1.0f;
+				m_CitrusBulletObject->mTransform->WorldPosition(pos);
+				if (auto scr = m_CitrusBulletObject->GetScript<ReisCitrusBullet>()) {
+					scr->SetVector(GetPlayerVectH());
+				}
+			}
+		}
+
+		ChangeAnime(AnimeID::Attack_Bullet);
+		if (IsCurrentAnimeEnd()) {
+
+			if (m_CitrusBulletObject) {
+				auto pos = m_CitrusBulletObject->mTransform->WorldPosition();
+				pos.y += 3.0f;
+				Teleport(pos);
+				Move(XMVectorSet(0.0f , -5.0f, 0.0f, 1.0f));
+
+				Hx::DestroyObject(m_CitrusBulletObject);
+				m_CitrusBulletObject = NULL;
+			}
+
+			if (m_CitrusBulletCount >= 2) {
+				m_CitrusBulletCount = 0;
+				m_ReisMode = ReisMode::Idle;
+			}
+			else {
+				ChangeAnime(AnimeID::Idle);
+				m_CitrusBulletCount++;
+			}
 		}
 	}
 }
@@ -104,6 +156,14 @@ void reis::OnCollideExit(GameObject target){
 	(void)target;
 }
 
+
+void reis::Teleport(const XMVECTOR & vect)
+{
+	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+	if (!cc)return;
+
+	cc->Teleport(vect);
+}
 
 void reis::Move(const XMVECTOR & vect)
 {
@@ -136,6 +196,14 @@ XMVECTOR reis::GetPlayerVect()
 {
 	if (!m_Player)return XMVectorZero();
 	auto v = m_Player->mTransform->WorldPosition()- gameObject->mTransform->WorldPosition();
+	if (XMVector3Length(v).x == 0.0f)return XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+	return XMVector3Normalize(v);
+}
+XMVECTOR reis::GetPlayerVectH()
+{
+	if (!m_Player)return XMVectorZero();
+	auto v = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
+	v.y = 0.0f;
 	if (XMVector3Length(v).x == 0.0f)return XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
 	return XMVector3Normalize(v);
 }
