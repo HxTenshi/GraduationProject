@@ -234,6 +234,7 @@ void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
 	}
 }
 
+class EmptyEnemy;
 Enemy * Enemy::GetEnemy(GameObject target)
 {
 	if (!target)return NULL;
@@ -241,6 +242,7 @@ Enemy * Enemy::GetEnemy(GameObject target)
 	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
 	if (auto scr = target->GetScript<EnemyArcher>())return scr;
 	if (auto scr = target->GetScript<EnemyEbilEye>())return scr;
+	if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
 
 	return NULL;
 }
