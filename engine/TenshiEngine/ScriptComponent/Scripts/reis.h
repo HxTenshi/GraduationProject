@@ -27,6 +27,8 @@ private:
 
 	bool IsCurrentAnimeEnd();
 
+	void WeaponEffect(int id, bool enable);
+
 	//ÉÅÉìÉoïœêî
 
 
@@ -34,13 +36,19 @@ private:
 	SERIALIZE float m_MoveSpeed;
 	SERIALIZE PrefabAsset m_Bullets;
 	SERIALIZE PrefabAsset m_CitrusBullet;
+	SERIALIZE PrefabAsset m_SonicWaveV;
+
+	SERIALIZE GameObject m_WeaponEffect;
 	
 	GameObject m_CitrusBulletObject;
 	int m_CitrusBulletCount;
 	float m_CitrusBulletCollDown;
 
+	GameObject m_SonicWaveObject;
+
 	GameObject m_Player;
 	int m_ReisMode;
+	int m_ReisLastAttackMode;
 	int m_CurrentAnimeID;
 
 };

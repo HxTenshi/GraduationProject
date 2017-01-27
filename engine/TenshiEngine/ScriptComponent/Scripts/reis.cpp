@@ -10,6 +10,8 @@
 
 #include "ReisCitrusBullet.h"
 
+#include "ReisSonicWave.h"
+
 
 struct ReisMode {
 	enum Enum {
@@ -18,6 +20,7 @@ struct ReisMode {
 		Attack,
 		Attack_Bullet,
 		Attack_CitrusBullet,
+		Attack_SonicWaveV,
 	};
 };
 
@@ -27,6 +30,7 @@ struct AnimeID {
 		Move,
 		Attack,
 		Attack_Bullet,
+		Attack_SonicWaveV,
 	};
 };
 
@@ -38,6 +42,8 @@ void reis::Initialize(){
 	m_CitrusBulletObject = NULL;
 	m_CitrusBulletCount = 0;
 	m_CitrusBulletCollDown = 0.0f;
+	m_ReisLastAttackMode = 0;
+	m_SonicWaveObject = NULL;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -67,12 +73,22 @@ void reis::Update(){
 		}
 
 		if (GetPlayerLen() > 10.0f) {
-
-			auto r = rand() / (float)RAND_MAX;
-			if (r < 0.5f && m_CitrusBulletCollDown<=0.0f) {
-				m_ReisMode = ReisMode::Attack_CitrusBullet;
-			}else {
-				m_ReisMode = ReisMode::Attack_Bullet;
+			for (;;) {
+				auto r = rand() / (float)RAND_MAX;
+				if (r < 0.33f) {
+					m_ReisMode = ReisMode::Attack_CitrusBullet;
+				}
+				else if (r < 0.66f) {
+					m_ReisMode = ReisMode::Attack_Bullet;
+				}
+				else {
+					m_ReisMode = ReisMode::Attack_SonicWaveV;
+				}
+				if (m_ReisLastAttackMode == m_ReisMode) {
+					continue;
+				}
+				m_ReisLastAttackMode = m_ReisMode;
+				break;
 			}
 		}
 
@@ -96,6 +112,34 @@ void reis::Update(){
 			m_ReisMode = ReisMode::Idle;
 		}
 	}
+	else if (m_ReisMode == ReisMode::Attack_SonicWaveV) {
+		Rotate(GetPlayerVect());
+
+		if (m_CurrentAnimeID != AnimeID::Attack_SonicWaveV) {
+			WeaponEffect(0, true);
+			m_SonicWaveObject = Hx::Instance(m_SonicWaveV);
+			m_SonicWaveObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+		}
+		
+		if (m_Player) {
+			auto pc = m_Player->GetScript<PlayerController>();
+			if (!(pc->GetPlayerState() == PlayerController::PlayerState::Dodge)) {
+				if (m_SonicWaveObject) {
+					auto wave = m_SonicWaveObject->GetScript<ReisSonicWave>();
+					wave->PlayerLockOn();
+				}
+			}
+		}
+
+		ChangeAnime(AnimeID::Attack_SonicWaveV);
+		if (IsCurrentAnimeEnd()) {
+			m_SonicWaveObject = NULL;
+			m_ReisMode = ReisMode::Idle;
+
+			WeaponEffect(0, false);
+		}
+
+	}
 	else if (m_ReisMode == ReisMode::Attack_CitrusBullet) {
 		Rotate(GetPlayerVect());
 		m_CitrusBulletCollDown = 5.0f;
@@ -117,7 +161,7 @@ void reis::Update(){
 				auto pos = m_CitrusBulletObject->mTransform->WorldPosition();
 				pos.y += 3.0f;
 				Teleport(pos);
-				Move(XMVectorSet(0.0f , -5.0f, 0.0f, 1.0f));
+				Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
 
 				Hx::DestroyObject(m_CitrusBulletObject);
 				m_CitrusBulletObject = NULL;
@@ -245,14 +289,14 @@ void reis::ChangeAnime(int id)
 		auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
 		p.mWeight = 0.0f;
 		p.mTime = 0.0f;
-		p.mTimeScale = 0.0f;
+		//p.mTimeScale = 0.0f;
 		anime->SetAnimetionParam(m_CurrentAnimeID, p);
 	}
 	m_CurrentAnimeID = id;
 	auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
 	p.mTime = 0.0f;
 	p.mWeight = 1.0f;
-	p.mTimeScale = 1.0f;
+	//p.mTimeScale = 1.0f;
 	anime->SetAnimetionParam(m_CurrentAnimeID, p);
 }
 
@@ -265,4 +309,17 @@ bool reis::IsCurrentAnimeEnd()
 		}
 	}
 	return false;
+}
+
+void reis::WeaponEffect(int id, bool enable)
+{
+	if (!m_WeaponEffect)return;
+	if (auto com = m_WeaponEffect->GetComponent<ParticleComponent>()) {
+		if (enable) {
+			com->mParticleParam.Param.x = com->mParticleCapacity;
+		}
+		else {
+			com->mParticleParam.Param.x = 0;
+		}
+	}
 }
