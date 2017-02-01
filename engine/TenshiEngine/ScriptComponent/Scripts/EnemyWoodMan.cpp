@@ -188,7 +188,7 @@ void EnemyWoodMan::ConfrontModeInitilize()
 
 void EnemyWoodMan::ConfrontModeUpdate()
 {	
-	LookPosition(m_StartPos + m_StartForward);
+	LookPosition(gameObject->mTransform->WorldPosition() + m_StartForward);
 	auto playerPos = m_Player->mTransform->WorldPosition();
 	auto myPos = gameObject->mTransform->WorldPosition();
 	m_Forward = gameObject->mTransform->Forward();
