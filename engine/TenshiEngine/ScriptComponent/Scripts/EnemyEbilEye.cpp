@@ -61,6 +61,7 @@ void EnemyEbilEye::ChildInitialize()
 	m_Hp = hp;
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
+	m_MovePositionCenter = gameObject->mTransform->WorldPosition();
 }
 
 void EnemyEbilEye::SoloAction()
@@ -124,7 +125,6 @@ bool EnemyEbilEye::DiscoveryPlayer()
 	auto rayMyPos = groundPos;
 	if (!m_Player)return false;
 	auto playerPos = m_Player->mTransform->WorldPosition();
-	groundPos.y = m_Player->mTransform->WorldPosition().y;
 	m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(playerPos - groundPos)).x, -1.0f, 1.0f));
 	if (XMVector3Length(groundPos - playerPos).x < m_TrackingRange && (m_View / 3.14f * 180.0f < m_TrackingAngle)) {
 		playerPos.y = playerPos.y + 3;
