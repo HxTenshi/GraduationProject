@@ -7,6 +7,7 @@
 #include "EnemyRezardMan.h"
 #include "EnemyArcher.h"
 #include "EnemyEbilEye.h"
+#include "EnemyWoodMan.h"
 #include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
@@ -242,7 +243,6 @@ Enemy * Enemy::GetEnemy(GameObject target)
 	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
 	if (auto scr = target->GetScript<EnemyArcher>())return scr;
 	if (auto scr = target->GetScript<EnemyEbilEye>())return scr;
-	if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
-
+if (auto scr = target->GetScript<EnemyWoodMan>())return scr;if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
 	return NULL;
 }
