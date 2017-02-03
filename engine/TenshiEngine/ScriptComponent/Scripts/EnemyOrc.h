@@ -2,9 +2,9 @@
 #include "main.h"
 #include "Enemy.h"
 
-class EnemyWoodMan : public Enemy {
+class EnemyOrc : public Enemy {
 public:
-	EnemyWoodMan();
+	EnemyOrc();
 	void ChildInitialize() override;
 	void SoloAction() override;
 	ENEMY_TYPE GetEnemyType() override;
@@ -19,7 +19,6 @@ private:
 	enum ANIM_ID {
 		ANIM_MOVE,
 		ANIM_RUNATTACK,
-		ANIM_TIRED,
 		ANIM_DOWN,
 		ANIM_NOMALATTACK,
 		ANIM_IDLE
