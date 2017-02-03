@@ -16,6 +16,9 @@ public:
 	void ChildFinalize() override;
 
 private:
+	GameObject NextDestinationDecide();
+	XMVECTOR NaviMeshTracking(GameObject destination);
+	void LookPosition(XMVECTOR position_,bool zReset = false);
 	enum ANIM_ID {
 		ANIM_IDLE,
 		ANIM_WALK_FORWARD,
@@ -61,6 +64,7 @@ private:
 	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
 	SERIALIZE float APROACHMINTIME;
 	SERIALIZE float APROACHMAXTIME;
+	SERIALIZE bool m_NaviMeshUse;
 	
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();
@@ -138,6 +142,7 @@ private:
 	void DeadModeInitilize();
 	void DeadModeUpdate();
 	void DeadModeFinalize();
+
 
 public:
 	static BATTLEACTION::Enum GetChangeBattleAction(

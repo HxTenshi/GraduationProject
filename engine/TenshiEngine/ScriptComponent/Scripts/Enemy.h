@@ -29,7 +29,7 @@ struct TrackingModeParameter {
 	TRACKINGACTION::Enum beforeId = TRACKINGACTION::NONE;
 	
 	//ナビメッシュを使うかどうか
-	bool naviMeshFlag = true;
+	bool naviMeshFlag = false;
 
 	//親が生きているかどうか
 	bool parentAlive = true;
@@ -215,7 +215,7 @@ protected:
 	float m_Hp;
 	float m_MaxHp;
 
-	std::vector<GameObject> m_MovePointsVec;
+	std::map<int,GameObject> m_MovePointsVec;
 
 	//アクションモードのID
 	ACTIONMODE m_ActionModeID;
