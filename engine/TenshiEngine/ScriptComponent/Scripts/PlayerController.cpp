@@ -226,8 +226,9 @@ void PlayerController::Start(){
 		attack.KnockbackEffectPower = 1.0f;
 
 		attack.DamageScale = 1.0f;
-		attack.AttackTime = 18.0f / 60.0f;//getMoutionTime(attack.MoutionID);
-		attack.OnDamageStart = 9.0f / 60.0f;
+		attack.AttackTime = 9.0f / 30.0f;//getMoutionTime(attack.MoutionID);
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9.0f / 30.0f;
 		attack.AttackMove = 0.0f;
 		attack.AttackFunc = [&]() {};
 		attack.DamageType = DamageType::LowDamage;
@@ -241,8 +242,9 @@ void PlayerController::Start(){
 		attack.EndID = AttackID::Low2End;
 
 		attack.DamageScale = 1.2f;
-		attack.AttackTime = 28.0f / 60.0f;//getMoutionTime(attack.MoutionID);
-		attack.OnDamageStart = 15.0f / 60.0f;
+		attack.AttackTime = 14.0f / 30.0f;//getMoutionTime(attack.MoutionID);
+		attack.OnDamageStart = 6.0f / 30.0f;
+		attack.OnDamageEnd = 14.0f / 30.0f;
 		attack.AttackMove = 0.0f;
 
 		attacklist[attack.ID] = attack;
@@ -254,8 +256,9 @@ void PlayerController::Start(){
 		attack.EndID = -1;
 
 		attack.DamageScale = 1.5f;
-		attack.AttackTime = 36.0f / 60.0f;//getMoutionTime(attack.MoutionID);
-		attack.OnDamageStart = 28.0f / 60.0f;
+		attack.AttackTime = 28.0f / 30.0f;//getMoutionTime(attack.MoutionID);
+		attack.OnDamageStart = 5.0f / 30.0f;
+		attack.OnDamageEnd = 18.0f / 30.0f;
 		attack.AttackMove = 0.0f;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
@@ -263,6 +266,9 @@ void PlayerController::Start(){
 		attack.NextLowID = AttackID::Low2;
 		attack.NextHighID = AttackID::High1;
 		attack.MoutionID = AnimeID::AttackLow3;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
 
 		attack.DamageScale = 1.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
@@ -275,7 +281,7 @@ void PlayerController::Start(){
 		attack.MoutionID = AnimeID::AttackHigh1;
 		attack.DamageType = DamageType::HighDamage;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
-		attack.OnDamageStart = 6.0f / 60.0f;
+		//attack.OnDamageStart = 6.0f / 60.0f;
 		attack.DamageScale = 0.5f;
 		attack.AttackMove = 0.0f;
 		attacklist[attack.ID] = attack;
@@ -322,6 +328,10 @@ void PlayerController::Start(){
 
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 0.0f;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 0.0f / 30.0f;
+		attack.FreeDogde = true;
 
 		attack.DamageScale = 0.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
@@ -773,6 +783,9 @@ void PlayerController::FreeExcute()
 
 void PlayerController::FreeExit()
 {
+	auto timeMgr = m_TimeManager->GetScript<TimeManager>();
+	if (!timeMgr) return;
+	timeMgr->OffSlow();
 }
 
 void PlayerController::GuardEnter()
@@ -916,7 +929,8 @@ void PlayerController::AttackExcute()
 	rotate();
 
 	
-	if (m_NextAttack==-1) {
+	//if (m_NextAttack==-1) {
+	{
 		if (BindInput(PlayerInput::ATK_S)) {
 			if (GetSpecial() >= m_SpecialPowerMax) {
 				m_NextAttack = AttackID::Special;
@@ -929,17 +943,42 @@ void PlayerController::AttackExcute()
 		else if (BindInput(PlayerInput::ATK_H)) {
 			m_NextAttack = m_CurrentAttack.NextHighID;
 		}
+
+		if (dodge()) {
+			m_NextAttack = 9999;
+		}
 	}
 
 	float time = Hx::DeltaTime()->GetDeltaTime() * m_MoutionSpeed;
 	m_CurrentAttack.AttackTime -= time;
 	m_CurrentAttack.OnDamageStart -= time;
+	m_CurrentAttack.OnDamageEnd -= time;
 
-	if (m_CurrentAttack.OnDamageStart >= 0.0f) {
+	if (m_CurrentAttack.OnDamageStart <= 0.0f) {
 		if (auto w = GetWeapon()) {
 			w->SetAttackFlag(true);
 		}
 	}
+	if (m_CurrentAttack.OnDamageEnd <= 0.0f) {
+		if (auto w = GetWeapon()) {
+			w->SetAttackFlag(false);
+		}
+
+		if (m_NextAttack == 9999) {
+
+			SetPlayerState(PlayerState::Dodge);
+			return;
+		}
+	}
+
+	if (m_CurrentAttack.FreeDogde) {
+		if (dodge()) {
+			SetPlayerState(PlayerState::Dodge);
+			return;
+		}
+	}
+
+
 	if (m_CurrentAttack.AttackTime > 0.0f) {
 		m_MoveVelo = gameObject->mTransform->Forward() * m_CurrentAttack.AttackMove;
 
@@ -955,7 +994,20 @@ void PlayerController::AttackExcute()
 	}
 	m_MoveVelo = XMVectorZero();
 
+	if (m_NextAttack == 9999) {
+
+		SetPlayerState(PlayerState::Dodge);
+		return;
+	}
+
 	if (m_NextAttack >= 0) {
+		auto w = GetWeapon();
+		if (w) {
+			if (m_CurrentAttack.DamageType == DamageType::DethBrowDamage) {
+				w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
+			}
+		}
+
 		m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
 
 		m_CurrentAttack.AttackFunc();
@@ -972,18 +1024,19 @@ void PlayerController::AttackExcute()
 		if (auto w = GetWeapon()) {
 			w->SetAttackFlag(false);
 		}
-
-		return;
-	}
-
-	if (dodge()) {
-		SetPlayerState(PlayerState::Dodge);
 		return;
 	}
 
 	m_NextAttack = m_CurrentAttack.EndID;
 
 	if (m_NextAttack >= 0) {
+		auto w = GetWeapon();
+		if (w) {
+			if (m_CurrentAttack.DamageType == DamageType::DethBrowDamage) {
+				w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
+			}
+		}
+
 		m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
 
 		m_CurrentAttack.AttackFunc();
@@ -1002,6 +1055,13 @@ void PlayerController::AttackExcute()
 		}
 
 		return;
+	}
+
+	auto w = GetWeapon();
+	if (w) {
+		if (m_CurrentAttack.DamageType == DamageType::DethBrowDamage) {
+			w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
+		}
 	}
 	SetPlayerState(PlayerState::Free);
 }
@@ -1027,11 +1087,54 @@ void PlayerController::DodgeEnter()
 	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
 	m_RotateLimit = Init::RotateLimit_dodge;
 
-	auto v = mJump;
+
+	float x = 0, y = 0;
+	if (BindInput(PlayerInput::Move_F)) {
+		y = 1.0f;
+	}
+	if (BindInput(PlayerInput::Move_D)) {
+		y = -1.0f;
+	}
+	if (BindInput(PlayerInput::Move_L)) {
+		x = -1.0f;
+	}
+	if (BindInput(PlayerInput::Move_R)) {
+		x = 1.0f;
+	}
+	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+	if (XMVector2Length(ls).x > 0.05f) {
+		x = ls.x;
+		y = ls.y;
+	}
+
+	auto v = XMVectorSet(x,0.0f,y,1.0f);
 	if (abs(v.x) == 0 && abs(v.z) == 0) {
 		v = gameObject->mTransform->Forward();
 	}
-	mVelocity = mJump;
+	else {
+		if (m_Camera) {
+			auto f = m_Camera->mTransform->Forward();
+			f.y = 0.0f;
+			f = XMVector3Normalize(f);
+
+			auto l = m_Camera->mTransform->Left();
+			l.y = 0.0f;
+			l = XMVector3Normalize(l);
+
+			auto v2 = XMVectorZero();
+			v2 += v.z * f;
+			v2 += v.x * l;
+
+			v2.y = 0.0f;
+			if (XMVector3Length(v2).x != 0)
+				v = XMVector3Normalize(v2);
+		}
+	}
+
+
+
+
+	mVelocity = v;
 	mVelocity.y = 0.0f;
 	mJump = XMVectorZero();
 
@@ -1243,6 +1346,10 @@ void PlayerController::DownExcute()
 	m_InvisibleTime -= time;
 	bool move = false;
 	if (BindInput(PlayerInput::Move_F) || BindInput(PlayerInput::Move_D) || BindInput(PlayerInput::Move_L) || BindInput(PlayerInput::Move_R)) {
+		move = true;
+	}
+	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+	if (XMVector2Length(ls).x > 0.05f) {
 		move = true;
 	}
 
@@ -1465,13 +1572,23 @@ void PlayerController::dontmove()
 		x = ls.x;
 		y = ls.y;
 	}
-
 	
-	auto xy = XMVector2Normalize(XMVectorSet(x, y, 0, 1));
+	auto xy = XMVectorZero();
+	if (XMVector2Length(XMVectorSet(x, y, 0, 1)).x != 0.0f) {
+		xy = XMVector2Normalize(XMVectorSet(x, y, 0, 1));
+	}
 	auto v = XMVectorZero();
 	if (m_Camera) {
-		v += xy.y * m_Camera->mTransform->Forward();
-		v += xy.x * m_Camera->mTransform->Left();
+		auto f = m_Camera->mTransform->Forward();
+		f.y = 0.0f;
+		f = XMVector3Normalize(f);
+
+		auto l = m_Camera->mTransform->Left();
+		l.y = 0.0f;
+		l = XMVector3Normalize(l);
+
+		v += xy.y * f;
+		v += xy.x * l;
 
 		v.y = 0.0f;
 		if (XMVector3Length(v).x != 0)
@@ -1707,8 +1824,9 @@ void PlayerController::lockOn()
 	
 	/*↓ロックオンされていた場合の処理↓*/
 
-	if (BindInput(PlayerInput::LockOn_L)) {
-
+	static bool  inputflag = true;
+	if (BindInput(PlayerInput::LockOn_L) && inputflag) {
+		inputflag = false;
 		if (!m_GetEnemy)return;
 		auto getenemy = m_GetEnemy->GetScript<GetEnemy>();
 
@@ -1717,12 +1835,14 @@ void PlayerController::lockOn()
 
 			auto enemy = getenemy->GetPointMinEnemy(camera->GetLookTarget(), GetEnemy::MinVect::left);
 			if (!enemy)return;
+			if (enemy == camera->GetLookTarget())return;
 			camera->SetLookTarget(enemy);
 		}
 
 	}
-	if (BindInput(PlayerInput::LockOn_R)) {
+	if (BindInput(PlayerInput::LockOn_R) && inputflag) {
 
+		inputflag = false;
 		if (!m_GetEnemy)return;
 		auto getenemy = m_GetEnemy->GetScript<GetEnemy>();
 
@@ -1731,8 +1851,12 @@ void PlayerController::lockOn()
 
 			auto enemy = getenemy->GetPointMinEnemy(camera->GetLookTarget(), GetEnemy::MinVect::right);
 			if (!enemy)return;
+			if (enemy == camera->GetLookTarget())return;
 			camera->SetLookTarget(enemy);
 		}
+	}
+	if (!BindInput(PlayerInput::LockOn_L)&& !BindInput(PlayerInput::LockOn_R)) {
+		inputflag = true;
 	}
 
 	//LookTargetのレイヤーが"Layer3"(敵)だったなら
@@ -1809,19 +1933,25 @@ void PlayerController::GettingWeapon(){
 	if (m_InputF_Time > 0.5f) {
 		//スローモードにする
 		timeMgr->OnSlow();
-		
-		if (BindInput(PlayerInput::LockOn_L)) {
+
+		static bool  inputflag = true;
+		if (BindInput(PlayerInput::LockOn_L) && inputflag) {
+			inputflag = false;
 			//選択対象から左に一番近いものを取得
 			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::left);
 			if(t)
 			m_tempWeapon = t;
 
 		}
-		else if (BindInput(PlayerInput::LockOn_R)) {
+		else if (BindInput(PlayerInput::LockOn_R) && inputflag) {
+			inputflag = false;
 			//選択対象から右に一番近いものを取得
 			auto t = getWeapon->GetPointMinWeapon(m_tempWeapon, GetWeapon::MinVect::right);
 			if (t)
 				m_tempWeapon = t;
+		}
+		if (!BindInput(PlayerInput::LockOn_L) && !BindInput(PlayerInput::LockOn_R)) {
+			inputflag = true;
 		}
 		//武器を見る
 		camera->SetLookTarget(m_tempWeapon);
@@ -1976,7 +2106,9 @@ void PlayerController::setWeapon(GameObject weapon)
 					AddSpecial(m_CurrentAttack.AddSpecial);
 					AddCombo();
 				}
-				w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
+				if (m_CurrentAttack.DamageType != DamageType::DethBrowDamage) {
+					w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
+				}
 				WeaponType t = w->GetWeaponType();
 
 			}

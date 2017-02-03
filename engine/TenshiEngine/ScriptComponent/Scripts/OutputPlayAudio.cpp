@@ -4,9 +4,11 @@
 
 bool OutputPlayAudio::OnStart(GameObject Sender)
 {
+	Hx::Debug()->Log("SE‚ÌÄ¶€”õ");
 	if (!m_PlayTarget)return false;
 
-	if (auto sound = m_PlayTarget->GetComponent<SoundComponent>())return false;
+	auto sound = m_PlayTarget->GetComponent<SoundComponent>();
+	if (!sound)return false;
 	
 	Hx::Debug()->Log("SE‚ÌÄ¶");
 	m_PlayTarget->GetComponent<SoundComponent>()->Play();

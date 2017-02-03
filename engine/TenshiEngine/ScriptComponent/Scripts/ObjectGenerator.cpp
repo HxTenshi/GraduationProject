@@ -22,17 +22,18 @@ void ObjectGenerator::Start(){
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void ObjectGenerator::Update(){
 	if (!m_Object.IsLoad())return;
-	if (m_Num != 0 && m_Count >= m_Num) {
-		return;
-	}
 	if (m_UniqueGeneratMode) {
 		if (m_GeneratObject)return;
-		if (m_GeneratFlag) {
+		//Hx::Debug()->Log("Cheack m_GeneratFlag : " + std::to_string(m_GeneratFlag));
+		if (m_GeneratFlag) {	
 			if (auto gimick = OutputGimic::GetOutputGimic(m_DestroyOutputGimick)) {
 				gimick->OnStart(gameObject);
 			}
 			m_GeneratFlag = false;
 		}
+	}
+	if (m_Num != 0 && m_Count >= m_Num) {
+		return;
 	}
 
 	m_Timer -= Hx::DeltaTime()->GetDeltaTime();

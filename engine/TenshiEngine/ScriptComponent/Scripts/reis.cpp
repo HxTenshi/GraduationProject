@@ -21,6 +21,7 @@ struct ReisMode {
 		Attack_Bullet,
 		Attack_CitrusBullet,
 		Attack_SonicWaveV,
+		Attack_WarpMelee,
 	};
 };
 
@@ -31,6 +32,7 @@ struct AnimeID {
 		Attack,
 		Attack_Bullet,
 		Attack_SonicWaveV,
+		Attack_WarpMelee,
 	};
 };
 
@@ -69,20 +71,25 @@ void reis::Update(){
 		Rotate(v);
 
 		if (GetPlayerLen() < 2.0f) {
+
 			m_ReisMode = ReisMode::Attack;
 		}
 
 		if (GetPlayerLen() > 10.0f) {
 			for (;;) {
 				auto r = rand() / (float)RAND_MAX;
-				if (r < 0.33f) {
+				auto numPar = 1.0f / 4.0f;
+				if (r < numPar) {
 					m_ReisMode = ReisMode::Attack_CitrusBullet;
 				}
-				else if (r < 0.66f) {
+				else if (r < numPar*2){
 					m_ReisMode = ReisMode::Attack_Bullet;
 				}
-				else {
+				else if(r<numPar*3){
 					m_ReisMode = ReisMode::Attack_SonicWaveV;
+				}
+				else {
+					m_ReisMode = ReisMode::Attack_WarpMelee;
 				}
 				if (m_ReisLastAttackMode == m_ReisMode) {
 					continue;
@@ -175,6 +182,28 @@ void reis::Update(){
 				ChangeAnime(AnimeID::Idle);
 				m_CitrusBulletCount++;
 			}
+		}
+	}
+	else if (m_ReisMode == ReisMode::Attack_WarpMelee) {
+		
+		if (m_CurrentAnimeID != AnimeID::Attack_WarpMelee) {
+			if (m_Player) {
+				auto pos = m_Player->mTransform->WorldPosition();
+
+				auto agnel = rand() / (float)RAND_MAX * XM_2PI;
+				auto add = XMVector3Transform(XMVectorSet(0.0f,0.0f,1.0f,1.0f), XMMatrixRotationY(agnel));
+
+				pos += add * 2.0f;
+				pos.y += 3.0f;
+				Teleport(pos);
+				Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
+			}
+		}
+		Rotate(GetPlayerVect());
+
+		ChangeAnime(AnimeID::Attack_WarpMelee);
+		if (IsCurrentAnimeEnd()) {
+			m_ReisMode = ReisMode::Idle;
 		}
 	}
 }
