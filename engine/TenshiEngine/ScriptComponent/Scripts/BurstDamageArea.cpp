@@ -25,18 +25,19 @@ void BurstDamageArea::Finish(){
 
 //コライダーとのヒット時に呼ばれます
 void BurstDamageArea::OnCollideBegin(GameObject target){
-	(void)target;
-}
-
-//コライダーとのヒット中に呼ばれます
-void BurstDamageArea::OnCollideEnter(GameObject target){
 	if (target) {
 		float time = Hx::DeltaTime()->GetDeltaTime();
 		auto player = target->GetScript<PlayerController>();
 		if (player) {
-			player->Damage(m_Damege, XMVectorZero(), m_KnockBackDonw?PlayerController::KnockBack::Down : PlayerController::KnockBack::Low, m_DodgeInevitable,m_GuardInevitable);
+			auto v = target->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
+			player->Damage(m_Damege, XMVector3Normalize(v), m_KnockBackDonw ? PlayerController::KnockBack::Down : PlayerController::KnockBack::Low, m_DodgeInevitable, m_GuardInevitable);
 		}
 	}
+}
+
+//コライダーとのヒット中に呼ばれます
+void BurstDamageArea::OnCollideEnter(GameObject target){
+	(void)target;
 }
 
 //コライダーとのロスト時に呼ばれます

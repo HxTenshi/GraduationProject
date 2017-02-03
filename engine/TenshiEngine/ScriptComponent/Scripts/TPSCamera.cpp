@@ -20,6 +20,22 @@ void TPSCamera::Initialize(){
 void TPSCamera::Start(){
 
 	Hx::System()->LockCursorPositionToWindowCenter(true);
+
+	auto currentPos = gameObject->mTransform->WorldPosition();
+	auto pos = mTarget->mTransform->WorldPosition();
+	auto back = -gameObject->mTransform->Forward() * mDistance;
+	auto up = XMVectorSet(0.0f,1.0f,0.0f,1.0f) * mUp;
+	float l = 1.0f;
+	if (mLookTarget) {
+		l = XMVector3Length(mTarget->mTransform->WorldPosition() - mLookTarget->mTransform->WorldPosition()).x;
+		l *= 0.1f;
+		l = min(l, 0.1f);
+
+	}
+	auto left = gameObject->mTransform->Left() * mLeft * l;
+	auto campos = pos + back + up + left;
+
+	gameObject->mTransform->WorldPosition(campos);
 }
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
@@ -40,12 +56,12 @@ void TPSCamera::Update(){
 		auto currentPos = gameObject->mTransform->WorldPosition();
 		auto pos = mTarget->mTransform->WorldPosition();
 		auto back = -gameObject->mTransform->Forward() * mDistance;
-		auto up = gameObject->mTransform->Up() * mUp;
+		auto up = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f) * mUp;
 		float l = 1.0f;
 		if (mLookTarget) {
 			l = XMVector3Length(mTarget->mTransform->WorldPosition()-mLookTarget->mTransform->WorldPosition()).x;
 			l *= 0.1f;
-			l = min(l, 1.0f);
+			l = min(l, 0.1f);
 
 		}
 		auto left = gameObject->mTransform->Left() * mLeft * l;
@@ -62,9 +78,12 @@ void TPSCamera::Update(){
 			m_CharacterControllerComponent->Teleport(pos);
 			m_CharacterControllerComponent->Move(campos);
 
-			//campos = gameObject->mTransform->WorldPosition();
-			//auto p = spring(currentPos, campos);
-			//gameObject->mTransform->WorldPosition(p);
+			campos = gameObject->mTransform->WorldPosition();
+			auto p = spring(currentPos, campos);
+			//m_CharacterControllerComponent->Teleport(p);
+			auto nan = XMVectorIsNaN(p);
+			if (!nan.x&&!nan.y&&!nan.z&&!nan.w)
+				gameObject->mTransform->WorldPosition(p);
 		}
 		else {
 			auto p = spring(currentPos, campos);
@@ -87,13 +106,28 @@ void TPSCamera::Update(){
 	}
 
 	if (mLookTarget) {
+		auto wq = gameObject->mTransform->WorldQuaternion();
+		auto wf = gameObject->mTransform->Forward();
 		auto eye = gameObject->mTransform->WorldPosition();
-		eye -= gameObject->mTransform->Up() * mUp;
+		eye -= XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f) * mUp;
 
 		auto at = mLookTarget->mTransform->WorldPosition();
 		auto rotate = XMMatrixTranspose(XMMatrixLookAtLH(eye, at, XMVectorSet(0, 1, 0, 1)));
 		auto q = XMQuaternionRotationMatrix(rotate);
 		gameObject->mTransform->WorldQuaternion(q);
+
+
+		auto f = gameObject->mTransform->Forward();
+		float angle = acos(XMVector3Dot(wf, f).x);
+		float limit = m_RotateLimit / 180.0f * XM_PI * Hx::DeltaTime()->GetDeltaTime();
+		float t = 1.0f;
+		if (limit < angle) {
+			if(angle)
+			t = limit / angle;
+		}
+		q = XMQuaternionSlerp(wq, q, t);
+		if(!XMQuaternionIsNaN(q))
+			gameObject->mTransform->WorldQuaternion(q);
 	}
 	else {
 		int mx, my;
