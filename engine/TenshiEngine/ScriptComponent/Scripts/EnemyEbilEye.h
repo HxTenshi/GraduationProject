@@ -87,6 +87,7 @@ private:
 	SERIALIZE float m_WinceTime;
 	SERIALIZE float hp;
 	SERIALIZE std::vector<float> m_AttackDamage;
+	SERIALIZE bool m_RotateOpp;
 
 	XMVECTOR m_MovePositionCenter;
 	float m_RotateAngle;
