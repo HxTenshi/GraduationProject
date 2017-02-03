@@ -86,6 +86,7 @@ private:
 	SERIALIZE float m_TackleStartRandMax;
 	SERIALIZE float m_WinceTime;
 	SERIALIZE float hp;
+	SERIALIZE std::vector<float> m_AttackDamage;
 
 	XMVECTOR m_MovePositionCenter;
 	float m_RotateAngle;

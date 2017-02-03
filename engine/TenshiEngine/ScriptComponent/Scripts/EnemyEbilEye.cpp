@@ -100,10 +100,10 @@ void EnemyEbilEye::Attack(GameObject player, COL_TYPE colType)
 	if (!playerScript)return;
 	if (!m_RotateEnd) {
 		if (colType == COL_TYPE::NORMAL && m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION) {
-			playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+			playerScript->Damage(m_AttackDamage[0], XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 		}
 		else if (colType == COL_TYPE::ROTATE && m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION) {
-			playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+			playerScript->Damage(m_AttackDamage[1], XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 		}
 	}
 }
@@ -500,6 +500,7 @@ void EnemyEbilEye::SetPositionRotation(XMVECTOR pos_,float radius_)
 	//auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	//if (!cc)return;
 	//cc->Teleport(moveVec);
+	if(XMVector3Length(moveVec - myPos).x < 2.0f)
 	m_RotateAngle += m_MoveRotateSpeed * Hx::DeltaTime()->GetDeltaTime();
 }
 
