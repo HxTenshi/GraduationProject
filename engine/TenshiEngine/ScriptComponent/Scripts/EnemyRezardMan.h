@@ -18,7 +18,6 @@ public:
 private:
 	GameObject NextDestinationDecide();
 	XMVECTOR NaviMeshTracking(GameObject destination);
-	void LookPosition(XMVECTOR position_,bool zReset = false);
 	enum ANIM_ID {
 		ANIM_IDLE,
 		ANIM_WALK_FORWARD,

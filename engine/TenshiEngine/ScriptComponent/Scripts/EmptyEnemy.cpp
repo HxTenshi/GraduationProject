@@ -22,13 +22,13 @@ EmptyEnemy::EmptyEnemy()
 	battleActionUpdate[BATTLEACTION::CONFRONTACTION] = std::bind(&EmptyEnemy::ConfrontModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::CONFRONTACTION] = std::bind(&EmptyEnemy::ConfrontModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EmptyEnemy::TackleModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EmptyEnemy::TackleModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EmptyEnemy::TackleModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EmptyEnemy::TackleModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK1ACTION] = std::bind(&EmptyEnemy::TackleModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EmptyEnemy::TackleModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EmptyEnemy::RotateTackleModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EmptyEnemy::RotateTackleModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EmptyEnemy::RotateTackleModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK3ACTION] = std::bind(&EmptyEnemy::RotateTackleModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK3ACTION] = std::bind(&EmptyEnemy::RotateTackleModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK3ACTION] = std::bind(&EmptyEnemy::RotateTackleModeFinalize, this);
 
 	battleActionInitilize[BATTLEACTION::WINCEACTION] = std::bind(&EmptyEnemy::WinceModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&EmptyEnemy::WinceModeUpdate, this);

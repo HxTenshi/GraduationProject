@@ -30,13 +30,13 @@ EnemyRezardMan::EnemyRezardMan()
 	battleActionUpdate[BATTLEACTION::APPROACHACTION] = std::bind(&EnemyRezardMan::ApproachModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::APPROACHACTION] = std::bind(&EnemyRezardMan::ApproachModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EnemyRezardMan::AttackDownModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EnemyRezardMan::AttackDownModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EnemyRezardMan::AttackDownModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyRezardMan::AttackDownModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyRezardMan::AttackDownModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyRezardMan::AttackDownModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&EnemyRezardMan::JumpAttackModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::JUMPATTACKACTION] = std::bind(&EnemyRezardMan::JumpAttackModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&EnemyRezardMan::JumpAttackModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK2ACTION] = std::bind(&EnemyRezardMan::JumpAttackModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK2ACTION] = std::bind(&EnemyRezardMan::JumpAttackModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK2ACTION] = std::bind(&EnemyRezardMan::JumpAttackModeFinalize, this);
 
 	battleActionInitilize[BATTLEACTION::GUARDACTION] = std::bind(&EnemyRezardMan::GuardModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::GUARDACTION] = std::bind(&EnemyRezardMan::GuardModeUpdate, this);
@@ -70,9 +70,9 @@ EnemyRezardMan::EnemyRezardMan()
 	battleActionUpdate[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK3ACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK3ACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK3ACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeFinalize, this);
 
 	battleActionInitilize[BATTLEACTION::DEADACTION] = std::bind(&EnemyRezardMan::DeadModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&EnemyRezardMan::DeadModeUpdate, this);
@@ -119,10 +119,10 @@ void EnemyRezardMan::SoloAction()
 	else if (m_BattleModeParam.id == BATTLEACTION::APPROACHACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 0, 40, 30, 0, 5));
 	}
-	else if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION) {
+	else if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 40, 20, 0, 0, 5));
 	}
-	else if (m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION) {
+	else if (m_BattleModeParam.id == BATTLEACTION::ATTACK2ACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 20, 0, 30, 0, 5));
 	}
 	else if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION) {
@@ -148,7 +148,7 @@ void EnemyRezardMan::SoloAction()
 	else if (m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
 	}
-	else if (m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION) {
+	else if (m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 40, 20, 0, 0, 5));
 	}
 }
@@ -252,39 +252,16 @@ XMVECTOR EnemyRezardMan::NaviMeshTracking(GameObject destination) {
 	return navi->GetPosition();
 }
 
-void EnemyRezardMan::LookPosition(XMVECTOR position_,bool zReset)
-{
-	auto myPos = gameObject->mTransform->WorldPosition();
-	auto moveVec = position_;
-	auto naviVec = XMVector3Normalize(moveVec - myPos);
-	naviVec.y = 0;
-	m_Forward = gameObject->mTransform->Forward();
-	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, naviVec));
-	m_View = acos(clamp(XMVector3Dot(m_Forward, naviVec).x, -1.0f, 1.0f));
-	if (m_View < 0.1f)m_View = 0.0f;
-	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	if (m_View < trackingNowAngle)
-		trackingNowAngle = m_View;
-	gameObject->mTransform->WorldQuaternion(
-		XMQuaternionMultiply(gameObject->mTransform->WorldQuaternion(), XMQuaternionRotationAxis(cross, trackingNowAngle)));
-	if (zReset) {
-		auto myAngle = gameObject->mTransform->Rotate();
-		myAngle.z = 0;
-		gameObject->mTransform->Rotate(myAngle);
-	}
-}
-
-
 void EnemyRezardMan::ParentTrackingModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 	auto distination = NextDestinationDecide();
 	if (!distination)return;
 	if (m_NaviMeshUse) {
-		LookPosition(NaviMeshTracking(distination));
+		LookPosition(NaviMeshTracking(distination),m_TrackingRotateSpeed);
 	}
 	else {
-		LookPosition(distination->mTransform->WorldPosition());
+		LookPosition(distination->mTransform->WorldPosition(), m_TrackingRotateSpeed);
 	}
 	m_Forward = gameObject->mTransform->Forward();
 	m_Vec += m_Forward * m_TrackingSpeed;
@@ -308,20 +285,25 @@ void EnemyRezardMan::ChildTrackingModeInitilize()
 		return;
 	}
 
-	navi->RootCreate(gameObject, m_MovePoints);
+	if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 1.0f) {
+		navi->RootCreate(gameObject, m_MovePoints);
+	}
 }
 
 void EnemyRezardMan::ChildTrackingModeUpdate()
 {
+	//if (m_DrawLog) {
+	//	Hx::Debug()->Log("x :" + std::to_string(m_MovePoints->mTransform->WorldPosition().x) + 
+	//		" y :" + std::to_string(m_MovePoints->mTransform->WorldPosition().y) + 
+	//		" z :" + std::to_string(m_MovePoints->mTransform->WorldPosition().z));
+	//}
 	if (m_TrackingModeParam.parentAlive) {
 		AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-		auto navi = gameObject->GetComponent<NaviMeshComponent>();
-		if (!navi)return;
 		if (!m_MovePoints)return;
-		if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 1.0f) {
+		if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 3.0f) {
 			m_ChildTranckingSpeed = 1.5f;
 		}
-		else if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 0.5f) {
+		else if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 1.0f) {
 			m_ChildTranckingSpeed = 0.0f;
 		}
 		else {
@@ -331,12 +313,17 @@ void EnemyRezardMan::ChildTrackingModeUpdate()
 		if (m_NaviMeshUse) {
 			auto navi = gameObject->GetComponent<NaviMeshComponent>();
 			if (!navi)return;
-			navi->RootCreate(gameObject, m_MovePoints);
+			if (navi->IsMoveEnd()) {
+				if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 1.0f) {
+					m_ChildTranckingSpeed = 1.0f;
+					navi->RootCreate(gameObject, m_MovePoints);
+				}
+			}
 			navi->Move(m_TrackingSpeed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
-			LookPosition(navi->GetPosition());
+			LookPosition(navi->GetPosition(), m_TrackingRotateSpeed);
 		}
 		else {
-			LookPosition(m_MovePoints->mTransform->WorldPosition());
+			LookPosition(m_MovePoints->mTransform->WorldPosition(), m_TrackingRotateSpeed);
 		}
 		m_Forward = gameObject->mTransform->Forward();
 
@@ -722,7 +709,7 @@ void EnemyRezardMan::HitInGuardModeUpdate() {
 		};
 	}
 	else {
-		ChangeBattleAction(BATTLEACTION::ATTACKMONCKEYACTION);
+		ChangeBattleAction(BATTLEACTION::ATTACK3ACTION);
 	}
 }
 
@@ -804,20 +791,20 @@ void EnemyRezardMan::Attack(GameObject player, COL_TYPE colType)
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("‰½‚©‚É•Ší‚ª“–‚½‚Á‚½");
-	if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION ||
-		m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION ||
-		m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION) {
+	if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION ||
+		m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION ||
+		m_BattleModeParam.id == BATTLEACTION::ATTACK2ACTION) {
 		if (m_DrawLog)
 			Hx::Debug()->Log("m_Player‚ÉUŒ‚‚ªHit");
 		if (!player)return;
 		auto playerScript = player->GetScript<PlayerController>();
 		if (!playerScript)return;
 
-		if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION)
+		if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
-		else if (m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION)
+		else if (m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-		else if (m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION)
+		else if (m_BattleModeParam.id == BATTLEACTION::ATTACK2ACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 	}
 }
@@ -937,10 +924,10 @@ BATTLEACTION::Enum EnemyRezardMan::GetChangeBattleAction(int guardProbability, i
 		return BATTLEACTION::BACKSTEPACTION;
 	}
 	else if (randam > attackProbability_) {
-		return BATTLEACTION::ATTACKDOWNACTION;
+		return BATTLEACTION::ATTACK1ACTION;
 	}
 	else if (randam > jumpAttackProbability_) {
-		return BATTLEACTION::JUMPATTACKACTION;
+		return BATTLEACTION::ATTACK2ACTION;
 	}
 	else if (randam > provocationProbability_) {
 		return BATTLEACTION::PROVOCATION;

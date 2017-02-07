@@ -69,7 +69,6 @@ private:
 	void DeadUpdate();
 	void DeadFinalize();
 
-	void LookPosition(XMVECTOR position_);
 
 	SERIALIZE float m_MoveRotateSpeed;
 	SERIALIZE float m_Speed;

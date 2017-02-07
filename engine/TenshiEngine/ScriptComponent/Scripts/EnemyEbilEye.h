@@ -70,7 +70,6 @@ private:
 	void DeadFinalize();
 
 	void SetPositionRotation(XMVECTOR pos_,float radius_);
-	void LookPosition(XMVECTOR position_);
 
 	SERIALIZE float m_MovePositionRadius;
 	SERIALIZE float m_MoveRotateSpeed;

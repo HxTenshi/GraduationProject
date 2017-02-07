@@ -40,8 +40,11 @@ struct BATTLEACTION {
 	NONE,
 	CONFRONTACTION,
 	APPROACHACTION,
-	ATTACKDOWNACTION,
-	JUMPATTACKACTION,
+	ATTACK1ACTION,
+	ATTACK2ACTION,
+	ATTACK3ACTION,
+	ATTACK4ACTION,
+	ATTACK5ACTION,
 	SHOTACTION,
 	GUARDACTION,
 	PROVOCATION,
@@ -51,7 +54,6 @@ struct BATTLEACTION {
 	BEATDOWNACTION,
 	DOWNACTION,
 	HITINGUARDACTION,
-	ATTACKMONCKEYACTION,
 	DEADACTION
 	};
 };
@@ -179,6 +181,8 @@ private:
 protected:
 	GameObject ModelObject;
 protected:
+	void LookPosition(XMVECTOR position_, float rotateSpeed, bool zReset = false);
+
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
 	std::map<ACTIONMODE,std::function<void()>> actionModeFinalize;
