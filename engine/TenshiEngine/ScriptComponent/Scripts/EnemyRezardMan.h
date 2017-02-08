@@ -15,6 +15,8 @@ public:
 	bool LostPlayer() override;
 	void ChildFinalize() override;
 
+	void SetMovePoint(GameObject movePoint_);
+
 private:
 	GameObject NextDestinationDecide();
 	XMVECTOR NaviMeshTracking(GameObject destination);
@@ -65,7 +67,7 @@ private:
 	SERIALIZE float APROACHMAXTIME;
 	SERIALIZE bool m_NaviMeshUse;
 
-	bool m_NotSetPoint;
+	bool m_SetPoint;
 	
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();

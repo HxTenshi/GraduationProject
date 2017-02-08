@@ -33,8 +33,13 @@ void Enemy::Start() {
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void Enemy::Update() {
+	
 	m_Vec = XMVectorZero();
 	if (!m_Player)return;
+	auto ps = m_Player->GetScript<PlayerController>();
+	if (!ps)return;
+	if (ps->GetPlayerState() == PlayerController::PlayerState::Movie)return;
+
 	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
 
 	if (gameObject->mTransform->WorldPosition().y < -100) {

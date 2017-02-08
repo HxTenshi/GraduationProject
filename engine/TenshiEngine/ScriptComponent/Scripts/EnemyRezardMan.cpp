@@ -81,13 +81,13 @@ EnemyRezardMan::EnemyRezardMan()
 
 void EnemyRezardMan::ChildInitialize()
 {
-	m_NotSetPoint = true;
+	m_SetPoint = true;
 	ModelObject = m_ModelObject;
 	m_MaxHp = hp;
 	m_Hp = hp;
 	if (!m_Child) {
 		if (!m_MovePoints) {
-			m_NotSetPoint = false;
+			m_SetPoint = false;
 			return;
 		}
 		for (auto i : m_MovePoints->mTransform->Children()){
@@ -191,7 +191,7 @@ void EnemyRezardMan::TrackingModeFinalize()
 
 void EnemyRezardMan::ParentTrackingModeInitilize()
 {
-	if (!m_NotSetPoint)return;
+	if (!m_SetPoint)return;
 	if (m_DrawLog)
 		Hx::Debug()->Log("‘{õƒ‚[ƒh‚ÖˆÚs");
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
@@ -223,7 +223,6 @@ GameObject EnemyRezardMan::NextDestinationDecide() {
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
 	if (XMVector3Length(m_MovePointsVec[m_MoveCount]->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
 		GameObject movePoint;
-		if (!m_MovePoints)return NULL;
 		int maxMoveCount = m_MovePointsVec.size() - 1;
 		if (m_MovePointsVec.size() == 0)return NULL;
 		Hx::Debug()->Log(std::to_string(m_MoveCount));
@@ -260,7 +259,7 @@ XMVECTOR EnemyRezardMan::NaviMeshTracking(GameObject destination) {
 void EnemyRezardMan::ParentTrackingModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-	if (!m_NotSetPoint)return;
+	if (!m_SetPoint)return;
 	auto distination = NextDestinationDecide();
 	if (!distination)return;
 	if (m_NaviMeshUse) {
@@ -305,7 +304,7 @@ void EnemyRezardMan::ChildTrackingModeUpdate()
 	//}
 	if (m_TrackingModeParam.parentAlive) {
 		AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-		if (!m_NotSetPoint)return;
+		if (!m_SetPoint)return;
 		if (!m_MovePoints)return;
 		if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 3.0f) {
 			m_ChildTranckingSpeed = 1.5f;
@@ -347,7 +346,7 @@ void EnemyRezardMan::ChildTrackingModeUpdate()
 	}
 	else {
 		AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
-		if (!m_NotSetPoint)return;
+		if (!m_SetPoint)return;
 	}
 }
 
@@ -913,6 +912,14 @@ void EnemyRezardMan::ChildFinalize()
 	//gameObject->Disable();
 	gameObject->RemoveComponent<CharacterControllerComponent>();
 	Hx::DestroyObject(gameObject);
+}
+
+void EnemyRezardMan::SetMovePoint(GameObject movePoint_)
+{
+	m_SetPoint = true;
+	for (auto i : m_MovePoints->mTransform->Children()) {
+		m_MovePointsVec[std::stoi(i->Name()) - 1] = i;
+	}
 }
 
 BATTLEACTION::Enum EnemyRezardMan::GetChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability, int provocationProbability) {
