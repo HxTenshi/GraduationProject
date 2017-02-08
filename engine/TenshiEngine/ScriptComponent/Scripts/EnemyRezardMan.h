@@ -64,6 +64,8 @@ private:
 	SERIALIZE float APROACHMINTIME;
 	SERIALIZE float APROACHMAXTIME;
 	SERIALIZE bool m_NaviMeshUse;
+
+	bool m_NotSetPoint;
 	
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();

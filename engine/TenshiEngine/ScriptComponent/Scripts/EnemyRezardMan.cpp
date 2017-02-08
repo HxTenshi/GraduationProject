@@ -81,11 +81,15 @@ EnemyRezardMan::EnemyRezardMan()
 
 void EnemyRezardMan::ChildInitialize()
 {
+	m_NotSetPoint = true;
 	ModelObject = m_ModelObject;
 	m_MaxHp = hp;
 	m_Hp = hp;
 	if (!m_Child) {
-		if (!m_MovePoints)return;
+		if (!m_MovePoints) {
+			m_NotSetPoint = false;
+			return;
+		}
 		for (auto i : m_MovePoints->mTransform->Children()){
 			m_MovePointsVec[std::stoi(i->Name()) - 1] = i;
 		}
@@ -187,6 +191,7 @@ void EnemyRezardMan::TrackingModeFinalize()
 
 void EnemyRezardMan::ParentTrackingModeInitilize()
 {
+	if (!m_NotSetPoint)return;
 	if (m_DrawLog)
 		Hx::Debug()->Log("‘{õƒ‚[ƒh‚ÖˆÚs");
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
@@ -255,6 +260,7 @@ XMVECTOR EnemyRezardMan::NaviMeshTracking(GameObject destination) {
 void EnemyRezardMan::ParentTrackingModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
+	if (!m_NotSetPoint)return;
 	auto distination = NextDestinationDecide();
 	if (!distination)return;
 	if (m_NaviMeshUse) {
@@ -299,6 +305,7 @@ void EnemyRezardMan::ChildTrackingModeUpdate()
 	//}
 	if (m_TrackingModeParam.parentAlive) {
 		AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
+		if (!m_NotSetPoint)return;
 		if (!m_MovePoints)return;
 		if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 3.0f) {
 			m_ChildTranckingSpeed = 1.5f;
@@ -309,14 +316,23 @@ void EnemyRezardMan::ChildTrackingModeUpdate()
 		else {
 			m_ChildTranckingSpeed = 1.0f;
 		}
+		auto navi = gameObject->GetComponent<NaviMeshComponent>();
+		if (!navi)return;
+
+		if (Hx::PhysX()->Raycast(gameObject->mTransform->WorldPosition(),
+			XMVector3Normalize(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()),
+			XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x,
+			Layer::UserTag4) && !m_NaviMeshUse) {
+			m_NaviMeshUse = true;
+			m_ChildTranckingSpeed = 1.0f;
+			navi->RootCreate(gameObject, m_MovePoints);
+		}
 
 		if (m_NaviMeshUse) {
-			auto navi = gameObject->GetComponent<NaviMeshComponent>();
-			if (!navi)return;
 			if (navi->IsMoveEnd()) {
+				m_NaviMeshUse = false;
 				if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 1.0f) {
-					m_ChildTranckingSpeed = 1.0f;
-					navi->RootCreate(gameObject, m_MovePoints);
+					
 				}
 			}
 			navi->Move(m_TrackingSpeed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
@@ -331,9 +347,8 @@ void EnemyRezardMan::ChildTrackingModeUpdate()
 	}
 	else {
 		AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
+		if (!m_NotSetPoint)return;
 	}
-
-
 }
 
 void EnemyRezardMan::ChildTrackingModeFinalize()
@@ -875,9 +890,18 @@ bool EnemyRezardMan::LostPlayer()
 		if (m_DrawLog)Hx::Debug()->Log("Player‚ÌGameObject‚ª‚¢‚È‚¢‚æ");
 		return false;
 	}
+	auto rayMyPos = gameObject->mTransform->WorldPosition();
+	rayMyPos.y = rayMyPos.y + 3;
+	auto rayBossPos = m_Player->mTransform->WorldPosition();
+	rayBossPos.y = rayMyPos.y;
+
 	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
 	m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
-	if (XMVector3Length(m_PlayerVec).x > m_LostRange) {
+	if (XMVector3Length(m_PlayerVec).x > m_LostRange || 
+		Hx::PhysX()->Raycast(rayMyPos,
+		XMVector3Normalize(rayBossPos - rayMyPos),
+		XMVector3Length(rayBossPos - rayMyPos).x,
+		Layer::UserTag4)) {
 		return true;
 	}
 	return false;
