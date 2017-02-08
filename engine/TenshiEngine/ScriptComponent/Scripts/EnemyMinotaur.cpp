@@ -154,7 +154,9 @@ void EnemyMinotaur::ConfrontModeUpdate()
 	m_thinking_time += Hx::DeltaTime()->GetDeltaTime();
 	if (m_thinking_time >= 5) {
 		//プレイヤーがバトル範囲以外だったら
-		if(m_roucine_module)
+		if (false) {
+
+		}
 	}
 }
 

@@ -9,7 +9,7 @@ namespace funifuni
 		In,
 		Over
 	};
-	template<class T,class U,class F>
+	template<class T,class U>
 	class ThoughtRoutineModule {
 	public:
 
@@ -46,14 +46,9 @@ namespace funifuni
 			if (m_flags.find(id) == m_distance.end())return false;
 			return m_flags[id];
 		}
-		template<class F>
-		void SetFunction(F id, std::unary_function<void()>& func) {
-			m_function
-		}
 	private:
 		std::map<T, int> m_distance;
 		std::map<U, bool> m_flags;
-		std::map <F, std::function<void()> m_function;
 		int state;
 	};
 
@@ -129,7 +124,7 @@ private:
 		FLAG_THINKING,
 	};
 
-	funifuni::ThoughtRoutineModule<DistanceType, FlagType,BATTLEACTION::Enum> m_roucine_module;
+	funifuni::ThoughtRoutineModule<DistanceType, FlagType> m_roucine_module;
 
 	SERIALIZE float hp;
 	SERIALIZE GameObject m_ModelObject;
