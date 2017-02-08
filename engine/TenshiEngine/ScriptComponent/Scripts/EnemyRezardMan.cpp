@@ -740,16 +740,12 @@ void EnemyRezardMan::Prowl()
 	//auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot), XMMatrixTranslationFromVector(playerPos));
 
 	auto battlePosVec = m_BattleModeParam.battlePosition - gameObject->mTransform->WorldPosition();
-	if(XMVector3Length(battlePosVec).x >= 10)
+	if (XMVector3Length(battlePosVec).x >= 10)
 		m_Vec += XMVector3Normalize(battlePosVec) * m_TrackingSpeed * 2.0f;
 	else
 		m_Vec += XMVector3Normalize(battlePosVec) * m_TrackingSpeed;
 
-	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
-	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
-	auto qua = gameObject->mTransform->Quaternion();
-	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+	LookPosition(m_Player->mTransform->WorldPosition(), m_TrackingRotateSpeed);
 }
 
 void EnemyRezardMan::AttackMonckeyModeInitilize() {
