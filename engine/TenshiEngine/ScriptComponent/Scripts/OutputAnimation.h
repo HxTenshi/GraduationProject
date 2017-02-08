@@ -5,6 +5,7 @@
 
 class OutputAnimation :public OutputGimic {
 public:
+	void Update();
 	bool OnStart(GameObject Sender) override;
 
 private:
@@ -16,4 +17,7 @@ private:
 	SERIALIZE float mTime;
 	SERIALIZE float mTimeScale;
 	SERIALIZE GameObject m_Output;
+
+	SERIALIZE GameObject m_AnimationEndAction;
+	bool mIsEnd;
 };
