@@ -3,13 +3,14 @@
 #include "main.h"
 #include "Enemy.h"
 #include <map>
+
 namespace funifuni
 {
 	enum ModuleDistanceType {
 		In,
 		Over
 	};
-	template<class T,class U>
+	template<class T, class U>
 	class ThoughtRoutineModule {
 	public:
 
@@ -37,6 +38,12 @@ namespace funifuni
 		int GetStateParam() {
 			return state;
 		}
+		void SetAnimState(int s) {
+			anim_state = s;
+		}
+		int GetAnimState() {
+			return anim_state;
+		}
 		template<class U>
 		void SetFlag(U id, bool f) {
 			m_flags.insert(std::pair<U, bool>(id, f));
@@ -50,11 +57,12 @@ namespace funifuni
 		std::map<T, int> m_distance;
 		std::map<U, bool> m_flags;
 		int state;
+		int anim_state;
 	};
 
 }
-class EnemyMinotaur:public Enemy {
-public :
+class EnemyMinotaur :public Enemy {
+public:
 	EnemyMinotaur();
 	void ChildInitialize() override;
 	void SoloAction() override;
@@ -66,9 +74,54 @@ public :
 	bool LostPlayer() override;
 	void ChildFinalize() override;
 private:
-	enum ANIM_ID {
-		
+	enum StateType {
+		STATE_NO_SEARCH,
+		STATE_SEARCH,
+		STATE_BATTLE,
+		STATE_BATTLE_MOVE,
+		STATE_ANGREE,
+		STATE_AWAKENING
 	};
+	enum DistanceType {
+		DSI_MOVE,
+		DSI_BACK,
+		DSI_EM_ATTACK,
+		DSI_ATTACK,
+		DSI_SIDE,
+		DSI_E_ATTACK,
+		DSI_SEARCH,
+		DSI_BATTLE_ATTACK,
+		DSI_BATTLE_RUN,
+		DSI_BATTLE_SIDE,
+		DSI_BATTLE_BACK
+	};
+	enum FlagType {
+		FLAG_ANGREE,
+		FLAG_MOVED,
+		FLAG_THINKING,
+	};
+	enum AnimType {
+		ANIM_F_WALK = 0,
+		ANIM_B_WALK,
+		ANIM_L_WALK,
+		ANIM_R_WALK,
+		ANIM_ATTACK1,
+		ANIM_ATTACK3,
+		ANIM_ATTACK2,
+		ANIM_BLOCK,
+		ANIM_ATTACK4,
+		ANIM_ATTACK5,
+		ANIM_ATTACK6,
+		ANIM_DYING,
+		ANIM_REACT_LARGE_BUT,
+		ANIM_F_RUN,
+		ANIM_ATTACK7,
+		ANIM_STUNNED,
+		ANIM_TAUNT,
+		ANIM_CHEST_THUMP,
+	};
+
+private:
 	void BattleModeInitilize();
 	void BattleModeUpdate();
 	void BattleModeFinalize();
@@ -82,14 +135,22 @@ private:
 	void DeadFinalize();
 
 
-	void Look();
 	void PositionReplaceBorn();
-
-	void Move();
+	//プレイヤー追跡中のルーチン
+	void HuntRoutine();
+	//プレイヤーとのバトル用ルーチン
+	void BattleRoutine();
+	//ルーチンのアニメーションが変わったときの設定関数
+	void RoutineSetUp(AnimType type);
+	void Move(float s);
+	void MoveSide(bool right = true);
+	void MoveBack();
+	//連続攻撃禁止のための関数
+	bool RecastCheck();
 	//思考関数
 	void ThoughtRoutine();
 	void InitThoughRoutineParam();
-	//横切り
+	
 	//TODO:あたり判定はまだない
 	void Attack1();
 	void Attack2();
@@ -103,33 +164,13 @@ private:
 
 	void SetAttackAction();
 
-private:
-	enum StateType {
-		STATE_NO_SEARCH,
-		STATE_SEARCH,
-		STATE_BATTLE,
-		STATE_BATTLE_MOVE,
-		STATE_ANGREE,
-		STATE_AWAKENING
-	};
-	enum DistanceType{
-		DSI_MOVE,
-		DSI_ATTACK,
-		DSI_E_ATTACK,
-		DSI_SEARCH
-	};
-	enum FlagType {
-		FLAG_ANGREE,
-		FLAG_MOVED,
-		FLAG_THINKING,
-	};
-
+	//思考ルーチンを管理するための独自クラス
 	funifuni::ThoughtRoutineModule<DistanceType, FlagType> m_roucine_module;
-
 	SERIALIZE float hp;
+	//アニメーションが入ってるモデル
 	SERIALIZE GameObject m_ModelObject;
 	SERIALIZE GameObject m_TargetBone;
-
+	//攻撃のエフェクト
 	SERIALIZE PrefabAsset m_Attack1Effect;//id 4
 	SERIALIZE PrefabAsset m_Attack2Effect;//id 5
 	SERIALIZE PrefabAsset m_Attack3Effect;//id 6
@@ -138,13 +179,38 @@ private:
 	SERIALIZE PrefabAsset m_Attack6Effect;//id 10
 	SERIALIZE PrefabAsset m_Attack7Effect;//id 14
 
+
+	//前方向のスピード
+	SERIALIZE float walk_speed;
+	//後ろ方向のスピード
+	SERIALIZE float back_speed;
+	//横方向のスピード
+	SERIALIZE float side_speed;
+	//追跡中に反撃攻撃してから次の反撃攻撃をするまでの時間
+	SERIALIZE float max_recast;
 	std::function<void(void)> m_attack_func;
 
+	//ミノタウロスの行動を左右するファンクション
+	std::function<void()> m_action_func;
 
+	//まだ使ってない
 	float m_thinking_time;
+	//前のフレームのアニメーションと比較するための変数
+	int m_anim_state;
 
+	//攻撃したときに別の関数が入らないように調整するためのフラグ
+	bool m_attack_flag;
+	//追跡中の近づいた時の反撃攻撃のキャスト
+	float recast;
 
+	bool anim_loop;
+	//追跡モードとバトルモードを切り替えるフラグ
+	bool is_change_attack;
+	//追跡からバトルに帰るためのタイム（サイド移動の時のみ加算）
+	float change_battle_time;
+	//バトルから追跡に切り替えるためのカウンター
+	int change_battle_counter;
 	XMVECTOR m_before_pos;
 	float m_hip_z;
 
-};	
+};
