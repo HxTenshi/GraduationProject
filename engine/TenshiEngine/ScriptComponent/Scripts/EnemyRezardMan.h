@@ -16,8 +16,12 @@ public:
 	void ChildFinalize() override;
 
 	void SetMovePoint(GameObject movePoint_);
+	void MoveFrontStart(float time);
 
 private:
+	void MoveFront();
+	float m_MoveFrontCounter;
+	float m_MoveFrontTime;
 	GameObject NextDestinationDecide();
 	XMVECTOR NaviMeshTracking(GameObject destination);
 	enum ANIM_ID {

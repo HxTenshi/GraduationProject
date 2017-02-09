@@ -1,6 +1,7 @@
 #include "EnemyTeam.h"
 #include "EnemyRezardManTeam.h"
 #include "EnemyOneTeam.h"
+#include "PlayerController.h"
 #include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
@@ -40,6 +41,9 @@ void EnemyTeam::Update(){
 		Hx::DestroyObject(gameObject);
 	}
 	DiscoveryOrLostPlayerSet();
+	if (m_Player->GetScript<PlayerController>()->GetPlayerState() == PlayerController::PlayerState::Movie) {
+		return;
+	}
 	TeamUpdate();
 }
 

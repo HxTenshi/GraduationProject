@@ -24,6 +24,7 @@ void Enemy::Initialize() {
 	m_WasAttacked = false;
 	ChildInitialize();
 	m_Forward = gameObject->mTransform->Forward();
+	m_MovieActionFlag = false;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
@@ -33,8 +34,29 @@ void Enemy::Start() {
 
 //毎フレーム呼ばれます
 void Enemy::Update() {
-	
 	m_Vec = XMVectorZero();
+	if (Input::Trigger(KeyCode::Key_N)){
+		static_cast<EnemyRezardMan*>(this)->MoveFrontStart(3.0f);
+	}
+	if (m_MovieActionFlag) {
+		m_MovieAction();
+		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+		if (!cc)return;
+
+		//重力
+		if (!cc->IsGround()) {
+			m_AccelVec += m_Gravity * Hx::DeltaTime()->GetDeltaTime();
+		}
+		else {
+			if (m_AccelVec.y <= 0)
+				m_AccelVec = m_Gravity;
+		}
+		m_Vec += m_AccelVec;
+
+		cc->Move(m_Vec  * Hx::DeltaTime()->GetDeltaTime());
+		return;
+	}
+
 	if (!m_Player)return;
 	auto ps = m_Player->GetScript<PlayerController>();
 	if (!ps)return;
