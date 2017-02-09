@@ -116,7 +116,7 @@ void EnemyRezardMan::ChildInitialize()
 }
 
 void EnemyRezardMan::SoloAction()
-{
+{	
 	if (m_BattleModeParam.id == BATTLEACTION::CONFRONTACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 30, 20, 20, 0, 5));
 	}
@@ -217,6 +217,24 @@ void EnemyRezardMan::ParentTrackingModeInitilize()
 	navi->RootCreate(gameObject, movePoint);
 
 	m_MoveCountUp = true;
+}
+
+void EnemyRezardMan::MoveFrontStart(float time)
+{
+	m_MovieAction = std::bind(&EnemyRezardMan::MoveFront,this);
+	m_MovieActionFlag = true;
+	m_MoveFrontTime = time;
+	m_MoveFrontCounter = 0.0f;
+}
+
+void EnemyRezardMan::MoveFront()
+{
+	m_MoveFrontCounter += Hx::DeltaTime()->GetDeltaTime();
+	m_Vec += gameObject->mTransform->Forward() * m_TrackingSpeed;
+	if (m_MoveFrontCounter > m_MoveFrontTime) {
+		m_MoveFrontCounter = 0.0f;
+		m_MovieActionFlag = false;
+	}
 }
 
 GameObject EnemyRezardMan::NextDestinationDecide() {
@@ -573,7 +591,7 @@ void EnemyRezardMan::BackStepModeUpdate()
 	if (GetNowAnimTime() < 12.5f) {
 		m_Vec -= m_Forward * 20.0f;
 	}
-	else if (GetNowAnimTime() < 20.0f) {
+	else {
 		m_BattleModeParam.actionFinish = true;
 	}
 }

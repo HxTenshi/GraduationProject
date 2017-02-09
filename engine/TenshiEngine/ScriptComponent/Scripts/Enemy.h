@@ -193,6 +193,9 @@ protected:
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
 
+	bool m_MovieActionFlag;
+	std::function<void()> m_MovieAction;
+
 	GameObject m_Player;
 
 	//‘O•ûŒü
