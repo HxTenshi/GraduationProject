@@ -17,8 +17,17 @@ void EnemyArrow::Start(){
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void EnemyArrow::Update() {
-
-
+	auto player = UniqueObject::GetPlayer();
+	if (!player) {
+		return;
+	}
+	auto ps = player->GetScript<PlayerController>();
+	if (!ps) {
+		return;
+	}
+	if (ps->GetPlayerState() == PlayerController::PlayerState::Movie) {
+		return;
+	}
 	gameObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition() + m_Vec * speed * Hx::DeltaTime()->GetDeltaTime());
 	count += Hx::DeltaTime()->GetDeltaTime();
 	if (count > 10.0f) {

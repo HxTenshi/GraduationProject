@@ -432,11 +432,7 @@ void EnemyRezardMan::AttackDownModeUpdate()
 	if (!anim)return;
 
 	if (GetNowAnimTime() < 1.0f) {
-		auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
-		auto trackingNowAngle = m_CorrectionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-		if (m_View < m_CorrectionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
-		auto qua = gameObject->mTransform->Quaternion();
-		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+		LookPosition(m_PlayerVec, m_CorrectionRotateSpeed);
 	}
 
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
@@ -549,11 +545,7 @@ void EnemyRezardMan::BackStepModeUpdate()
 	if (!anim)return;
 
 	if (GetNowAnimTime() < 1.0f) {
-		auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
-		auto trackingNowAngle = m_CorrectionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-		if (m_View < m_CorrectionRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
-		auto qua = gameObject->mTransform->Quaternion();
-		gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+		LookPosition(m_PlayerVec, m_CorrectionRotateSpeed);
 	}
 
 	if (GetNowAnimTime() < 12.5f) {
