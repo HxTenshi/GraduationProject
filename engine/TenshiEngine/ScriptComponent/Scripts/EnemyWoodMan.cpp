@@ -102,9 +102,11 @@ void EnemyWoodMan::Attack(GameObject player, COL_TYPE colType)
 	m_Attacked = true;
 	if (!m_RotateEnd) {
 		if (colType == COL_TYPE::NORMAL && m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION) {
+			m_AttackHit = true;
 			playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 		}
 		else if (colType == COL_TYPE::ROTATE && m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION) {
+			m_AttackHit = true;
 			playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 		}
 	}
@@ -206,7 +208,7 @@ void EnemyWoodMan::RunAttackModeInitilize()
 {
 	AnimChange(ANIM_ID::ANIM_RUNATTACK, 10.0f);
 	m_Attacked = false;
-
+	m_AttackHit = false;
 }
 
 void EnemyWoodMan::RunAttackModeUpdate()
@@ -217,6 +219,7 @@ void EnemyWoodMan::RunAttackModeUpdate()
 
 	if (XMVector3Length(gameObject->mTransform->WorldPosition() - m_StartPos).x > m_LostRange || m_Attacked) {
 		ChangeBattleAction(BATTLEACTION::APPROACHACTION);
+		m_AttackHit = false;
 	}
 }
 

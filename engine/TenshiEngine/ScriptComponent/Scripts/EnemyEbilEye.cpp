@@ -101,9 +101,11 @@ void EnemyEbilEye::Attack(GameObject player, COL_TYPE colType)
 	if (!playerScript)return;
 	if (!m_RotateEnd) {
 		if (colType == COL_TYPE::NORMAL && m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION) {
+			m_AttackHit = true;
 			playerScript->Damage(m_AttackDamage[0], XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 		}
 		else if (colType == COL_TYPE::ROTATE && m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION) {
+			m_AttackHit = true;
 			playerScript->Damage(m_AttackDamage[1], XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 		}
 	}
@@ -239,13 +241,14 @@ void EnemyEbilEye::TackleModeInitilize()
 	m_TackleStartPos = gameObject->mTransform->WorldPosition();
 	AnimChange(ANIM_ID::ANIM_TACKLE, 10.0f);
 	m_RotateEnd = false;
+	m_AttackHit = false;
 }
 
 void EnemyEbilEye::TackleModeUpdate()
 {
 	if (!m_RotateEnd) {
 		m_Vec += XMVector3Normalize(m_TackleVec) * m_TackleSpeed;
-		LookPosition(gameObject->mTransform->WorldPosition() + m_Vec, m_RotateSpeed);
+		LookPosition(gameObject->mTransform->WorldPosition() + m_Vec, m_RotateSpeed, true);
 	}
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;
@@ -258,6 +261,7 @@ void EnemyEbilEye::TackleModeUpdate()
 	auto animParam = anim->GetAnimetionParam(ANIM_ID::ANIM_ROTATEEYE);
 	if (m_RotateEnd && anim->IsAnimationEnd(ANIM_ID::ANIM_ROTATEEYE)) {
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+		m_AttackHit = false;
 	}
 }
 
@@ -272,7 +276,14 @@ void EnemyEbilEye::RotateTackleModeInitilize()
 	m_BattleModeParam.battlePosition = m_Player->mTransform->WorldPosition();
 	m_RotateStart = false;
 	m_RotateEnd = false;
-	m_Count = 0.0f;
+	m_Count = 0.0f; 
+	if (m_BattleModeParam.battlePosition.y <= gameObject->mTransform->WorldPosition().y) {
+		m_RotateDown = true;
+	}
+	else {
+		m_RotateDown = false;
+	}
+	m_AttackHit = false;
 }
 
 void EnemyEbilEye::RotateTackleModeUpdate()
@@ -281,11 +292,17 @@ void EnemyEbilEye::RotateTackleModeUpdate()
 	if (!cc)return;
 	if (!m_RotateStart) {
 		bool downMove = false;
-		if (m_BattleModeParam.battlePosition.y <= gameObject->mTransform->WorldPosition().y) {
+		if (m_BattleModeParam.battlePosition.y <= gameObject->mTransform->WorldPosition().y && m_RotateDown) {
 			m_Vec += XMVectorSet(0, -1, 0, 0) * m_Speed;
-			LookPosition(m_Player->mTransform->WorldPosition(), m_RotateSpeed);
+			LookPosition(m_Player->mTransform->WorldPosition(), m_RotateSpeed, true);
 			downMove = true;
 		}
+		else if(m_BattleModeParam.battlePosition.y > gameObject->mTransform->WorldPosition().y && !m_RotateDown){
+			m_Vec += XMVectorSet(0, 1, 0, 0) * m_Speed;
+			LookPosition(m_Player->mTransform->WorldPosition(), m_RotateSpeed,true);
+			downMove = true;
+		}
+
 		if (!downMove || cc->IsGround()) {
 			m_RotateStart = true;
 			AnimChange(ANIM_ID::ANIM_ROTATEATTACK, 10.0f);
@@ -307,6 +324,7 @@ void EnemyEbilEye::RotateTackleModeUpdate()
 			animParam = anim->GetAnimetionParam(ANIM_ID::ANIM_ROTATEEYE);
 			if (m_RotateEnd && anim->IsAnimationEnd(ANIM_ID::ANIM_ROTATEEYE)) {
 				ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+				m_AttackHit = false;
 			}
 		}
 		else {
@@ -427,7 +445,7 @@ void EnemyEbilEye::DownInitilize()
 
 void EnemyEbilEye::DownUpdate()
 {
-	LookPosition(m_TackleStartPos, m_RotateSpeed);
+	LookPosition(m_TackleStartPos, m_RotateSpeed, true);
 	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
@@ -456,7 +474,7 @@ void EnemyEbilEye::DeadUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (m_DeadIsGround) {
-		LookPosition(m_TackleStartPos, m_RotateSpeed);
+		LookPosition(m_TackleStartPos, m_RotateSpeed, true);
 
 		if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
 			m_Isend = true;

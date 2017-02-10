@@ -25,6 +25,10 @@ void EnemyWeapon::Finish(){
 
 //コライダーとのヒット時に呼ばれます
 void EnemyWeapon::OnCollideBegin(GameObject target){
+}
+
+//コライダーとのヒット中に呼ばれます
+void EnemyWeapon::OnCollideEnter(GameObject target){
 	if (!target) {
 		Hx::Debug()->Log("out");
 		return;
@@ -32,12 +36,7 @@ void EnemyWeapon::OnCollideBegin(GameObject target){
 	if (!enemy)return;
 	auto enemyScript = Enemy::GetEnemy(enemy);
 	if (!enemyScript)return;
-	enemyScript->Attack(target,(COL_TYPE)colType);
-}
-
-//コライダーとのヒット中に呼ばれます
-void EnemyWeapon::OnCollideEnter(GameObject target){
-	(void)target;
+	enemyScript->Attack(target, (COL_TYPE)colType);
 }
 
 //コライダーとのロスト時に呼ばれます

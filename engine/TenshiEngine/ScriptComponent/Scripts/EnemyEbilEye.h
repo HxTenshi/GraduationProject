@@ -98,5 +98,6 @@ private:
 	float m_WinceCount;
 	bool m_UpperdownNow;
 	bool m_DeadIsGround;
+	bool m_RotateDown;
 public:
 };

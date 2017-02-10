@@ -9,8 +9,6 @@
 #include "EnemyEbilEye.h"
 #include "EnemyWoodMan.h"
 #include "UniqueObject.h"
-#include "EnemyGate.h"
-#include "EmptyEnemy.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
@@ -32,6 +30,7 @@ void Enemy::Initialize() {
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
 void Enemy::Start() {
 	m_Player = UniqueObject::GetPlayer();
+	m_AttackHit = false;
 }
 
 //毎フレーム呼ばれます
@@ -41,11 +40,11 @@ void Enemy::Update() {
 		static_cast<EnemyRezardMan*>(this)->MoveFrontStart(3.0f);
 	}
 	if (m_MovieActionFlag) {
+		AnimLerp();
 		m_MovieAction();
 		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 		if (!cc)return;
 
-		AnimLerp();
 		//重力
 		if (!cc->IsGround()) {
 			m_AccelVec += m_Gravity * Hx::DeltaTime()->GetDeltaTime();
@@ -286,6 +285,9 @@ void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
 	}
 }
 
+class EmptyEnemy;
+class EnemyOrc;
+class EnemyGate;
 Enemy * Enemy::GetEnemy(GameObject target)
 {
 	if (!target)return NULL;
@@ -293,8 +295,63 @@ Enemy * Enemy::GetEnemy(GameObject target)
 	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
 	if (auto scr = target->GetScript<EnemyArcher>())return scr;
 	if (auto scr = target->GetScript<EnemyEbilEye>())return scr;
-	if (auto scr = target->GetScript<EnemyWoodMan>())return scr;
-	if (auto scr = target->GetScript<EmptyEnemy>())return scr;
-	if (auto scr = target->GetScript<EnemyGate>())return scr;
+if (auto scr = target->GetScript<EnemyWoodMan>())return scr;
+if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
+if (auto scr = target->GetScript<EnemyOrc>())return (Enemy*)scr;
+if (auto scr = target->GetScript<EnemyGate>())return (Enemy*)scr;
+
 	return NULL;
+}
+
+GameObject Enemy::NextDestinationDecide() {
+	auto navi = gameObject->GetComponent<NaviMeshComponent>();
+	if (XMVector3Length(m_MovePointsVec[m_MoveCount]->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
+		GameObject movePoint;
+		int maxMoveCount = m_MovePointsVec.size() - 1;
+		if (m_MovePointsVec.size() == 0)return NULL;
+		if (m_MoveCountUp) {
+			m_MoveCount++;
+			if (m_MoveCount > maxMoveCount) {
+				m_MoveCount = maxMoveCount - 1;
+				m_MoveCountUp = false;
+			}
+		}
+		else {
+			m_MoveCount--;
+			if (m_MoveCount < 0) {
+				m_MoveCount = 1;
+				m_MoveCountUp = true;
+			}
+		}
+	}
+
+	return m_MovePointsVec[m_MoveCount];
+}
+
+GameObject Enemy::NextDestinationDeciceInit()
+{
+	GameObject movePoint = NULL;
+	int i = 0;
+	float movePointLenMin;
+	for (auto& j : m_MovePointsVec) {
+		auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - j.second->mTransform->WorldPosition()).x;
+		if (i == 0 || movePointLenMin > movePointLen) {
+			movePointLenMin = movePointLen;
+			m_MoveCount = i;
+			movePoint = j.second;
+		}
+		i++;
+	}
+
+	return movePoint;
+}
+
+XMVECTOR Enemy::NaviMeshTracking(GameObject destination,float speed) {
+	auto navi = gameObject->GetComponent<NaviMeshComponent>();
+	if (!navi)return XMVectorSet(0, 0, 0, 0);
+	if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
+		navi->RootCreate(gameObject, destination);
+	}
+	navi->Move(speed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
+	return navi->GetPosition();
 }
