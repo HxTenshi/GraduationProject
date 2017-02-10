@@ -78,6 +78,9 @@ namespace funifuni {
 			SetArrowPosition();
 
 		}
+		if (Input::Trigger(KeyCode::Key_SPACE)) {
+			Select();
+		}
 		if (is_next) {
 
 			m_MoveObject.Move(is_arrow);
@@ -206,4 +209,15 @@ namespace funifuni {
 
 	void TitleManager::Select()
 	{
+		switch (m_button_state)
+		{
+		case TitleButtonRoll::GameStart: //Hx::LoadScene("");
+			break;
+		case TitleButtonRoll::Config: Hx::LoadScene("Assets/Mossan/Config.scene");
+			break;
+		case TitleButtonRoll::GameEnd: //Hx::LoadScene("");
+			break;
+		default:
+			break;
+		}
 	}
