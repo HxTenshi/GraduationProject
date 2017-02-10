@@ -19,5 +19,12 @@ private:
 	SERIALIZE GameObject m_Output;
 
 	SERIALIZE GameObject m_AnimationEndAction;
+
+	SERIALIZE GameObject m_EnemyGen;
 	bool mIsEnd;
+
+	SERIALIZE float m_WalkTime;
+
+	SERIALIZE bool m_UseGenConb;
+	SERIALIZE bool m_UseEndAction;
 };

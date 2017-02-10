@@ -225,6 +225,7 @@ void EnemyRezardMan::MoveFrontStart(float time)
 	m_MovieActionFlag = true;
 	m_MoveFrontTime = time;
 	m_MoveFrontCounter = 0.0f;
+	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 }
 
 void EnemyRezardMan::MoveFront()
@@ -234,6 +235,7 @@ void EnemyRezardMan::MoveFront()
 	if (m_MoveFrontCounter > m_MoveFrontTime) {
 		m_MoveFrontCounter = 0.0f;
 		m_MovieActionFlag = false;
+		AnimChange(ANIM_ID::ANIM_IDLE, 5.0f,true,true);
 	}
 }
 
@@ -276,8 +278,11 @@ XMVECTOR EnemyRezardMan::NaviMeshTracking(GameObject destination) {
 
 void EnemyRezardMan::ParentTrackingModeUpdate()
 {
+	if (!m_SetPoint) {
+		AnimChange(ANIM_ID::ANIM_IDLE,5.0f);
+		return;
+	}
 	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-	if (!m_SetPoint)return;
 	auto distination = NextDestinationDecide();
 	if (!distination)return;
 	if (m_NaviMeshUse) {

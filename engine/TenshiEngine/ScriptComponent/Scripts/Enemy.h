@@ -146,6 +146,7 @@ public:
 	virtual void ChildFinalize() {}
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};
+
 	bool IsEnd() { return m_Isend; }
 	bool GetWasAttacked() {
 		auto ret = m_WasAttacked;

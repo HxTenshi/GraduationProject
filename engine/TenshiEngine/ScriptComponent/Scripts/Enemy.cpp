@@ -9,6 +9,8 @@
 #include "EnemyEbilEye.h"
 #include "EnemyWoodMan.h"
 #include "UniqueObject.h"
+#include "EnemyGate.h"
+#include "EmptyEnemy.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
@@ -43,6 +45,7 @@ void Enemy::Update() {
 		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 		if (!cc)return;
 
+		AnimLerp();
 		//重力
 		if (!cc->IsGround()) {
 			m_AccelVec += m_Gravity * Hx::DeltaTime()->GetDeltaTime();
@@ -283,7 +286,6 @@ void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
 	}
 }
 
-class EmptyEnemy;
 Enemy * Enemy::GetEnemy(GameObject target)
 {
 	if (!target)return NULL;
@@ -291,6 +293,8 @@ Enemy * Enemy::GetEnemy(GameObject target)
 	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
 	if (auto scr = target->GetScript<EnemyArcher>())return scr;
 	if (auto scr = target->GetScript<EnemyEbilEye>())return scr;
-if (auto scr = target->GetScript<EnemyWoodMan>())return scr;if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
+	if (auto scr = target->GetScript<EnemyWoodMan>())return scr;
+	if (auto scr = target->GetScript<EmptyEnemy>())return scr;
+	if (auto scr = target->GetScript<EnemyGate>())return scr;
 	return NULL;
 }

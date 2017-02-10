@@ -2,6 +2,8 @@
 #include "Enemy.h"
 #include "../h_standard.h"
 #include "../h_component.h"
+#include "UniqueObject.h"
+#include "PlayerController.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void EnemyArrow::Initialize(){
@@ -14,7 +16,9 @@ void EnemyArrow::Start(){
 }
 
 //毎フレーム呼ばれます
-void EnemyArrow::Update(){
+void EnemyArrow::Update() {
+
+
 	gameObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition() + m_Vec * speed * Hx::DeltaTime()->GetDeltaTime());
 	count += Hx::DeltaTime()->GetDeltaTime();
 	if (count > 10.0f) {

@@ -1696,7 +1696,7 @@ void PlayerController::rotate()
 	auto q = XMQuaternionRotationMatrix(rotate);
 
 	auto f = gameObject->mTransform->Forward();
-	float angle =  acos(XMVector3Dot(f, mVelocity).x);
+	float angle =  acos(clamp(XMVector3Dot(f, mVelocity).x,-1.0f,1.0f));
 	float limit = m_RotateLimit / 180.0f * XM_PI * Hx::DeltaTime()->GetDeltaTime();
 	float t = 1.0f;
 	if (limit < angle) {
@@ -1704,7 +1704,7 @@ void PlayerController::rotate()
 	}
 	auto wq = gameObject->mTransform->WorldQuaternion();
 	q = XMQuaternionSlerp(wq,q,t);
-	gameObject->mTransform->WorldQuaternion(q);
+	//gameObject->mTransform->WorldQuaternion(q);
 }
 
 bool PlayerController::dodge()
