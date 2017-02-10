@@ -96,6 +96,7 @@ float EnemyEbilEye::GetOnBattleRange()
 
 void EnemyEbilEye::Attack(GameObject player, COL_TYPE colType)
 {
+	if (m_AttackHit)return;
 	if (!player)return;
 	auto playerScript = player->GetScript<PlayerController>();
 	if (!playerScript)return;

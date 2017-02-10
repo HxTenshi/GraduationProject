@@ -423,6 +423,7 @@ void EnemyRezardMan::AttackDownModeInitilize()
 	if (m_DrawLog)
 		Hx::Debug()->Log("縦切り");
 	AnimChange(ANIM_ID::ANIM_ATTACK_DOWN, 5.0f, false, true);
+	m_AttackHit = false;
 }
 
 void EnemyRezardMan::AttackDownModeUpdate()
@@ -436,6 +437,7 @@ void EnemyRezardMan::AttackDownModeUpdate()
 	}
 
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		m_AttackHit = false;
 		m_BattleModeParam.actionFinish = true;
 	};
 }
@@ -450,6 +452,7 @@ void EnemyRezardMan::JumpAttackModeInitilize()
 	if (m_DrawLog)
 		Hx::Debug()->Log("ジャンプ切り");
 	AnimChange(ANIM_ID::ANIM_JUMPATTACK, 5.0f, false);
+	m_AttackHit = false;
 }
 
 void EnemyRezardMan::JumpAttackModeUpdate()
@@ -462,6 +465,7 @@ void EnemyRezardMan::JumpAttackModeUpdate()
 		m_Vec += m_Forward * 20.0f;
 	}
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		m_AttackHit = false;
 		m_BattleModeParam.actionFinish = true;
 	};
 }
@@ -730,6 +734,7 @@ void EnemyRezardMan::AttackMonckeyModeInitilize() {
 	if (m_DrawLog)
 		Hx::Debug()->Log("モンキーアタック");
 	AnimChange(ANIM_ID::ANIM_ATTACK_MONCKEY, 5.0f, false);
+	m_AttackHit = false;
 }
 
 void EnemyRezardMan::AttackMonckeyModeUpdate() {
@@ -738,6 +743,7 @@ void EnemyRezardMan::AttackMonckeyModeUpdate() {
 	if (!anim)return;
 
 	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		m_AttackHit = false;
 		m_BattleModeParam.actionFinish = true;
 	};
 }
@@ -777,6 +783,7 @@ void EnemyRezardMan::DeadModeFinalize()
 
 void EnemyRezardMan::Attack(GameObject player, COL_TYPE colType)
 {
+	if (m_AttackHit)return;
 	if (m_DrawLog)
 		Hx::Debug()->Log("何かに武器が当たった");
 	if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION ||
@@ -788,12 +795,18 @@ void EnemyRezardMan::Attack(GameObject player, COL_TYPE colType)
 		auto playerScript = player->GetScript<PlayerController>();
 		if (!playerScript)return;
 
-		if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION)
+		if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION) {
+			m_AttackHit = true;
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
-		else if (m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION)
+		}
+		else if (m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION) {
+			m_AttackHit = true;
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-		else if (m_BattleModeParam.id == BATTLEACTION::ATTACK2ACTION)
+		}
+		else if (m_BattleModeParam.id == BATTLEACTION::ATTACK2ACTION) {
+			m_AttackHit = true;
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+		}
 	}
 }
 
