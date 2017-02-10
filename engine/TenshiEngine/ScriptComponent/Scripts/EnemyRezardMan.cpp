@@ -239,43 +239,6 @@ void EnemyRezardMan::MoveFront()
 	}
 }
 
-GameObject EnemyRezardMan::NextDestinationDecide() {
-	auto navi = gameObject->GetComponent<NaviMeshComponent>();
-	if (XMVector3Length(m_MovePointsVec[m_MoveCount]->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
-		GameObject movePoint;
-		int maxMoveCount = m_MovePointsVec.size() - 1;
-		if (m_MovePointsVec.size() == 0)return NULL;
-		Hx::Debug()->Log(std::to_string(m_MoveCount));
-		if (m_MoveCountUp) {
-			m_MoveCount++;
-			if (m_MoveCount > maxMoveCount) {
-				m_MoveCount = maxMoveCount - 1;
-				m_MoveCountUp = false;
-			}
-		}
-		else {
-			m_MoveCount--;
-			if (m_MoveCount < 0) {
-				m_MoveCount = 1;
-				m_MoveCountUp = true;
-			}
-		}
-		Hx::Debug()->Log("after" + std::to_string(m_MoveCount));
-	}
-
-	return m_MovePointsVec[m_MoveCount];
-}
-
-XMVECTOR EnemyRezardMan::NaviMeshTracking(GameObject destination) {
-	auto navi = gameObject->GetComponent<NaviMeshComponent>();
-	if (!navi)return XMVectorSet(0,0,0,0);
-	if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
-		navi->RootCreate(gameObject, destination);
-	}
-	navi->Move(m_TrackingSpeed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
-	return navi->GetPosition();
-}
-
 void EnemyRezardMan::ParentTrackingModeUpdate()
 {
 	if (!m_SetPoint) {
@@ -286,7 +249,7 @@ void EnemyRezardMan::ParentTrackingModeUpdate()
 	auto distination = NextDestinationDecide();
 	if (!distination)return;
 	if (m_NaviMeshUse) {
-		LookPosition(NaviMeshTracking(distination),m_TrackingRotateSpeed);
+		LookPosition(NaviMeshTracking(distination,m_TrackingSpeed),m_TrackingRotateSpeed);
 	}
 	else {
 		LookPosition(distination->mTransform->WorldPosition(), m_TrackingRotateSpeed);
