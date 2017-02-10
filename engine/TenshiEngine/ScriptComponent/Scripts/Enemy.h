@@ -29,7 +29,7 @@ struct TrackingModeParameter {
 	TRACKINGACTION::Enum beforeId = TRACKINGACTION::NONE;
 	
 	//ナビメッシュを使うかどうか
-	bool naviMeshFlag = true;
+	bool naviMeshFlag = false;
 
 	//親が生きているかどうか
 	bool parentAlive = true;
@@ -40,8 +40,11 @@ struct BATTLEACTION {
 	NONE,
 	CONFRONTACTION,
 	APPROACHACTION,
-	ATTACKDOWNACTION,
-	JUMPATTACKACTION,
+	ATTACK1ACTION,
+	ATTACK2ACTION,
+	ATTACK3ACTION,
+	ATTACK4ACTION,
+	ATTACK5ACTION,
 	SHOTACTION,
 	GUARDACTION,
 	PROVOCATION,
@@ -51,7 +54,6 @@ struct BATTLEACTION {
 	BEATDOWNACTION,
 	DOWNACTION,
 	HITINGUARDACTION,
-	ATTACKMONCKEYACTION,
 	DEADACTION
 	};
 };
@@ -179,6 +181,8 @@ private:
 protected:
 	GameObject ModelObject;
 protected:
+	void LookPosition(XMVECTOR position_, float rotateSpeed, bool zReset = false);
+
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;
 	std::map<ACTIONMODE,std::function<void()>> actionModeFinalize;
@@ -188,6 +192,9 @@ protected:
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionInitilize;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
+
+	bool m_MovieActionFlag;
+	std::function<void()> m_MovieAction;
 
 	GameObject m_Player;
 
@@ -215,7 +222,7 @@ protected:
 	float m_Hp;
 	float m_MaxHp;
 
-	std::vector<GameObject> m_MovePointsVec;
+	std::map<int,GameObject> m_MovePointsVec;
 
 	//アクションモードのID
 	ACTIONMODE m_ActionModeID;

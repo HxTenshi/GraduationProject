@@ -55,9 +55,6 @@ void EnemyArcher::ChildInitialize()
 	m_Hp = hp;
 	if (!m_Child) {
 		if (!m_MovePoints)return;
-		for (auto i : m_MovePoints->mTransform->Children()) {
-			m_MovePointsVec.push_back(i);
-		}
 	}
 
 	if (m_DrawLog) {

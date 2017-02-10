@@ -30,13 +30,13 @@ EnemyRezardMan::EnemyRezardMan()
 	battleActionUpdate[BATTLEACTION::APPROACHACTION] = std::bind(&EnemyRezardMan::ApproachModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::APPROACHACTION] = std::bind(&EnemyRezardMan::ApproachModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EnemyRezardMan::AttackDownModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EnemyRezardMan::AttackDownModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKDOWNACTION] = std::bind(&EnemyRezardMan::AttackDownModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyRezardMan::AttackDownModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyRezardMan::AttackDownModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyRezardMan::AttackDownModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&EnemyRezardMan::JumpAttackModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::JUMPATTACKACTION] = std::bind(&EnemyRezardMan::JumpAttackModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::JUMPATTACKACTION] = std::bind(&EnemyRezardMan::JumpAttackModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK2ACTION] = std::bind(&EnemyRezardMan::JumpAttackModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK2ACTION] = std::bind(&EnemyRezardMan::JumpAttackModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK2ACTION] = std::bind(&EnemyRezardMan::JumpAttackModeFinalize, this);
 
 	battleActionInitilize[BATTLEACTION::GUARDACTION] = std::bind(&EnemyRezardMan::GuardModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::GUARDACTION] = std::bind(&EnemyRezardMan::GuardModeUpdate, this);
@@ -70,9 +70,9 @@ EnemyRezardMan::EnemyRezardMan()
 	battleActionUpdate[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::HITINGUARDACTION] = std::bind(&EnemyRezardMan::HitInGuardModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACKMONCKEYACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK3ACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK3ACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK3ACTION] = std::bind(&EnemyRezardMan::AttackMonckeyModeFinalize, this);
 
 	battleActionInitilize[BATTLEACTION::DEADACTION] = std::bind(&EnemyRezardMan::DeadModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&EnemyRezardMan::DeadModeUpdate, this);
@@ -81,13 +81,17 @@ EnemyRezardMan::EnemyRezardMan()
 
 void EnemyRezardMan::ChildInitialize()
 {
+	m_SetPoint = true;
 	ModelObject = m_ModelObject;
 	m_MaxHp = hp;
 	m_Hp = hp;
 	if (!m_Child) {
-		if (!m_MovePoints)return;
-		for (auto i : m_MovePoints->mTransform->Children()) {
-			m_MovePointsVec.push_back(i);
+		if (!m_MovePoints) {
+			m_SetPoint = false;
+			return;
+		}
+		for (auto i : m_MovePoints->mTransform->Children()){
+			m_MovePointsVec[std::stoi(i->Name()) - 1] = i;
 		}
 	}
 
@@ -112,17 +116,17 @@ void EnemyRezardMan::ChildInitialize()
 }
 
 void EnemyRezardMan::SoloAction()
-{
+{	
 	if (m_BattleModeParam.id == BATTLEACTION::CONFRONTACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 30, 20, 20, 0, 5));
 	}
 	else if (m_BattleModeParam.id == BATTLEACTION::APPROACHACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(30, 0, 40, 30, 0, 5));
 	}
-	else if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION) {
+	else if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 40, 20, 0, 0, 5));
 	}
-	else if (m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION) {
+	else if (m_BattleModeParam.id == BATTLEACTION::ATTACK2ACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 20, 0, 30, 0, 5));
 	}
 	else if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION) {
@@ -148,7 +152,7 @@ void EnemyRezardMan::SoloAction()
 	else if (m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 0, 40, 20, 0, 5));
 	}
-	else if (m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION) {
+	else if (m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION) {
 		ChangeBattleAction(EnemyRezardMan::GetChangeBattleAction(40, 40, 20, 0, 0, 5));
 	}
 }
@@ -187,6 +191,7 @@ void EnemyRezardMan::TrackingModeFinalize()
 
 void EnemyRezardMan::ParentTrackingModeInitilize()
 {
+	if (!m_SetPoint)return;
 	if (m_DrawLog)
 		Hx::Debug()->Log("‘{õƒ‚[ƒh‚ÖˆÚs");
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
@@ -201,11 +206,11 @@ void EnemyRezardMan::ParentTrackingModeInitilize()
 	int i = 0;
 	float movePointLenMin;
 	for (auto& j : m_MovePointsVec) {
-		auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - j->mTransform->WorldPosition()).x;
+		auto movePointLen = XMVector3Length(gameObject->mTransform->WorldPosition() - j.second->mTransform->WorldPosition()).x;
 		if (i == 0 || movePointLenMin > movePointLen) {
 			movePointLenMin = movePointLen;
 			m_MoveCount = i;
-			movePoint = j;
+			movePoint = j.second;
 		}
 		i++;
 	}
@@ -214,17 +219,31 @@ void EnemyRezardMan::ParentTrackingModeInitilize()
 	m_MoveCountUp = true;
 }
 
-void EnemyRezardMan::ParentTrackingModeUpdate()
+void EnemyRezardMan::MoveFrontStart(float time)
 {
-	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
+	m_MovieAction = std::bind(&EnemyRezardMan::MoveFront,this);
+	m_MovieActionFlag = true;
+	m_MoveFrontTime = time;
+	m_MoveFrontCounter = 0.0f;
+}
 
+void EnemyRezardMan::MoveFront()
+{
+	m_MoveFrontCounter += Hx::DeltaTime()->GetDeltaTime();
+	m_Vec += gameObject->mTransform->Forward() * m_TrackingSpeed;
+	if (m_MoveFrontCounter > m_MoveFrontTime) {
+		m_MoveFrontCounter = 0.0f;
+		m_MovieActionFlag = false;
+	}
+}
+
+GameObject EnemyRezardMan::NextDestinationDecide() {
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
-	if (!navi)return;
-	if (navi->IsMoveEnd()) {
+	if (XMVector3Length(m_MovePointsVec[m_MoveCount]->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
 		GameObject movePoint;
-		if (!m_MovePoints)return;
 		int maxMoveCount = m_MovePointsVec.size() - 1;
-		if (m_MovePointsVec.size() == 0)return;
+		if (m_MovePointsVec.size() == 0)return NULL;
+		Hx::Debug()->Log(std::to_string(m_MoveCount));
 		if (m_MoveCountUp) {
 			m_MoveCount++;
 			if (m_MoveCount > maxMoveCount) {
@@ -239,27 +258,36 @@ void EnemyRezardMan::ParentTrackingModeUpdate()
 				m_MoveCountUp = true;
 			}
 		}
-
-		navi->RootCreate(gameObject, m_MovePointsVec[m_MoveCount]);
+		Hx::Debug()->Log("after" + std::to_string(m_MoveCount));
 	}
 
+	return m_MovePointsVec[m_MoveCount];
+}
+
+XMVECTOR EnemyRezardMan::NaviMeshTracking(GameObject destination) {
+	auto navi = gameObject->GetComponent<NaviMeshComponent>();
+	if (!navi)return XMVectorSet(0,0,0,0);
+	if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
+		navi->RootCreate(gameObject, destination);
+	}
 	navi->Move(m_TrackingSpeed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
+	return navi->GetPosition();
+}
 
-	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-	if (!cc)return;
-
-	auto naviVec = XMVector3Normalize(navi->GetPosition() - gameObject->mTransform->WorldPosition());
-	m_Forward.y = 0;
-	naviVec.y = 0;
-	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, naviVec));
-	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-
-	m_View = acos(clamp(XMVector3Dot(m_Forward, naviVec).x, -1.0f, 1.0f));
-	if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
-	auto qua = gameObject->mTransform->Quaternion();
-	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
-
-	m_Vec += m_Forward * m_TrackingSpeed * m_ChildTranckingSpeed;
+void EnemyRezardMan::ParentTrackingModeUpdate()
+{
+	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
+	if (!m_SetPoint)return;
+	auto distination = NextDestinationDecide();
+	if (!distination)return;
+	if (m_NaviMeshUse) {
+		LookPosition(NaviMeshTracking(distination),m_TrackingRotateSpeed);
+	}
+	else {
+		LookPosition(distination->mTransform->WorldPosition(), m_TrackingRotateSpeed);
+	}
+	m_Forward = gameObject->mTransform->Forward();
+	m_Vec += m_Forward * m_TrackingSpeed;
 }
 
 void EnemyRezardMan::ParentTrackingModeFinalize()
@@ -274,151 +302,69 @@ void EnemyRezardMan::ChildTrackingModeInitilize()
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
 	if (!navi)return;
 
-	GameObject movePoint;
 
 	if (!m_MovePoints) {
 		if (m_DrawLog)Hx::Debug()->Log("enemyMovePoint‚Ì’†g‚ª‚È‚¢‚æ");
 		return;
 	}
-	movePoint = m_MovePoints;
-	m_TrackingRotateSpeed *= 2;
-	auto rayMyPos = gameObject->mTransform->WorldPosition();
-	rayMyPos.y = rayMyPos.y + 3;
-	auto rayBossPos = m_MovePoints->mTransform->WorldPosition();
-	rayMyPos.y = rayMyPos.y + 3;
-	if (Hx::PhysX()->Raycast(rayMyPos,
-		XMVector3Normalize(rayBossPos - rayMyPos),
-		XMVector3Length(rayBossPos - rayMyPos).x,
-		Layer::UserTag4)) {
-		movePoint = m_MovePoints;
-		navi->RootCreate(gameObject, movePoint);
-		m_TrackingModeParam.naviMeshFlag = true;
-	}
-	else {
-		m_TrackingModeParam.naviMeshFlag = false;
+
+	if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 1.0f) {
+		navi->RootCreate(gameObject, m_MovePoints);
 	}
 }
 
 void EnemyRezardMan::ChildTrackingModeUpdate()
 {
+	//if (m_DrawLog) {
+	//	Hx::Debug()->Log("x :" + std::to_string(m_MovePoints->mTransform->WorldPosition().x) + 
+	//		" y :" + std::to_string(m_MovePoints->mTransform->WorldPosition().y) + 
+	//		" z :" + std::to_string(m_MovePoints->mTransform->WorldPosition().z));
+	//}
 	if (m_TrackingModeParam.parentAlive) {
 		AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
-		if (!m_Player)return;
-		XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
-
-		m_Forward = XMVector3Normalize(gameObject->mTransform->Forward());
-		m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
-		m_Forward.y = 0.0f;
-		m_PlayerVec.y = 0.0f;
-		m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x, -1.0f, 1.0f));
-		if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
-		auto rayMyPos = gameObject->mTransform->WorldPosition();
-		rayMyPos.y = rayMyPos.y + 3;
-		auto rayYourPos = m_Player->mTransform->WorldPosition();
-		rayMyPos.y = rayMyPos.y + 3;
-		if ((XMVector3Length(m_PlayerVec).x < m_TrackingRange && m_View / 3.14f * 180.0f < m_TrackingAngle) &&
-			!Hx::PhysX()->Raycast(rayMyPos,
-				XMVector3Normalize(rayYourPos - rayMyPos),
-				XMVector3Length(rayYourPos - rayMyPos).x,
-				Layer::UserTag4)) {
-			//trackingActionFinalize[m_TrackingModeParam.id]();
-			//return;
-		}
-
+		if (!m_SetPoint)return;
 		if (!m_MovePoints)return;
-		rayMyPos = gameObject->mTransform->WorldPosition();
-		rayMyPos.y = rayMyPos.y + 3;
-		rayYourPos = m_MovePoints->mTransform->WorldPosition();
-		rayMyPos.y = rayMyPos.y + 3;
-		if (Hx::PhysX()->Raycast(rayMyPos,
-			XMVector3Normalize(rayYourPos - rayMyPos),
-			XMVector3Length(rayYourPos - rayMyPos).x,
-			Layer::UserTag4)) {
-			if (!m_TrackingModeParam.naviMeshFlag) {
-				auto navi = gameObject->GetComponent<NaviMeshComponent>();
-				if (!navi)return;
-				GameObject movePoint;
-				if (!m_MovePoints)return;
-				movePoint = m_MovePoints;
-				if (XMVector3Length(movePoint->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 1.0f) {
-					m_ChildTranckingSpeed = 0.0f;
-				}
-				else {
-					m_ChildTranckingSpeed = 1.0f;
-					navi->RootCreate(gameObject, movePoint);
-				}
-				m_TrackingModeParam.naviMeshFlag = true;
-			}
-		}
-		else {
-			if (m_TrackingModeParam.naviMeshFlag) {
-				m_TrackingModeParam.naviMeshFlag = false;
-			}
-		}
-
-		m_TrackingModeParam.naviMeshFlag = false;
-
-		if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 1.0f) {
+		if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 3.0f) {
 			m_ChildTranckingSpeed = 1.5f;
 		}
-		else if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 0.3f) {
+		else if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 1.0f) {
 			m_ChildTranckingSpeed = 0.0f;
 		}
 		else {
 			m_ChildTranckingSpeed = 1.0f;
 		}
+		auto navi = gameObject->GetComponent<NaviMeshComponent>();
+		if (!navi)return;
 
-		if (m_TrackingModeParam.naviMeshFlag) {
-			auto navi = gameObject->GetComponent<NaviMeshComponent>();
-			if (!navi)return;
+		if (Hx::PhysX()->Raycast(gameObject->mTransform->WorldPosition(),
+			XMVector3Normalize(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()),
+			XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x,
+			Layer::UserTag4) && !m_NaviMeshUse) {
+			m_NaviMeshUse = true;
+			m_ChildTranckingSpeed = 1.0f;
+			navi->RootCreate(gameObject, m_MovePoints);
+		}
+
+		if (m_NaviMeshUse) {
 			if (navi->IsMoveEnd()) {
-				GameObject movePoint;
-				if (!m_MovePoints)return;
-				movePoint = m_MovePoints;
-				if (XMVector3Length(movePoint->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 1.0f) {
-					m_ChildTranckingSpeed = 0.0f;
-				}
-				else {
-					m_ChildTranckingSpeed = 1.0f;
-					navi->RootCreate(gameObject, movePoint);
+				m_NaviMeshUse = false;
+				if (XMVector3Length(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x > 1.0f) {
+					
 				}
 			}
-
 			navi->Move(m_TrackingSpeed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
-
-			auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-			if (!cc)return;
-
-			auto naviVec = XMVector3Normalize(navi->GetPosition() - gameObject->mTransform->WorldPosition());
-			m_Forward.y = 0;
-			naviVec.y = 0;
-			auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, naviVec));
-			auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-			m_View = acos(clamp(XMVector3Dot(m_Forward, naviVec).x, -1.0f, 1.0f));
-			if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
-			auto qua = gameObject->mTransform->Quaternion();
-			gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+			LookPosition(navi->GetPosition(), m_TrackingRotateSpeed);
 		}
 		else {
-			auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-			if (!cc)return;
-
-
-			auto childVec = XMVector3Normalize(m_MovePoints->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
-			m_Forward.y = 0;
-			childVec.y = 0;
-			auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, childVec));
-			auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-			m_View = acos(clamp(XMVector3Dot(m_Forward, childVec).x, -1.0f, 1.0f));
-			if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
-			auto qua = gameObject->mTransform->Quaternion();
-			gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+			LookPosition(m_MovePoints->mTransform->WorldPosition(), m_TrackingRotateSpeed);
 		}
+		m_Forward = gameObject->mTransform->Forward();
 
 		m_Vec += m_Forward * m_TrackingSpeed * m_ChildTranckingSpeed;
 	}
 	else {
 		AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
+		if (!m_SetPoint)return;
 	}
 }
 
@@ -645,7 +591,7 @@ void EnemyRezardMan::BackStepModeUpdate()
 	if (GetNowAnimTime() < 12.5f) {
 		m_Vec -= m_Forward * 20.0f;
 	}
-	else if (GetNowAnimTime() < 20.0f) {
+	else {
 		m_BattleModeParam.actionFinish = true;
 	}
 }
@@ -795,7 +741,7 @@ void EnemyRezardMan::HitInGuardModeUpdate() {
 		};
 	}
 	else {
-		ChangeBattleAction(BATTLEACTION::ATTACKMONCKEYACTION);
+		ChangeBattleAction(BATTLEACTION::ATTACK3ACTION);
 	}
 }
 
@@ -812,16 +758,12 @@ void EnemyRezardMan::Prowl()
 	//auto pos = XMMatrixMultiply(XMMatrixMultiply(trans, rot), XMMatrixTranslationFromVector(playerPos));
 
 	auto battlePosVec = m_BattleModeParam.battlePosition - gameObject->mTransform->WorldPosition();
-	if(XMVector3Length(battlePosVec).x >= 10)
+	if (XMVector3Length(battlePosVec).x >= 10)
 		m_Vec += XMVector3Normalize(battlePosVec) * m_TrackingSpeed * 2.0f;
 	else
 		m_Vec += XMVector3Normalize(battlePosVec) * m_TrackingSpeed;
 
-	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, XMVector3Normalize(m_PlayerVec)));
-	auto trackingNowAngle = m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	if (m_View < m_TrackingRotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime())trackingNowAngle = m_View;
-	auto qua = gameObject->mTransform->Quaternion();
-	gameObject->mTransform->WorldQuaternion(XMQuaternionMultiply(qua, XMQuaternionRotationAxis(cross, trackingNowAngle)));
+	LookPosition(m_Player->mTransform->WorldPosition(), m_TrackingRotateSpeed);
 }
 
 void EnemyRezardMan::AttackMonckeyModeInitilize() {
@@ -877,20 +819,20 @@ void EnemyRezardMan::Attack(GameObject player, COL_TYPE colType)
 {
 	if (m_DrawLog)
 		Hx::Debug()->Log("‰½‚©‚É•Ší‚ª“–‚½‚Á‚½");
-	if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION ||
-		m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION ||
-		m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION) {
+	if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION ||
+		m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION ||
+		m_BattleModeParam.id == BATTLEACTION::ATTACK2ACTION) {
 		if (m_DrawLog)
 			Hx::Debug()->Log("m_Player‚ÉUŒ‚‚ªHit");
 		if (!player)return;
 		auto playerScript = player->GetScript<PlayerController>();
 		if (!playerScript)return;
 
-		if (m_BattleModeParam.id == BATTLEACTION::ATTACKDOWNACTION)
+		if (m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
-		else if (m_BattleModeParam.id == BATTLEACTION::ATTACKMONCKEYACTION)
+		else if (m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-		else if (m_BattleModeParam.id == BATTLEACTION::JUMPATTACKACTION)
+		else if (m_BattleModeParam.id == BATTLEACTION::ATTACK2ACTION)
 			playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 	}
 }
@@ -961,9 +903,18 @@ bool EnemyRezardMan::LostPlayer()
 		if (m_DrawLog)Hx::Debug()->Log("Player‚ÌGameObject‚ª‚¢‚È‚¢‚æ");
 		return false;
 	}
+	auto rayMyPos = gameObject->mTransform->WorldPosition();
+	rayMyPos.y = rayMyPos.y + 3;
+	auto rayBossPos = m_Player->mTransform->WorldPosition();
+	rayBossPos.y = rayMyPos.y;
+
 	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
 	m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
-	if (XMVector3Length(m_PlayerVec).x > m_LostRange) {
+	if (XMVector3Length(m_PlayerVec).x > m_LostRange || 
+		Hx::PhysX()->Raycast(rayMyPos,
+		XMVector3Normalize(rayBossPos - rayMyPos),
+		XMVector3Length(rayBossPos - rayMyPos).x,
+		Layer::UserTag4)) {
 		return true;
 	}
 	return false;
@@ -975,6 +926,14 @@ void EnemyRezardMan::ChildFinalize()
 	//gameObject->Disable();
 	gameObject->RemoveComponent<CharacterControllerComponent>();
 	Hx::DestroyObject(gameObject);
+}
+
+void EnemyRezardMan::SetMovePoint(GameObject movePoint_)
+{
+	m_SetPoint = true;
+	for (auto i : m_MovePoints->mTransform->Children()) {
+		m_MovePointsVec[std::stoi(i->Name()) - 1] = i;
+	}
 }
 
 BATTLEACTION::Enum EnemyRezardMan::GetChangeBattleAction(int guardProbability, int approachProbability, int backstepProbability, int attackProbability, int jumpAttackProbability, int provocationProbability) {
@@ -1010,13 +969,13 @@ BATTLEACTION::Enum EnemyRezardMan::GetChangeBattleAction(int guardProbability, i
 		return BATTLEACTION::BACKSTEPACTION;
 	}
 	else if (randam > attackProbability_) {
-		return BATTLEACTION::ATTACKDOWNACTION;
+		return BATTLEACTION::ATTACK1ACTION;
 	}
 	else if (randam > jumpAttackProbability_) {
-		return BATTLEACTION::JUMPATTACKACTION;
+		return BATTLEACTION::ATTACK2ACTION;
 	}
 	else if (randam > provocationProbability_) {
 		return BATTLEACTION::PROVOCATION;
 	}
 	return BATTLEACTION::CONFRONTACTION;
-}\
+}

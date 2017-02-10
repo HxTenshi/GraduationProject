@@ -236,7 +236,7 @@ void EnemyRezardManTeam::TeamUpdate()
 							eap.battleModeParameter.id == BATTLEACTION::UPPERDOWNACTION ||
 							eap.battleModeParameter.id == BATTLEACTION::BEATDOWNACTION ||
 							eap.battleModeParameter.id == BATTLEACTION::DOWNACTION ||
-							eap.battleModeParameter.id == BATTLEACTION::JUMPATTACKACTION) {
+							eap.battleModeParameter.id == BATTLEACTION::ATTACK2ACTION) {
 							j.enemyParameter.everyoneAttack = false;
 							everyoneAttack = false;
 							nextAttackTime = ((float)(rand() % (int)((m_NextAttackTimeMax - m_NextAttackTimeMin) * 100))) / 100.0f + m_NextAttackTimeMin;
@@ -246,7 +246,7 @@ void EnemyRezardManTeam::TeamUpdate()
 							//バックステップが終わったら
 							if (eap.battleModeParameter.id == BATTLEACTION::BACKSTEPACTION) {
 								if (eap.battleModeParameter.actionFinish) {
-									jScript->ChangeBattleAction(BATTLEACTION::JUMPATTACKACTION);
+									jScript->ChangeBattleAction(BATTLEACTION::ATTACK2ACTION);
 								}
 							}
 							else {
@@ -296,7 +296,7 @@ void EnemyRezardManTeam::TeamUpdate()
 								j.enemyParameter.attack = true;
 								j.enemyParameter.nextAttackTimeCountFlag = false;
 								nextAttackTimeCount = 0.0f;
-								jScript->ChangeBattleAction(BATTLEACTION::ATTACKDOWNACTION);
+								jScript->ChangeBattleAction(BATTLEACTION::ATTACK1ACTION);
 								for (auto& archerSearch : teamMember) {
 									if (archerSearch.enemyParameter.enemy_type == ENEMY_TYPE::CHILD_ARCHER) {
 										archerSearch.enemyParameter.m_ArcharAttackStart = true;

@@ -15,7 +15,15 @@ public:
 	bool LostPlayer() override;
 	void ChildFinalize() override;
 
+	void SetMovePoint(GameObject movePoint_);
+	void MoveFrontStart(float time);
+
 private:
+	void MoveFront();
+	float m_MoveFrontCounter;
+	float m_MoveFrontTime;
+	GameObject NextDestinationDecide();
+	XMVECTOR NaviMeshTracking(GameObject destination);
 	enum ANIM_ID {
 		ANIM_IDLE,
 		ANIM_WALK_FORWARD,
@@ -61,6 +69,9 @@ private:
 	SERIALIZE int m_AbsolutelyAvoidInHitAttackProbability;
 	SERIALIZE float APROACHMINTIME;
 	SERIALIZE float APROACHMAXTIME;
+	SERIALIZE bool m_NaviMeshUse;
+
+	bool m_SetPoint;
 	
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();
@@ -138,6 +149,7 @@ private:
 	void DeadModeInitilize();
 	void DeadModeUpdate();
 	void DeadModeFinalize();
+
 
 public:
 	static BATTLEACTION::Enum GetChangeBattleAction(

@@ -28,10 +28,10 @@ private:
 	GameObject mMoveActor;
 	bool onMove;
 	float mTime;
-	int mDown;
-	float mDownTime;
 	SERIALIZE float mSpeed;
 	XMVECTOR mMoveStartPosition;
+	XMVECTOR m_LastPos;
+	bool m_MoveFirst;
 
 	WeaponControl mWeaponControl;
 };

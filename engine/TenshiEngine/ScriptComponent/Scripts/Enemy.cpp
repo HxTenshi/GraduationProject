@@ -7,6 +7,7 @@
 #include "EnemyRezardMan.h"
 #include "EnemyArcher.h"
 #include "EnemyEbilEye.h"
+#include "EnemyWoodMan.h"
 #include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
@@ -23,7 +24,7 @@ void Enemy::Initialize() {
 	m_WasAttacked = false;
 	ChildInitialize();
 	m_Forward = gameObject->mTransform->Forward();
-
+	m_MovieActionFlag = false;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
@@ -34,7 +35,33 @@ void Enemy::Start() {
 //毎フレーム呼ばれます
 void Enemy::Update() {
 	m_Vec = XMVectorZero();
+	if (Input::Trigger(KeyCode::Key_N)){
+		static_cast<EnemyRezardMan*>(this)->MoveFrontStart(3.0f);
+	}
+	if (m_MovieActionFlag) {
+		m_MovieAction();
+		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
+		if (!cc)return;
+
+		//重力
+		if (!cc->IsGround()) {
+			m_AccelVec += m_Gravity * Hx::DeltaTime()->GetDeltaTime();
+		}
+		else {
+			if (m_AccelVec.y <= 0)
+				m_AccelVec = m_Gravity;
+		}
+		m_Vec += m_AccelVec;
+
+		cc->Move(m_Vec  * Hx::DeltaTime()->GetDeltaTime());
+		return;
+	}
+
 	if (!m_Player)return;
+	auto ps = m_Player->GetScript<PlayerController>();
+	if (!ps)return;
+	if (ps->GetPlayerState() == PlayerController::PlayerState::Movie)return;
+
 	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
 
 	if (gameObject->mTransform->WorldPosition().y < -100) {
@@ -173,6 +200,28 @@ void Enemy::AnimLerp()
 	}
 }
 
+void Enemy::LookPosition(XMVECTOR position_, float rotateSpeed, bool zReset)
+{
+	auto myPos = gameObject->mTransform->WorldPosition();
+	auto moveVec = position_;
+	auto naviVec = XMVector3Normalize(moveVec - myPos);
+	naviVec.y = 0;
+	m_Forward = gameObject->mTransform->Forward();
+	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, naviVec));
+	m_View = acos(clamp(XMVector3Dot(m_Forward, naviVec).x, -1.0f, 1.0f));
+	if (m_View < 0.1f)m_View = 0.0f;
+	auto trackingNowAngle = rotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
+	if (m_View < trackingNowAngle)
+		trackingNowAngle = m_View;
+	gameObject->mTransform->WorldQuaternion(
+		XMQuaternionMultiply(gameObject->mTransform->WorldQuaternion(), XMQuaternionRotationAxis(cross, trackingNowAngle)));
+	if (zReset) {
+		auto myAngle = gameObject->mTransform->Rotate();
+		myAngle.z = 0;
+		gameObject->mTransform->Rotate(myAngle);
+	}
+}
+
 float Enemy::GetNowAnimTime() {
 	if (!ModelObject)return 0;
 	auto anim = ModelObject->GetComponent<AnimationComponent>();
@@ -234,6 +283,7 @@ void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
 	}
 }
 
+class EmptyEnemy;
 Enemy * Enemy::GetEnemy(GameObject target)
 {
 	if (!target)return NULL;
@@ -241,6 +291,6 @@ Enemy * Enemy::GetEnemy(GameObject target)
 	if (auto scr = target->GetScript<EnemyRezardMan>())return scr;
 	if (auto scr = target->GetScript<EnemyArcher>())return scr;
 	if (auto scr = target->GetScript<EnemyEbilEye>())return scr;
-
+if (auto scr = target->GetScript<EnemyWoodMan>())return scr;if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
 	return NULL;
 }
