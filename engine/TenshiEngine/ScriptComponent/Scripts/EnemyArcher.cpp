@@ -115,6 +115,7 @@ void EnemyArcher::TrackingModeUpdate()
 
 void EnemyArcher::TrackingModeFinalize()
 {
+	trackingActionFinalize[m_TrackingModeParam.id]();
 	//m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 	//ChangeActionMode(ACTIONMODE::BATTLEMODE);
 }
@@ -355,7 +356,7 @@ void EnemyArcher::Attack(GameObject player, COL_TYPE colType)
 	if (!player)return;
 	auto playerScript = player->GetScript<PlayerController>();
 	if (!playerScript)return;
-	playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+	//playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 }
 
 /****************************************************ƒ_ƒ[ƒW‚Ìˆ—********************************************************/

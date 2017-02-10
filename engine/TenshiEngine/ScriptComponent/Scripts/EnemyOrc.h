@@ -19,9 +19,10 @@ private:
 	enum ANIM_ID {
 		ANIM_MOVE,
 		ANIM_RUNATTACK,
-		ANIM_DOWN,
+		ANIM_WINCE,
 		ANIM_NOMALATTACK,
-		ANIM_IDLE
+		ANIM_IDLE,
+		ANIM_DOWN
 	};
 	//ÉÅÉìÉoïœêî
 	void TrackingModeInitilize();
@@ -40,13 +41,9 @@ private:
 	void ConfrontModeUpdate();
 	void ConfrontModeFinalize();
 
-	void RunAttackModeInitilize();
-	void RunAttackModeUpdate();
-	void RunAttackModeFinalize();
-
-	void ComeBackModeInitilize();
-	void ComeBackModeUpdate();
-	void ComeBackModeFinalize();
+	void WeakAttackModeInitilize();
+	void WeakAttackModeUpdate();
+	void WeakAttackModeFinalize();
 
 	void WinceModeInitilize();
 	void WinceModeUpdate();
@@ -75,12 +72,16 @@ private:
 	SERIALIZE float m_LostRange;
 	SERIALIZE float m_RotateSpeed;
 	SERIALIZE GameObject m_ModelObject;
+	SERIALIZE float m_TrackingSpeed;
+	SERIALIZE float m_TrackingRotateSpeed;
 	SERIALIZE float m_TackleSpeed;
 	SERIALIZE float m_TackleTime;
 	SERIALIZE float m_TackleStartRandMin;
 	SERIALIZE float m_TackleStartRandMax;
 	SERIALIZE float m_WinceTime;
 	SERIALIZE float hp;
+	SERIALIZE GameObject m_MovePoints;
+	SERIALIZE float m_BattleRange;
 
 	float m_RotateAngle;
 	float m_Count;
@@ -92,10 +93,11 @@ private:
 	bool m_UpperdownNow;
 	bool m_DeadIsGround;
 
+	bool m_SetPoint;
+
 	XMVECTOR m_StartForward;
 	XMVECTOR m_StartPos;
 
 	BATTLEACTION::Enum m_WinceBeforeId;
-	bool m_Attacked;
 public:
 };

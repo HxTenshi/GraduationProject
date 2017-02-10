@@ -181,6 +181,9 @@ private:
 protected:
 	GameObject ModelObject;
 protected:
+	GameObject NextDestinationDecide();
+	GameObject NextDestinationDeciceInit();
+	XMVECTOR NaviMeshTracking(GameObject destination,float speed);
 	void LookPosition(XMVECTOR position_, float rotateSpeed, bool zReset = false);
 
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
@@ -221,6 +224,8 @@ protected:
 
 	float m_Hp;
 	float m_MaxHp;
+
+	bool m_AttackHit;
 
 	std::map<int,GameObject> m_MovePointsVec;
 
