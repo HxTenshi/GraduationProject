@@ -22,7 +22,6 @@ void VolumeScene::Initialize(){
 	if (!m_backConfigObj) return;
 	////‰¹—Ê‚ğ•Û‘¶‚µ‚Ä‚¢‚éCSV‚ğ“Ç‚İ‚Ş
 	vector<vector<string>> arrays = CSVScript::readCSV("Assets/data/Volume.csv");
-	//vector<vector<string>> arrays = readCSV("Assets/data/Volume.csv");
 	//BGM‚Ìî•ñ‚ğæ“¾
 	bgmCtrl = m_bgmBarObj->GetScript<VolumeBarCtrl>();
 	bgmCtrl->SetVolume(atoi(arrays[0][0].c_str()));
