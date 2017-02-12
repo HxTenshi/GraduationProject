@@ -1,6 +1,7 @@
 #pragma once
 #include "main.h"
 #include "Enemy.h"
+# include "h_standard.h"
 
 class EnemyOrc : public Enemy {
 public:
@@ -14,6 +15,8 @@ public:
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
 	void ChildFinalize() override;
+
+	void SetMovePoint(GameObject target) { Hx::Debug()->Log("ƒZƒbƒg‚µ‚½!!!"); m_MovePoints = target; if(m_MovePoints)Hx::Debug()->Log(m_MovePoints->Name()); }
 
 private:
 	enum ANIM_ID {

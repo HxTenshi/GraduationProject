@@ -99,6 +99,7 @@ float EnemyOrc::GetOnBattleRange()
 
 void EnemyOrc::Attack(GameObject player, COL_TYPE colType)
 {
+	//if (m_MovePoints && gameObject->mTransform->GetParent()->Name() == "OrcTeam_ZERO")Hx::Debug()->Log("ムー部ポイントあるよ");
 	if (m_AttackHit)return;
 	if (!player)return;
 	auto playerScript = player->GetScript<PlayerController>();

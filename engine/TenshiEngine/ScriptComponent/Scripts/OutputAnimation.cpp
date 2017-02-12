@@ -4,6 +4,7 @@
 #include "ObjectGenerator.h"
 #include "Enemy.h"
 #include "EnemyRezardMan.h"
+# include "EnemyOrc.h"
 
 void OutputAnimation::Update()
 {
@@ -39,6 +40,11 @@ void OutputAnimation::Update()
 		}
 		Hx::Debug()->Log("scriptも見えた");
 
+		if (m_OrcChild) {
+			SetUpOrcChild(m_OrcChildOne,m_MovePointOne);
+			SetUpOrcChild(m_OrcChildSecond, m_MovePointSecond);
+		}
+
 		rezardScr->MoveFrontStart(m_WalkTime);
 		Hx::Debug()->Log("アニメーション終了時の処理実行");
 	}
@@ -65,4 +71,25 @@ bool OutputAnimation::OnStart(GameObject Sender)
 	scr->OnStart(Sender);
 
 	return true;
+}
+
+void OutputAnimation::SetUpOrcChild(GameObject gen, GameObject point)
+{
+	auto enemyObj = gen->GetScript<ObjectGenerator>()->GetGeneratorObject();
+	if (!enemyObj) {
+		Hx::Debug()->Log("enemyが遅れてない");
+		return;
+	}
+	GameObject child;
+	for (auto i : enemyObj->mTransform->Children()) {
+		child = i;
+	}
+	auto rezardScr = static_cast<EnemyRezardMan*>(Enemy::GetEnemy(child));
+	if (!rezardScr) {
+		Hx::Debug()->Log("scriptが見えない");
+		return;
+	}
+	static_cast<EnemyOrc*>(Enemy::GetEnemy(child))->SetMovePoint(point);
+	rezardScr->SetMovePoint(point);
+	rezardScr->MoveFrontStart(m_WalkTime);
 }

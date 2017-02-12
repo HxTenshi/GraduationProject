@@ -8,6 +8,8 @@ public:
 	void Update();
 	bool OnStart(GameObject Sender) override;
 
+	void SetUpOrcChild(GameObject gen,GameObject point);
+
 private:
 	//ÉÅÉìÉoïœêî
 	SERIALIZE GameObject m_Target;
@@ -27,4 +29,10 @@ private:
 
 	SERIALIZE bool m_UseGenConb;
 	SERIALIZE bool m_UseEndAction;
+
+	SERIALIZE GameObject m_OrcChildOne;
+	SERIALIZE GameObject m_OrcChildSecond;
+	SERIALIZE bool m_OrcChild;
+	SERIALIZE GameObject m_MovePointOne;
+	SERIALIZE GameObject m_MovePointSecond;
 };
