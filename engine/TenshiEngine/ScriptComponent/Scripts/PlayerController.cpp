@@ -30,7 +30,18 @@ struct AttackID {
 		High1,
 		High1End,
 		High2,
+		High2End,
+		IdleFloatLow,
+		HighFloatLow,
 		FloatLow1,
+		FloatLow1End,
+		FloatLow2,
+
+		IdleFloatHigh,
+		HighFloatHigh,
+		FloatLow1FloatHigh,
+		FloatLow2FloatHigh,
+		FloatHigh1,
 		Special,
 		DogdeAttack,
 		Count,
@@ -62,6 +73,17 @@ struct AnimeID {
 		Throw,
 		AttackSP,
 		AttackHigh1,
+		AttackFloatLow1,
+		AttackFloatLow2,
+		AttackFloatHigh,
+		HighToFloatLow,
+		IdleToFloatLow,
+		HighToFloatHigh,
+		IdleToFloatHigh,
+		FloatLow1ToFloatHigh,
+		FloatLow2ToFloatHigh,
+		AttackHigh2End,
+		AttackFloatLow1End,
 		Count,
 	};
 };
@@ -276,49 +298,152 @@ void PlayerController::Start(){
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::High1;
 		attack.NextLowID = -1;
-		attack.NextHighID = -1;
+		attack.NextHighID = AttackID::High2;
 		attack.EndID = AttackID::High1End;
 		attack.MoutionID = AnimeID::AttackHigh1;
 		attack.DamageType = DamageType::HighDamage;
-		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.AttackTime = 16.0f / 30.0f;
 		//attack.OnDamageStart = 6.0f / 60.0f;
+
+		attack.OnDamageStart = 6.0f / 30.0f;
+		attack.OnDamageEnd = 16.0f / 30.0f;
+
 		attack.DamageScale = 0.5f;
 		attack.AttackMove = 0.0f;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::High2;
-		attack.NextLowID = -1;
-		attack.NextHighID = -1;
-		attack.MoutionID = AnimeID::AttackHigh2;
-		attack.EndID = -1;
-		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.NextLowID = AttackID::HighFloatLow;
+		attack.NextHighID = AttackID::HighFloatHigh;
+		attack.MoutionID = AnimeID::AttackHigh1;
+		attack.EndID = AttackID::High2End;
+		attack.AttackTime = 23.0f / 30.0f;
+
+		attack.KnockbackEffect = BATTLEACTION::UPPERDOWNACTION;
+		attack.KnockbackEffectPower = 10.0f;
+
+		attack.OnDamageStart = 8.0f / 30.0f;
+		attack.OnDamageEnd = 23.0f / 30.0f;
+
 		attack.DamageScale = 10.0f;
 		attack.AttackMove = 0.0f;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatLow1;
+		attack.NextLowID = AttackID::FloatLow2;
+		attack.NextHighID = AttackID::FloatLow1FloatHigh;
+		attack.MoutionID = AnimeID::AttackFloatLow1;
+		attack.EndID = AttackID::FloatLow1End;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
+		attack.KnockbackEffectPower = 1.0f;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 11.0f / 30.0f;
+
+		attack.DamageScale = 1.0f;
+		attack.AttackMove = 0.0f;
+		attack.DamageType = DamageType::LowDamage;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatLow2;
+		attack.NextLowID = -1;
+		attack.NextHighID = AttackID::FloatLow2FloatHigh;
+		attack.MoutionID = AnimeID::AttackFloatLow2;
+		attack.EndID = -1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 13.0f / 30.0f;
+
+		attack.DamageScale = 1.0f;
+		attack.AttackMove = 0.0f;
+		attack.DamageType = DamageType::LowDamage;
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatHigh1;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
-		attack.MoutionID = AnimeID::AttackLow3;
+		attack.MoutionID = AnimeID::AttackFloatHigh;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+
+		attack.KnockbackEffect = BATTLEACTION::BEATDOWNACTION;
+		attack.KnockbackEffectPower = 1.0f;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 24.0f / 30.0f;
+
 		attack.DamageScale = 1.0f;
-		attack.AttackMove = 7.0f;
-		attack.DamageType = DamageType::LowDamage;
+		attack.AttackMove = 0.0f;
+		attack.DamageType = DamageType::HighDamage;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::Special;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
 		attack.MoutionID = AnimeID::AttackSP;
+
+		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
+		attack.KnockbackEffectPower = 1.0f;
+
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.DamageScale = 2.0f;
 		attack.AttackMove = 0.0f;
 		attack.AddSpecial = 0.0f;
 		attack.DamageType = DamageType::DethBrowDamage;
 		attacklist[attack.ID] = attack;
+
+
+
 		//+++++++++++++++++++++++
+		attack.ID = AttackID::IdleFloatLow;
+		attack.MoutionID = AnimeID::IdleToFloatLow;
+		attack.EndID = AttackID::FloatLow1;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+		attack.DamageType = DamageType::LowDamage;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::HighFloatLow;
+		attack.MoutionID = AnimeID::HighToFloatLow;
+		attack.EndID = AttackID::FloatLow1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::IdleFloatHigh;
+		attack.MoutionID = AnimeID::IdleToFloatHigh;
+		attack.EndID = AttackID::FloatHigh1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::HighFloatHigh;
+		attack.MoutionID = AnimeID::HighToFloatHigh;
+		attack.EndID = AttackID::FloatHigh1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatLow1FloatHigh;
+		attack.MoutionID = AnimeID::FloatLow1ToFloatHigh;
+		attack.EndID = AttackID::FloatHigh1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatLow2FloatHigh;
+		attack.MoutionID = AnimeID::FloatLow2ToFloatHigh;
+		attack.EndID = AttackID::FloatHigh1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
 
 
+		//+++++++++++++++++++++++
 		attack.ID = AttackID::Low1End;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
@@ -350,6 +475,18 @@ void PlayerController::Start(){
 		attack.MoutionID = AnimeID::AttackHigh1End;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::High2End;
+		attack.MoutionID = AnimeID::AttackHigh2End;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+
+		attack.ID = AttackID::FloatLow1End;
+		attack.MoutionID = AnimeID::AttackFloatLow1End;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+
 	}
 	{
 		AttackState attack;
@@ -1750,7 +1887,11 @@ bool PlayerController::attack()
 	}
 	else {
 		if (BindInput(PlayerInput::ATK_L)) {
-			m_NextAttack = AttackID::FloatLow1;
+			m_NextAttack = AttackID::IdleFloatLow;
+		}
+
+		if (BindInput(PlayerInput::ATK_H)) {
+			m_NextAttack = AttackID::IdleFloatHigh;
 		}
 	}
 	return (m_NextAttack != -1);

@@ -118,7 +118,7 @@ void TPSCamera::Update(){
 
 
 		auto f = gameObject->mTransform->Forward();
-		float angle = acos(XMVector3Dot(wf, f).x);
+		float angle = acos(max(min(XMVector3Dot(wf, f).x, 1.0f), -1.0f));
 		float limit = m_RotateLimit / 180.0f * XM_PI * Hx::DeltaTime()->GetDeltaTime();
 		float t = 1.0f;
 		if (limit < angle) {
