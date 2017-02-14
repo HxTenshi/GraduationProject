@@ -15,6 +15,9 @@
 #include "OutputConnectorCooldownGimic.h"
 #include "OutputConnectorCountGimick.h"
 # include "ChangePlayerState.h"
+#include "EnemyGate.h"
+# include "OutPlayEnemyAnimation.h"
+# include "OutputInstaanceObject.h"
 
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 {
@@ -36,5 +39,8 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 	if (auto scr = target->GetScript<OutputChangePhysicesGimic>())return scr;
 	if (auto scr = target->GetScript<OutputAnimation>())return scr;
 	if (auto scr = target->GetScript<ChangePlayerState>())return scr;
+	if (auto scr = target->GetScript<OutPlayEnemyAnimation>())return scr;
+	if (auto scr = target->GetScript<OutputInstaanceObject>())return scr;
+
 	return NULL;
 }

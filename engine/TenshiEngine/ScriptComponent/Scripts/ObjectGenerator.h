@@ -12,7 +12,7 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-
+	GameObject GetGeneratorObject() { return m_GeneratObject; }
 private:
 	//ƒƒ“ƒo•Ï”
 

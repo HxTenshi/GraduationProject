@@ -22,13 +22,9 @@ EnemyOrc::EnemyOrc()
 	battleActionUpdate[BATTLEACTION::CONFRONTACTION] = std::bind(&EnemyOrc::ConfrontModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::CONFRONTACTION] = std::bind(&EnemyOrc::ConfrontModeFinalize, this);
 
-	battleActionInitilize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyOrc::RunAttackModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyOrc::RunAttackModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyOrc::RunAttackModeFinalize, this);
-
-	battleActionInitilize[BATTLEACTION::APPROACHACTION] = std::bind(&EnemyOrc::ComeBackModeInitilize, this);
-	battleActionUpdate[BATTLEACTION::APPROACHACTION] = std::bind(&EnemyOrc::ComeBackModeUpdate, this);
-	battleActionFinalize[BATTLEACTION::APPROACHACTION] = std::bind(&EnemyOrc::ComeBackModeFinalize, this);
+	battleActionInitilize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyOrc::WeakAttackModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyOrc::WeakAttackModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyOrc::WeakAttackModeFinalize, this);
 
 	battleActionInitilize[BATTLEACTION::WINCEACTION] = std::bind(&EnemyOrc::WinceModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&EnemyOrc::WinceModeUpdate, this);
@@ -50,21 +46,32 @@ EnemyOrc::EnemyOrc()
 	battleActionUpdate[BATTLEACTION::DEADACTION] = std::bind(&EnemyOrc::DeadUpdate, this);
 	battleActionFinalize[BATTLEACTION::DEADACTION] = std::bind(&EnemyOrc::DeadFinalize, this);
 
-	m_ActionModeID = ACTIONMODE::BATTLEMODE;
+	m_ActionModeID = ACTIONMODE::TRACKINGMODE;
 	m_TrackingModeParam.id = TRACKINGACTION::PARENTTRACKING;
 	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 	m_RotateAngle = 0;
 	m_UpperdownNow = false;
-	m_Attacked = false;
 }
 void EnemyOrc::ChildInitialize()
 {
+	m_SetPoint = true;
+	if (!m_MovePoints)m_SetPoint = false;
+	else {
+		for (auto i : m_MovePoints->mTransform->Children()) {
+			if (m_MovePoints->mTransform->Children().size() == 1) {
+				m_MovePointsVec[0] = i;
+				break;
+			}
+			m_MovePointsVec[std::stoi(i->Name()) - 1] = i;
+		}
+	}
+
 	m_Hp = hp;
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
 	m_StartForward = gameObject->mTransform->Forward();
 	m_StartPos = gameObject->mTransform->WorldPosition();
-	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+	//ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 }
 
 void EnemyOrc::SoloAction()
@@ -92,21 +99,15 @@ float EnemyOrc::GetOnBattleRange()
 
 void EnemyOrc::Attack(GameObject player, COL_TYPE colType)
 {
+	//if (m_MovePoints && gameObject->mTransform->GetParent()->Name() == "OrcTeam_ZERO")Hx::Debug()->Log("ƒ€[•”ƒ|ƒCƒ“ƒg‚ ‚é‚æ");
+	if (m_AttackHit)return;
 	if (!player)return;
 	auto playerScript = player->GetScript<PlayerController>();
 	if (!playerScript)return;
-	if (m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::UPPERDOWNACTION &&
-		m_BattleModeParam.id != BATTLEACTION::BEATDOWNACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION) {
-		m_WinceBeforeId = m_BattleModeParam.id;
-	}
-	m_Attacked = true;
-	if (!m_RotateEnd) {
-		if (colType == COL_TYPE::NORMAL && m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION) {
-			playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
-		}
-		else if (colType == COL_TYPE::ROTATE && m_BattleModeParam.id == BATTLEACTION::ATTACK3ACTION) {
-			playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-		}
+	if (m_ActionModeID != ACTIONMODE::BATTLEMODE)return;
+	if (colType == COL_TYPE::NORMAL && m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION) {
+		m_AttackHit = true;
+		playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 	}
 }
 
@@ -114,6 +115,10 @@ bool EnemyOrc::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR acc
 {
 	m_Damage = damage_;
 	m_Accel = accelPower_;
+	if (m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::UPPERDOWNACTION &&
+		m_BattleModeParam.id != BATTLEACTION::BEATDOWNACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION) {
+		m_WinceBeforeId = m_BattleModeParam.id;
+	}
 	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
 		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
 		return true;
@@ -121,14 +126,58 @@ bool EnemyOrc::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR acc
 	return false;
 }
 
+//“G‚ð”­Œ©‚µ‚½‚©
 bool EnemyOrc::DiscoveryPlayer()
 {
+	if (!m_Player) {
+		Hx::Debug()->Log("Player‚ÌGameObject‚ª‚¢‚È‚¢‚æ");
+		return false;
+	}
+	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
+	auto rayMyPos = gameObject->mTransform->WorldPosition();
+	rayMyPos.y = rayMyPos.y + 3;
+	auto rayBossPos = m_Player->mTransform->WorldPosition();
+	rayBossPos.y = rayMyPos.y;
+
+	m_Forward = XMVector3Normalize(gameObject->mTransform->Forward());
+	m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
+	m_Forward.y = 0.0f;
+	m_PlayerVec.y = 0.0f;
+	m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x, -1.0f, 1.0f));
+	if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
+	if ((XMVector3Length(m_PlayerVec).x < m_TrackingRange && m_View / 3.14f * 180.0f < m_TrackingAngle)) {
+		if (!Hx::PhysX()->Raycast(rayMyPos,
+			XMVector3Normalize(rayBossPos - rayMyPos),
+			XMVector3Length(rayBossPos - rayMyPos).x,
+			Layer::UserTag4)) {
+			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+			return true;
+		}
+	}
 	return false;
 }
 
+//“G‚ðŒ©Ž¸‚Á‚½‚©
 bool EnemyOrc::LostPlayer()
 {
+	if (!m_Player) {
+		return false;
+	}
+	auto rayMyPos = gameObject->mTransform->WorldPosition();
+	rayMyPos.y = rayMyPos.y + 3;
+	auto rayBossPos = m_Player->mTransform->WorldPosition();
+	rayBossPos.y = rayMyPos.y;
 
+	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
+	m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
+	if (XMVector3Length(m_PlayerVec).x > m_LostRange ||
+		Hx::PhysX()->Raycast(rayMyPos,
+			XMVector3Normalize(rayBossPos - rayMyPos),
+			XMVector3Length(rayBossPos - rayMyPos).x,
+			Layer::UserTag4)) {
+		ChangeActionAndTrackingAction(ACTIONMODE::TRACKINGMODE, TRACKINGACTION::PARENTTRACKING);
+		return true;
+	}
 	return false;
 }
 
@@ -142,6 +191,7 @@ void EnemyOrc::ChildFinalize()
 
 void EnemyOrc::TrackingModeInitilize()
 {
+
 	trackingActionInitilize[m_TrackingModeParam.id]();
 }
 
@@ -152,14 +202,29 @@ void EnemyOrc::TrackingModeUpdate()
 
 void EnemyOrc::TrackingModeFinalize()
 {
+	trackingActionFinalize[m_TrackingModeParam.id]();
 }
 
 void EnemyOrc::TrackingMoveModeInitilize()
 {
+	NextDestinationDeciceInit();
 }
 
 void EnemyOrc::TrackingMoveModeUpdate()
 {
+	if (!m_SetPoint) {
+		AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
+		return;
+	}
+	else {
+		AnimChange(ANIM_ID::ANIM_MOVE, 5.0f);
+		if (!m_SetPoint)return;
+		auto distination = NextDestinationDecide();
+		if (!distination)return;
+		LookPosition(NaviMeshTracking(distination, m_TrackingSpeed), m_TrackingRotateSpeed);
+		m_Forward = gameObject->mTransform->Forward();
+		m_Vec += m_Forward * m_TrackingSpeed;
+	}
 }
 
 void EnemyOrc::TrackingMoveModeFinalize()
@@ -178,22 +243,23 @@ void EnemyOrc::BattleModeUpdate()
 
 void EnemyOrc::BattleModeFinalize()
 {
+	battleActionFinalize[m_BattleModeParam.id]();
 }
 
 void EnemyOrc::ConfrontModeInitilize()
 {
-	AnimChange(ANIM_ID::ANIM_IDLE, 10.0f);
+	AnimChange(ANIM_ID::ANIM_MOVE, 10.0f);
 	m_UpperdownNow = false;
 }
 
 void EnemyOrc::ConfrontModeUpdate()
 {
-	LookPosition(gameObject->mTransform->WorldPosition() + m_StartForward, m_RotateSpeed);
 	auto playerPos = m_Player->mTransform->WorldPosition();
 	auto myPos = gameObject->mTransform->WorldPosition();
 	m_Forward = gameObject->mTransform->Forward();
-	m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(playerPos - myPos)).x, -1.0f, 1.0f));
-	if (XMVector3Length(myPos - playerPos).x < m_TrackingRange && (m_View / 3.14f * 180.0f < m_TrackingAngle)) {
+	LookPosition(playerPos, m_RotateSpeed);
+	m_Vec += m_Forward * m_TrackingSpeed;
+	if (XMVector3Length(myPos - playerPos).x < m_BattleRange) {
 		ChangeBattleAction(BATTLEACTION::ATTACK1ACTION);
 	}
 }
@@ -202,48 +268,26 @@ void EnemyOrc::ConfrontModeFinalize()
 {
 }
 
-void EnemyOrc::RunAttackModeInitilize()
+void EnemyOrc::WeakAttackModeInitilize()
 {
-	AnimChange(ANIM_ID::ANIM_RUNATTACK, 10.0f);
-	m_Attacked = false;
-
+	AnimChange(ANIM_ID::ANIM_NOMALATTACK, 10.0f,false);
+	m_AttackHit = false;
 }
 
-void EnemyOrc::RunAttackModeUpdate()
+void EnemyOrc::WeakAttackModeUpdate()
 {
-	auto pPos = m_Player->mTransform->WorldPosition();
-	LookPosition(pPos, m_RotateSpeed);
-	m_Vec += XMVector3Normalize(gameObject->mTransform->Forward()) * m_TackleSpeed;
-
-	if (XMVector3Length(gameObject->mTransform->WorldPosition() - m_StartPos).x > m_LostRange || m_Attacked) {
-		ChangeBattleAction(BATTLEACTION::APPROACHACTION);
-	}
-}
-
-void EnemyOrc::RunAttackModeFinalize()
-{
-}
-
-void EnemyOrc::ComeBackModeInitilize()
-{
-	AnimChange(ANIM_ID::ANIM_MOVE, 10.0f);
-}
-
-void EnemyOrc::ComeBackModeUpdate()
-{
-	LookPosition(m_StartPos, m_RotateSpeed);
-	m_Vec += XMVector3Normalize(m_StartPos - gameObject->mTransform->WorldPosition()) * m_TackleSpeed;
-	auto groundPos = gameObject->mTransform->WorldPosition();
-	auto groundStartPos = m_StartPos;
-	groundPos.y = 0;
-	groundStartPos.y = 0;
-	if (XMVector3Length(groundPos - groundStartPos).x < 1.0f) {
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+	if (anim->IsAnimationEnd(ANIM_ID::ANIM_NOMALATTACK)) {
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+		m_AttackHit = false;
 	}
 }
 
-void EnemyOrc::ComeBackModeFinalize()
+void EnemyOrc::WeakAttackModeFinalize()
 {
+	Hx::Debug()->Log("fd");
+	m_AttackHit = false;
 }
 
 void EnemyOrc::WinceModeInitilize() {
@@ -252,7 +296,7 @@ void EnemyOrc::WinceModeInitilize() {
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
-	AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true);
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;

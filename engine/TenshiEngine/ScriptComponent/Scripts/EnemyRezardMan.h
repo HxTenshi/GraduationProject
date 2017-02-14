@@ -22,8 +22,6 @@ private:
 	void MoveFront();
 	float m_MoveFrontCounter;
 	float m_MoveFrontTime;
-	GameObject NextDestinationDecide();
-	XMVECTOR NaviMeshTracking(GameObject destination);
 	enum ANIM_ID {
 		ANIM_IDLE,
 		ANIM_WALK_FORWARD,

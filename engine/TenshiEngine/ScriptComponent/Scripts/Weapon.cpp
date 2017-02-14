@@ -383,10 +383,10 @@ void Weapon::PierceSupport(GameObject obj)
 void Weapon::BreakWeapon()
 {
 	if (is_break_weapon) {
-		Hx::Debug()->Log("isbreakweapon");
+		//Hx::Debug()->Log("isbreakweapon");
 		if (!is_hand) {
 			break_time += Hx::DeltaTime()->GetDeltaTime();
-			Hx::Debug()->Log("ishand");
+			//Hx::Debug()->Log("ishand");
 			if (break_time > weapon_break) {
 				Hx::DestroyObject(gameObject);
 				Hx::Debug()->Log("break");
