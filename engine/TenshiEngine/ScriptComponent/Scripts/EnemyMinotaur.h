@@ -101,24 +101,11 @@ private:
 		FLAG_THINKING,
 	};
 	enum AnimType {
-		ANIM_F_WALK = 0,
-		ANIM_B_WALK,
-		ANIM_L_WALK,
-		ANIM_R_WALK,
-		ANIM_ATTACK1,
-		ANIM_ATTACK3,
-		ANIM_ATTACK2,
-		ANIM_BLOCK,
-		ANIM_ATTACK4,
-		ANIM_ATTACK5,
-		ANIM_ATTACK6,
-		ANIM_DYING,
-		ANIM_REACT_LARGE_BUT,
-		ANIM_F_RUN,
-		ANIM_ATTACK7,
-		ANIM_STUNNED,
-		ANIM_TAUNT,
-		ANIM_CHEST_THUMP,
+		ANIM_F_WALK = 0,ANIM_B_WALK,ANIM_L_WALK,ANIM_R_WALK,
+		ANIM_ATTACK1,ANIM_ATTACK3,ANIM_ATTACK2,ANIM_BLOCK,
+		ANIM_ATTACK4,ANIM_ATTACK5,ANIM_ATTACK6,ANIM_DYING,
+		ANIM_REACT_LARGE_BUT,ANIM_F_RUN,ANIM_ATTACK7,ANIM_STUNNED,
+		ANIM_TAUNT,ANIM_CHEST_THUMP,
 	};
 
 private:
@@ -160,6 +147,9 @@ private:
 	void Attack5();
 	void Attack6();
 	void Attack7();
+	void ChestThump();
+	void Stan();
+	void NoAnimtionMove();
 	void None();
 	void PlayerSearch();
 
@@ -201,7 +191,10 @@ private:
 	float m_thinking_time;
 	//前のフレームのアニメーションと比較するための変数
 	int m_anim_state;
-
+	//
+	COL_TYPE attack_type;
+	//怯み用のカウンタ
+	int stan_count;
 	//攻撃したときに別の関数が入らないように調整するためのフラグ
 	bool m_attack_flag;
 	//追跡中の近づいた時の反撃攻撃のキャスト
