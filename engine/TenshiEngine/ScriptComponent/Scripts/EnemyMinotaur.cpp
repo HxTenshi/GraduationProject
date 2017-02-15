@@ -47,9 +47,9 @@ void EnemyMinotaur::ChildInitialize()
 	recast = 0.0f;
 	change_battle_time = 0.0f;
 	change_battle_counter = 0;
+	anim_cast = 0.0f;
+	is_changed_take_over = false;
 }
-
-
 void EnemyMinotaur::SoloAction()
 {
 	if (m_AccelVec.y >= 0 || m_BattleModeParam.id == BATTLEACTION::UPPERDOWNACTION || m_BattleModeParam.id == BATTLEACTION::DEADACTION) {
@@ -119,7 +119,7 @@ void EnemyMinotaur::BattleModeInitilize()
 	nav->RootCreate(gameObject, m_Player);
 	battleActionInitilize[m_BattleModeParam.id]();
 
-
+	
 	std::string debug_draw_anim[18]{
 		"ANIM_F_WALK","ANIM_B_WALK","ANIM_L_WALK","ANIM_R_WALK",
 		"ANIM_ATTACK1","ANIM_ATTACK2","ANIM_ATTACK3","ANIM_BLOCK",
@@ -127,15 +127,10 @@ void EnemyMinotaur::BattleModeInitilize()
 		"ANIM_REACT_LARGE_BUT","ANIM_F_RUN","ANIM_ATTACK7","ANIM_STUNNED",
 		"ANIM_TAUNT","ANIM_CHEST_THUMP"
 	};
+
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	AnimChange(m_roucine_module.GetAnimState(), 10.0f,anim_loop, false);
 	Hx::Debug()->Log("Anim:" + debug_draw_anim[m_roucine_module.GetAnimState()]+":Loop:"+std::to_string(anim_loop));
-
-	if (change_battle_counter >= 4) {
-		change_battle_counter = 0;
-		change_battle_time = 0.0f;
-		is_change_attack = false;
-	}
 	
 }
 void EnemyMinotaur::BattleModeUpdate()
@@ -152,6 +147,12 @@ void EnemyMinotaur::BattleModeUpdate()
 	if (auto anim = m_ModelObject->GetComponent<AnimationComponent>()) {
 		if (anim->IsAnimationEnd(m_anim_state)&m_attack_flag) {
 			m_attack_flag = false;
+			if (is_changed_take_over) {
+				is_changed_take_over = false;
+				m_action_func = [this]() {MoveSide(); };
+				anim_loop = true;
+				RoutineSetUp(ANIM_R_WALK);
+			}
 		}
 	}
 
@@ -243,23 +244,22 @@ void EnemyMinotaur::HuntRoutine()
 		auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
 		//”½Œ‚UŒ‚‚ð‚·‚é
 		if (m_roucine_module.DistanceCheck(DSI_EM_ATTACK, distance, funifuni::ModuleDistanceType::In) && RecastCheck()) {
-
 			m_action_func = [this]() {Attack2(); };
 			recast = 0.0f;
 			m_attack_flag = true;
 			anim_loop = false;
 			RoutineSetUp(ANIM_ATTACK2);
+		}//UŒ‚”ÍˆÍ“à‚É‚¢‚½‚ç
+		else if (m_roucine_module.DistanceCheck(DSI_SIDE, distance, funifuni::ModuleDistanceType::In)) {
+			m_action_func = [this]() {MoveSide(); };
+			anim_loop = true;
+			RoutineSetUp(ANIM_R_WALK);
 		}//UŒ‚’†ˆÈŠO‚É‹ß‚Ã‚©‚ê‚½‚ç‰º‚ª‚é
 		else if (m_roucine_module.DistanceCheck(DSI_BACK, distance, funifuni::ModuleDistanceType::In)) {
 
 			m_action_func = [this]() {MoveBack(); };
 			anim_loop = true;
 			RoutineSetUp(ANIM_B_WALK);
-		}//UŒ‚”ÍˆÍ“à‚É‚¢‚½‚ç
-		else if (m_roucine_module.DistanceCheck(DSI_SIDE, distance, funifuni::ModuleDistanceType::In)) {
-			m_action_func = [this]() {MoveSide(); };
-			anim_loop = true;
-			RoutineSetUp(ANIM_R_WALK);
 		}//UŒ‚”ÍˆÍŠO‚Éo‚Ä‚¢‚½‚ç
 		else if (m_roucine_module.DistanceCheck(DSI_MOVE, distance, funifuni::ModuleDistanceType::Over)) {
 			m_action_func = [this]() {Move(walk_speed); };
@@ -272,11 +272,11 @@ void EnemyMinotaur::HuntRoutine()
 			change_battle_time += Hx::DeltaTime()->GetDeltaTime();
 		}
 		//’ÇÕƒ‚[ƒh‚©‚çƒoƒgƒ‹ƒ‚[ƒh‚É
-		if (change_battle_time > 5.0f) {
+		if (change_battle_time > 2.0f) {
 			change_battle_time = 0.0f;
 			is_change_attack = true;
-			m_action_func = nullptr;
 		}
+
 		if (m_action_func)m_action_func();
 		m_anim_state = m_roucine_module.GetAnimState();
 	}
@@ -287,36 +287,43 @@ void EnemyMinotaur::BattleRoutine()
 	if (!m_Player)return;
 	if (!m_attack_flag) {
 
-		recast += Hx::DeltaTime()->GetDeltaTime();
+		recast = max_recast;// += Hx::DeltaTime()->GetDeltaTime();
 		auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
+		Hx::Debug()->Log(std::to_string(recast));
 
-		if (m_roucine_module.DistanceCheck(DSI_BATTLE_BACK, distance, funifuni::ModuleDistanceType::In)) {
-			m_action_func = [this]() {MoveBack(); };
-			anim_loop = true;
-			RoutineSetUp(ANIM_B_WALK);
-		}//UŒ‚‚Å‚«‚é‹——£‚É“ü‚Á‚½‚çUŒ‚
-		else if (m_roucine_module.DistanceCheck(DSI_BATTLE_ATTACK,distance,funifuni::ModuleDistanceType::In) && RecastCheck()) {
+		if (m_roucine_module.DistanceCheck(DSI_BATTLE_ATTACK,distance,funifuni::ModuleDistanceType::In) && RecastCheck()) {
 			m_action_func = [this]() {Attack3(); };
-			recast = 0.0f;
+			recast = 3.0f;
 			m_attack_flag = true;
 			anim_loop = false;
 			change_battle_counter++;
+			is_changed_take_over = true;
 			RoutineSetUp(ANIM_ATTACK3);
 		}
-		else if (m_roucine_module.DistanceCheck(DSI_BATTLE_SIDE, distance, funifuni::ModuleDistanceType::In)) {
-			m_action_func = [this]() {MoveSide(false); };
-			anim_loop = true;
-			RoutineSetUp(ANIM_L_WALK);
-		}
+		//else if (m_roucine_module.DistanceCheck(DSI_BATTLE_BACK, distance, funifuni::ModuleDistanceType::In)) {
+		//	m_action_func = [this]() {MoveBack(); };
+		//	anim_loop = true;
+		//	RoutineSetUp(ANIM_B_WALK);
+		//}//UŒ‚‚Å‚«‚é‹——£‚É“ü‚Á‚½‚çUŒ‚
+		//else if (m_roucine_module.DistanceCheck(DSI_BATTLE_SIDE, distance, funifuni::ModuleDistanceType::In)) {
+		//	m_action_func = [this]() {MoveSide(); };
+		//	anim_loop = true;
+		//	RoutineSetUp(ANIM_R_WALK);
+		//}
 		//UŒ‚‚Å‚«‚È‚¢‹——£‚¾‚Á‚½‚çˆÚ“®‚·‚é
 		else {
-			m_action_func = [this]() {Move(walk_speed-2.0f); };
+			m_action_func = [this]() {Move(walk_speed-3.0f); };
 			anim_loop = true;
 			RoutineSetUp(ANIM_F_WALK);
 		}
 
 		if (m_action_func)m_action_func();
 		m_anim_state = m_roucine_module.GetAnimState();
+		if (change_battle_counter >= 1) {
+			change_battle_counter = 0;
+			change_battle_time = 0.0f;
+			is_change_attack = false;
+		}
 	}
 }
 
