@@ -40,15 +40,15 @@ struct AttackIf
 const int melee_num = 3;
 const AttackIf mode_melee[] = { 
 	AttackIf(ReisMode::Attack_v1),
-	AttackIf(ReisMode::Attack_v2),
-	AttackIf(ReisMode::Attack_v3),
+	AttackIf(ReisMode::Attack_v2,false),
+	AttackIf(ReisMode::Attack_v3,false),
 };
 const int mid_num = 4;
 const AttackIf mode_mid[] = { 
-	AttackIf(ReisMode::Attack_Bullet),
-	AttackIf(ReisMode::Attack_CitrusBullet),
-	AttackIf(ReisMode::Attack_SonicWaveV),
-	AttackIf(ReisMode::Attack_WarpMelee)
+	AttackIf(ReisMode::Attack_Bullet		,false),
+	AttackIf(ReisMode::Attack_CitrusBullet	,false),
+	AttackIf(ReisMode::Attack_SonicWaveV	,false),
+	AttackIf(ReisMode::Attack_WarpMelee		,false)
 };
 
 struct AnimeID {
@@ -128,8 +128,8 @@ void reis::Start(){
 					m_ReisMode = mode_mid[atk].mode;
 					f = mode_mid[atk].enable;
 				}
-
-				if (m_ReisLastAttackMode == m_ReisMode || !f) {
+				bool f2 = false;//m_ReisLastAttackMode == m_ReisMode;
+				if (f2 || !f) {
 					m_ReisMode = ReisMode::Move;
 					continue;
 				}
@@ -141,19 +141,26 @@ void reis::Start(){
 		}
 	};
 	m_MoveFunc[ReisMode::Attack_v1] = [&]() {
-		//if (m_AttackStage.stage == 0) {
-		//	ChangeAnime(AnimeID::Attack_Ch_v1);
-		//	if (IsCurrentAnimeEnd()) {
-		//		m_AttackStage.stage++;
-		//	}
-		//}
-		//else if(m_AttackStage.stage == 1) {
+		if (m_AttackStage.stage == 0) {
+			ChangeAnime(AnimeID::Attack_Ch_v1);
+			if (IsCurrentAnimeEnd()) {
+				m_AttackStage.stage++;
+			}
+		}
+		else if(m_AttackStage.stage <= 5) {
+			ChangeAnime(AnimeID::Attack_v1);
+			if (IsCurrentAnimeEnd()) {
+				ChangeAnime(AnimeID::Idle);
+				m_AttackStage.stage++;
+			}
+		}
+		else {
 			ChangeAnime(AnimeID::Attack_v1);
 			if (IsCurrentAnimeEnd()) {
 				m_ReisMode = ReisMode::Idle;
 				m_AttackStage = AttackStage();
 			}
-		//}
+		}
 		
 	};
 	m_MoveFunc[ReisMode::Attack_v2] = [&]() {
@@ -444,23 +451,23 @@ void reis::WeaponEffect(int id, bool enable)
 
 void reis::BoneMoveUpdate()
 {
-	//if (m_AnimeModel&&m_BoneMirrorObject) {
-	//	auto model = m_AnimeModel->mTransform->WorldPosition();
-	//	auto bone = m_BoneMirrorObject->mTransform->WorldPosition();
-	//
-	//	bool flag = false;
-	//	if (XMVector3Length(m_BoneMirrorObject->mTransform->Position()).x > 0.01f) {
-	//		flag = true;
-	//	}
-	//	bone -= model;
-	//	bone.y = 0.0f;
-	//	m_AnimeModel->mTransform->Position(-bone);
-	//	if (flag) {
-	//		auto move = bone - m_BoneBackPos;
-	//
-	//		//Move(move);
-	//	}
-	//
-	//	m_BoneBackPos = bone;
-	//}
+	if (m_AnimeModel&&m_BoneMirrorObject) {
+		auto model = m_AnimeModel->mTransform->WorldPosition();
+		auto bone = m_BoneMirrorObject->mTransform->WorldPosition();
+	
+		bool flag = false;
+		if (XMVector3Length(m_BoneMirrorObject->mTransform->Position()).x > 0.01f) {
+			flag = true;
+		}
+		bone -= model;
+		bone.y = 0.0f;
+		//m_AnimeModel->mTransform->Position(m_BoneMirrorObject->mTransform->Position()*0.02);
+		if (flag) {
+			auto move = bone - m_BoneBackPos;
+	
+			Move(move);
+		}
+	
+		m_BoneBackPos = bone;
+	}
 }

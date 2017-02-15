@@ -25,6 +25,10 @@ void AnimationMove::Update(){
 			float z = XMVector3Length(bone).x;
 			m_MoveObject->mTransform->Position(XMVectorSet(0, 0, -z, 1));
 		}
+		else if(m_ZeroSetting){
+			auto s = m_MoveObject->mTransform->Scale();
+			m_MoveObject->mTransform->Position(m_BoneObject->mTransform->Position()*s);
+		}
 		else {
 			bool flag = false;
 			if (XMVector3Length(m_BoneObject->mTransform->Position()).x > 0.1f) {
