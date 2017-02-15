@@ -9,6 +9,7 @@
 #include "EnemyEbilEye.h"
 #include "EnemyWoodMan.h"
 #include "UniqueObject.h"
+#include "EnemyMinotaur.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
@@ -299,6 +300,7 @@ if (auto scr = target->GetScript<EnemyWoodMan>())return scr;
 if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
 if (auto scr = target->GetScript<EnemyOrc>())return (Enemy*)scr;
 if (auto scr = target->GetScript<EnemyGate>())return (Enemy*)scr;
+if (auto scr = target->GetScript<EnemyMinotaur>())return (Enemy*)scr;
 
 	return NULL;
 }
