@@ -65,12 +65,15 @@ void PauseMenuManager::UpdateOpne() {
 
 	//左上のポーズテクスチャ
 	m_lerpTimers[0] += m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+	m_lerpTimers[0] = min(max(0.0f, m_lerpTimers[0]), 1.0f);
 	LerpFunc(m_objMap[0][0], m_lerpTimers[0]);
 
 	if (!m_isItimie) {
 		//lerpの計算
 		m_lerpTimers[1] += m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
 		m_lerpTimers[2] -= m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+		m_lerpTimers[1] = min(max(0.0f, m_lerpTimers[1]), 1.0f);
+		m_lerpTimers[2] = min(max(0.0f, m_lerpTimers[2]), 1.0f);
 		//0～3の間にクランプ
 		if (Input::Trigger(KeyCode::Key_UP)) m_num--;
 		if (Input::Trigger(KeyCode::Key_DOWN)) m_num++;
@@ -88,6 +91,8 @@ void PauseMenuManager::UpdateOpne() {
 		//lerpの計算
 		m_lerpTimers[1] -= m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
 		m_lerpTimers[2] += m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+		m_lerpTimers[1] = min(max(0.0f, m_lerpTimers[1]), 1.0f);
+		m_lerpTimers[2] = min(max(0.0f, m_lerpTimers[2]), 1.0f);
 
 		//めにゅーを閉じる
 		if (Input::Trigger(KeyCode::Key_SPACE))MenuReAction(4);
