@@ -308,7 +308,7 @@ void PlayerController::Start(){
 		attack.OnDamageStart = 6.0f / 30.0f;
 		attack.OnDamageEnd = 16.0f / 30.0f;
 
-		attack.DamageScale = 0.5f;
+		attack.DamageScale = 2.0f;
 		attack.AttackMove = 0.0f;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
@@ -325,7 +325,7 @@ void PlayerController::Start(){
 		attack.OnDamageStart = 8.0f / 30.0f;
 		attack.OnDamageEnd = 23.0f / 30.0f;
 
-		attack.DamageScale = 10.0f;
+		attack.DamageScale = 1.0f;
 		attack.AttackMove = 0.0f;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
@@ -357,7 +357,7 @@ void PlayerController::Start(){
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 13.0f / 30.0f;
 
-		attack.DamageScale = 1.0f;
+		attack.DamageScale = 1.5f;
 		attack.AttackMove = 0.0f;
 		attack.DamageType = DamageType::LowDamage;
 		attacklist[attack.ID] = attack;
@@ -376,7 +376,7 @@ void PlayerController::Start(){
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 24.0f / 30.0f;
 
-		attack.DamageScale = 1.0f;
+		attack.DamageScale = 3.0f;
 		attack.AttackMove = 0.0f;
 		attack.DamageType = DamageType::HighDamage;
 		attacklist[attack.ID] = attack;
@@ -390,7 +390,7 @@ void PlayerController::Start(){
 		attack.KnockbackEffectPower = 1.0f;
 
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
-		attack.DamageScale = 2.0f;
+		attack.DamageScale = 10.0f;
 		attack.AttackMove = 0.0f;
 		attack.AddSpecial = 0.0f;
 		attack.DamageType = DamageType::DethBrowDamage;
@@ -824,6 +824,12 @@ void PlayerController::SpeedJumpWeaponCatch(GameObject weapon)
 	mJump.y += m_JumpPower * 3;
 	setWeapon(weapon);
 	SetPlayerState(PlayerState::Free);
+}
+
+void PlayerController::AddMove(XMVECTOR v)
+{
+	if(m_CharacterControllerComponent)
+	m_CharacterControllerComponent->Move(v);
 }
 
 Weapon * PlayerController::GetWeapon()
@@ -2361,18 +2367,18 @@ void PlayerController::animeFlip()
 		anime->SetAnimetionParam(m_CurrentAnimeID_Back, p);
 	}
 
-	m_CurrentAnime_Weight = 0.0f;
+	m_CurrentAnime_Weight = 1.0f;
 
 	if (m_CurrentAnimeID >= 0) {
 		auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
-		p.mWeight = 1.0f;
+		p.mWeight = 1.0f - m_CurrentAnime_Weight;
 		//p.mTime = 0.0f;
 		p.mTimeScale = 0.0f;
 		anime->SetAnimetionParam(m_CurrentAnimeID, p);
 	}
 	auto p = anime->GetAnimetionParam(m_CurrentAnimeID_Stack);
 	p.mTime = 0.0f;
-	p.mWeight = 0.0f;
+	p.mWeight = m_CurrentAnime_Weight;
 	p.mTimeScale = m_MoutionSpeed;
 	anime->SetAnimetionParam(m_CurrentAnimeID_Stack, p);
 	m_CurrentAnimeID_Back = m_CurrentAnimeID;

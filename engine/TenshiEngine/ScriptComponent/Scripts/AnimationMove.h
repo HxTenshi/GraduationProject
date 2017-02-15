@@ -17,4 +17,6 @@ private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE GameObject m_MoveObject;
 	SERIALIZE GameObject m_BoneObject;
+	SERIALIZE bool m_Center;
+	XMVECTOR m_BackPos;
 };

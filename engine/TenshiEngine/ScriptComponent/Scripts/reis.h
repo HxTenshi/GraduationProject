@@ -29,6 +29,8 @@ private:
 
 	void WeaponEffect(int id, bool enable);
 
+	void BoneMoveUpdate();
+
 	//ƒƒ“ƒo•Ï”
 
 
@@ -40,6 +42,11 @@ private:
 
 	SERIALIZE GameObject m_WeaponEffect;
 	
+	//ƒ{[ƒ“’Ç]ü‚è
+	SERIALIZE GameObject m_BoneMirrorObject;
+	XMVECTOR m_BoneBackPos;
+	
+
 	GameObject m_CitrusBulletObject;
 	int m_CitrusBulletCount;
 	float m_CitrusBulletCollDown;
@@ -50,5 +57,11 @@ private:
 	int m_ReisMode;
 	int m_ReisLastAttackMode;
 	int m_CurrentAnimeID;
+
+	struct AttackStage
+	{
+		int stage = 0;
+	} m_AttackStage;
+	std::vector<std::function<void(void)>> m_MoveFunc;
 
 };
