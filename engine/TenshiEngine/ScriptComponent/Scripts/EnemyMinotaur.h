@@ -150,6 +150,7 @@ private:
 	//思考関数
 	void ThoughtRoutine();
 	void InitThoughRoutineParam();
+
 	
 	//TODO:あたり判定はまだない
 	void Attack1();
@@ -188,11 +189,14 @@ private:
 	SERIALIZE float side_speed;
 	//追跡中に反撃攻撃してから次の反撃攻撃をするまでの時間
 	SERIALIZE float max_recast;
+	//ミノタウロスの攻撃用のファンクション
 	std::function<void(void)> m_attack_func;
-
+	//バトルモードから追跡モードへのファンクション変更するときにアニメーションが動かないを修正するフラグ
+	bool is_changed_take_over;
 	//ミノタウロスの行動を左右するファンクション
 	std::function<void()> m_action_func;
-
+	//追跡時の行動アニメーションの変更時間
+	float anim_cast;
 	//まだ使ってない
 	float m_thinking_time;
 	//前のフレームのアニメーションと比較するための変数
@@ -202,7 +206,6 @@ private:
 	bool m_attack_flag;
 	//追跡中の近づいた時の反撃攻撃のキャスト
 	float recast;
-
 	bool anim_loop;
 	//追跡モードとバトルモードを切り替えるフラグ
 	bool is_change_attack;
@@ -212,5 +215,6 @@ private:
 	int change_battle_counter;
 	XMVECTOR m_before_pos;
 	float m_hip_z;
+	
 
 };
