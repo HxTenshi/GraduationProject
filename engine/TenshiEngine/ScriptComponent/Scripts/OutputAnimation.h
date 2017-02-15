@@ -8,7 +8,7 @@ public:
 	void Update();
 	bool OnStart(GameObject Sender) override;
 
-	void SetUpOrcChild(GameObject gen,GameObject point);
+	void SetUpOrcChild(GameObject gen,GameObject point,float time);
 
 private:
 	//ÉÅÉìÉoïœêî
@@ -26,6 +26,8 @@ private:
 	bool mIsEnd;
 
 	SERIALIZE float m_WalkTime;
+	SERIALIZE float m_WalkTimeChildOne;
+	SERIALIZE float m_WalkTimeChildSecond;
 
 	SERIALIZE bool m_UseGenConb;
 	SERIALIZE bool m_UseEndAction;
