@@ -33,7 +33,7 @@ void OutputAnimation::Update()
 		for (auto i : enemyObj->mTransform->Children()) {
 			child = i;
 		}
-		auto rezardScr = static_cast<EnemyOrc*>(Enemy::GetEnemy(child));
+		auto rezardScr = static_cast<EnemyRezardMan*>(Enemy::GetEnemy(child));
 		if (!rezardScr) {
 			Hx::Debug()->Log("script‚ªŒ©‚¦‚È‚¢");
 			return;
@@ -41,8 +41,8 @@ void OutputAnimation::Update()
 		Hx::Debug()->Log("script‚àŒ©‚¦‚½");
 
 		if (m_OrcChild) {
-			SetUpOrcChild(m_OrcChildOne,m_MovePointOne,m_WalkTimeChildOne);
-			SetUpOrcChild(m_OrcChildSecond, m_MovePointSecond,m_WalkTimeChildSecond);
+			SetUpOrcChild(m_OrcChildOne,m_MovePointOne);
+			SetUpOrcChild(m_OrcChildSecond, m_MovePointSecond);
 		}
 
 		rezardScr->MoveFrontStart(m_WalkTime);
@@ -73,23 +73,23 @@ bool OutputAnimation::OnStart(GameObject Sender)
 	return true;
 }
 
-void OutputAnimation::SetUpOrcChild(GameObject gen, GameObject point,float time)
+void OutputAnimation::SetUpOrcChild(GameObject gen, GameObject point)
 {
-	Hx::Debug()->Log("OutputAnimation : 1");
 	auto enemyObj = gen->GetScript<ObjectGenerator>()->GetGeneratorObject();
 	if (!enemyObj) {
 		Hx::Debug()->Log("enemy‚ª’x‚ê‚Ä‚È‚¢");
 		return;
 	}
-	Hx::Debug()->Log("OutputAnimation : 2");
 	GameObject child;
 	for (auto i : enemyObj->mTransform->Children()) {
 		child = i;
 	}
-	Hx::Debug()->Log("OutputAnimation : 3");
-	auto orcSrc = static_cast<EnemyOrc*>(Enemy::GetEnemy(child));
-	if (!orcSrc)return;
-	orcSrc->SetMovePoint(point);
-	orcSrc->MoveFrontStart(time);
-	Hx::Debug()->Log("OutputAnimation : 4");
+	auto rezardScr = static_cast<EnemyRezardMan*>(Enemy::GetEnemy(child));
+	if (!rezardScr) {
+		Hx::Debug()->Log("script‚ªŒ©‚¦‚È‚¢");
+		return;
+	}
+	static_cast<EnemyOrc*>(Enemy::GetEnemy(child))->SetMovePoint(point);
+	rezardScr->SetMovePoint(point);
+	rezardScr->MoveFrontStart(m_WalkTime);
 }

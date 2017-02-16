@@ -189,51 +189,9 @@ void EnemyOrc::ChildFinalize()
 	Hx::DestroyObject(this->gameObject);
 }
 
-void EnemyOrc::SetMovePoint(GameObject target)
-{
-	Hx::Debug()->Log("ƒZƒbƒg‚µ‚½!!!");
-	m_MovePoints = target;
-	if (m_MovePoints)Hx::Debug()->Log(m_MovePoints->Name());
-
-	Hx::Debug()->Log("before" + std::to_string(m_MovePointsVec.size()));
-	if (!m_MovePoints)m_SetPoint = false;
-	else {
-		for (auto i : m_MovePoints->mTransform->Children()) {
-			if (m_MovePoints->mTransform->Children().size() == 1) {
-				m_MovePointsVec[0] = i;
-				break;
-			}
-			m_MovePointsVec[std::stoi(i->Name()) - 1] = i;
-		}
-	}
-	Hx::Debug()->Log("after" + std::to_string(m_MovePointsVec.size()));
-	NextDestinationDeciceInit();
-
-	m_SetPoint = true;
-}
-
-void EnemyOrc::MoveFrontStart(float time)
-{
-	m_MovieAction = std::bind(&EnemyOrc::MoveFront, this);
-	m_MovieActionFlag = true;
-	m_MoveFrontTime = time;
-	m_MoveFrontCounter = 0.0f;
-	AnimChange(ANIM_ID::ANIM_MOVE, 5.0f);
-}
-
-void EnemyOrc::MoveFront()
-{
-	m_MoveFrontCounter += Hx::DeltaTime()->GetDeltaTime();
-	m_Vec += gameObject->mTransform->Forward() * m_TrackingSpeed;
-	if (m_MoveFrontCounter > m_MoveFrontTime) {
-		m_MoveFrontCounter = 0.0f;
-		m_MovieActionFlag = false;
-		AnimChange(ANIM_ID::ANIM_IDLE, 5.0f, true, true);
-	}
-}
-
 void EnemyOrc::TrackingModeInitilize()
 {
+
 	trackingActionInitilize[m_TrackingModeParam.id]();
 }
 
@@ -262,10 +220,7 @@ void EnemyOrc::TrackingMoveModeUpdate()
 		AnimChange(ANIM_ID::ANIM_MOVE, 5.0f);
 		if (!m_SetPoint)return;
 		auto distination = NextDestinationDecide();
-		if (!distination) {
-			Hx::Debug()->Log("yaabai");
-			return;
-		}
+		if (!distination)return;
 		LookPosition(NaviMeshTracking(distination, m_TrackingSpeed), m_TrackingRotateSpeed);
 		m_Forward = gameObject->mTransform->Forward();
 		m_Vec += m_Forward * m_TrackingSpeed;
@@ -491,4 +446,3 @@ void EnemyOrc::DeadUpdate()
 void EnemyOrc::DeadFinalize()
 {
 }
-

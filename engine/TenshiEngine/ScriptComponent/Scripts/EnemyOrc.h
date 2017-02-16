@@ -16,13 +16,9 @@ public:
 	bool LostPlayer() override;
 	void ChildFinalize() override;
 
-	void SetMovePoint(GameObject target);
-	void MoveFrontStart(float time);
+	void SetMovePoint(GameObject target) { Hx::Debug()->Log("ƒZƒbƒg‚µ‚½!!!"); m_MovePoints = target; if(m_MovePoints)Hx::Debug()->Log(m_MovePoints->Name()); }
 
 private:
-	void MoveFront();
-	float m_MoveFrontCounter;
-	float m_MoveFrontTime;
 	enum ANIM_ID {
 		ANIM_MOVE,
 		ANIM_RUNATTACK,
