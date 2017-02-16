@@ -101,6 +101,11 @@ bool EmptyEnemy::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR a
 	m_Accel = accelPower_;
 	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
 		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
+
+
+		if (m_objective_flag) {
+			hp = m_MaxHp;
+		}
 		return true;
 	}
 	return false;
@@ -145,9 +150,6 @@ void EmptyEnemy::TrackingMoveModeInitilize()
 
 void EmptyEnemy::TrackingMoveModeUpdate()
 {
-	if (m_objective_flag) {
-		hp = m_MaxHp;
-	}
 }
 
 void EmptyEnemy::TrackingMoveModeFinalize()
@@ -210,6 +212,11 @@ void EmptyEnemy::RotateTackleModeFinalize()
 }
 
 void EmptyEnemy::WinceModeInitilize() {
+	m_Hp -= m_Damage;
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
 }
 
 void EmptyEnemy::WinceModeUpdate() {
@@ -221,6 +228,11 @@ void EmptyEnemy::WinceModeFinalize() {
 
 void EmptyEnemy::UpperDownInitilize()
 {
+	m_Hp -= m_Damage;
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
 }
 
 void EmptyEnemy::UpperDownUpdate()
@@ -246,14 +258,6 @@ void EmptyEnemy::BeatDownInitilize()
 
 void EmptyEnemy::BeatDownUpdate()
 {
-	m_BattleModeParam.canChangeAttackAction = false;
-
-	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-	if (!cc)return;
-
-	if (cc->IsGround()) {
-		ChangeBattleAction(BATTLEACTION::DOWNACTION);
-	}
 
 }
 
