@@ -99,7 +99,7 @@ void Enemy::Finish() {
 //コライダーとのヒット時に呼ばれます
 void Enemy::OnCollideBegin(GameObject target) {
 	auto navi = gameObject->GetComponent<NaviMeshComponent>();
-	if (!navi)gameObject->AddComponent<NaviMeshComponent>();
+	if (!navi)return;
 	if (target->Name() == "NaviMeshColliderSegment1") {
 		navi->SetBaseNaviMeshObject(UniqueObject::GetNaviMesh(1));
 	}
