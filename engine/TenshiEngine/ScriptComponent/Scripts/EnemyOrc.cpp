@@ -300,9 +300,9 @@ void EnemyOrc::ConfrontModeInitilize()
 void EnemyOrc::ConfrontModeUpdate()
 {
 	auto playerPos = m_Player->mTransform->WorldPosition();
-	auto myPos = gameObject->mTransform->WorldPosition();
+	auto myPos = gameObject->mTransform->WorldPosition();		
+	LookPosition(NaviMeshTracking(m_Player, m_TrackingSpeed), m_TrackingRotateSpeed);
 	m_Forward = gameObject->mTransform->Forward();
-	LookPosition(playerPos, m_RotateSpeed);
 	m_Vec += m_Forward * m_TrackingSpeed;
 	if (XMVector3Length(myPos - playerPos).x < m_BattleRange) {
 		ChangeBattleAction(BATTLEACTION::ATTACK1ACTION);

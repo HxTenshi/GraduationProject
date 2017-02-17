@@ -352,6 +352,9 @@ XMVECTOR Enemy::NaviMeshTracking(GameObject destination,float speed) {
 	if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
 		navi->RootCreate(gameObject, destination);
 	}
+	auto naviPos = navi->GetPosition();
+	naviPos.y = gameObject->mTransform->WorldPosition().y;
+	if(XMVector3Length(gameObject->mTransform->WorldPosition() - naviPos).x < 1.0f)
 	navi->Move(speed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
 	return navi->GetPosition();
 }
