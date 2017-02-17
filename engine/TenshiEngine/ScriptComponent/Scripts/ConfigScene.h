@@ -40,4 +40,7 @@ private:
 	GameObject m_kakoiTexObj;
 	std::vector<GameObject> m_texObjs;
 	int num;
+	float m_stickInterval;
+	SERIALIZE
+		float STICK_INTERVAL;
 };

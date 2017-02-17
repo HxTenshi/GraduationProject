@@ -73,5 +73,9 @@ private:
 
 	SERIALIZE
 		GameObject m_Canvas;
+	SERIALIZE
+		std::string gameStartScenePass;
+	SERIALIZE
+		std::string configScenePass;
 };
 
