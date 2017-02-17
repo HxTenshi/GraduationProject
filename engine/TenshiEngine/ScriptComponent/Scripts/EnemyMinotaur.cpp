@@ -52,6 +52,7 @@ void EnemyMinotaur::ChildInitialize()
 	m_AttackHit = true;//攻撃のヒット
 	is_dead = false;//死んだとき
 	is_damage = false;
+	m_crate_dead_effect_timer = 0.0f;
 }
 void EnemyMinotaur::SoloAction()
 {
@@ -89,6 +90,7 @@ bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTO
 {
 	if (is_dead)return false;
 	if (is_damage)return false;
+
 	m_Damage= damage_;
 	m_Accel = accelPower_;
 	is_damage = true;
@@ -139,7 +141,7 @@ void EnemyMinotaur::BattleModeInitilize()
 	if (is_dead)return;
 	if (!m_Player)return;
 	battleActionInitilize[m_BattleModeParam.id]();
-
+	m_attackd_func = nullptr;
 	
 	std::string debug_draw_anim[18]{
 		"ANIM_F_WALK","ANIM_B_WALK","ANIM_L_WALK","ANIM_R_WALK",
@@ -184,8 +186,10 @@ void EnemyMinotaur::BattleModeUpdate()
 				is_changed_take_over = false;
 				m_action_func = [this]() {MoveSide(); };
 				anim_loop = true;
+				m_attackd_func = nullptr;
 				RoutineSetUp(ANIM_R_WALK);
 				if (m_Debug_flag)Hx::Debug()->Log("AnimEnd");
+
 			}
 		}
 	}
@@ -222,6 +226,7 @@ void EnemyMinotaur::DeadInitilize()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (m_Debug_flag)Hx::Debug()->Log("Anim:ANIM_DYING");
 	AnimChange(ANIM_DYING, 10.0f, false, true);
+	is_dead_anim_end = false;
 }
 
 void EnemyMinotaur::DeadUpdate()
@@ -229,8 +234,21 @@ void EnemyMinotaur::DeadUpdate()
 	//死んだときの削除処理
 	if (auto anim = m_ModelObject->GetComponent<AnimationComponent>()) {
 		if (anim->IsAnimationEnd(ANIM_DYING)) {
-			Hx::DestroyObject(gameObject);
+			if (!is_dead_anim_end) {
+				//Hx::DestroyObject(gameObject);
+				auto g = Hx::Instance(m_DeadEffect);
+				auto f = gameObject->mTransform->Forward();
+				auto pos = gameObject->mTransform->WorldPosition();
+				pos += f*3.0f;
+				g->mTransform->WorldPosition(pos);
+				is_dead_anim_end = true;
+			}
+			m_crate_dead_effect_timer += Hx::DeltaTime()->GetDeltaTime();
+
 		}
+	}
+	if (m_crate_dead_effect_timer > 1.0f) {
+		Hx::DestroyObject(gameObject);
 	}
 }
 
@@ -304,17 +322,17 @@ void EnemyMinotaur::HuntRoutine()
 			m_attack_flag = true;
 			anim_loop = false;
 			RoutineSetUp(t);
-		}//攻撃範囲内にいたら
-		else if (m_roucine_module.DistanceCheck(DSI_SIDE, distance, funifuni::ModuleDistanceType::In)) {
-			m_action_func = [this]() {MoveSide(); };
-			anim_loop = true;
-			RoutineSetUp(ANIM_R_WALK);
 		}//攻撃中以外に近づかれたら下がる
 		else if (m_roucine_module.DistanceCheck(DSI_BACK, distance, funifuni::ModuleDistanceType::In)) {
 
 			m_action_func = [this]() {MoveBack(); };
 			anim_loop = true;
 			RoutineSetUp(ANIM_B_WALK);
+		}//攻撃範囲内にいたら
+		else if (m_roucine_module.DistanceCheck(DSI_SIDE, distance, funifuni::ModuleDistanceType::In)) {
+			m_action_func = [this]() {MoveSide(); };
+			anim_loop = true;
+			RoutineSetUp(ANIM_R_WALK);
 		}//攻撃範囲外に出ていたら
 		else if (m_roucine_module.DistanceCheck(DSI_MOVE, distance, funifuni::ModuleDistanceType::Over)) {
 			m_action_func = [this]() {Move(walk_speed); };
@@ -329,6 +347,7 @@ void EnemyMinotaur::HuntRoutine()
 		}
 
 		if (m_action_func)m_action_func();
+
 		m_anim_state = m_roucine_module.GetAnimState();
 		//追跡モードからバトルモードに
 		if (change_battle_time > 2.0f) {
@@ -337,6 +356,7 @@ void EnemyMinotaur::HuntRoutine()
 		}
 
 	}
+	if (m_attackd_func)m_attackd_func();
 }
 
 void EnemyMinotaur::BattleRoutine()
@@ -401,6 +421,7 @@ void EnemyMinotaur::BattleRoutine()
 			is_change_attack = false;
 		}
 	}
+	if (m_attackd_func)m_attackd_func();
 }
 
 void EnemyMinotaur::RoutineSetUp(AnimType type)
@@ -426,14 +447,14 @@ void EnemyMinotaur::Move(float s)
 	auto dir = nav->GetRouteVector();
 	dir = XMVector3Normalize(dir);
 	nav->Move(7.0f* Hx::DeltaTime()->GetDeltaTime());
-	LookPosition(player->mTransform->WorldPosition(), 270.0f, false);
+	LookPosition(player->mTransform->WorldPosition(), 400.0f, false);
 	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Forward()*Hx::DeltaTime()->GetDeltaTime()*s);
 }
 void EnemyMinotaur::MoveSide(bool right)
 {
 	auto player = m_Player;
 	if (!player)return;
-	LookPosition(player->mTransform->WorldPosition(), 360.0f, false);
+	LookPosition(player->mTransform->WorldPosition(), 400.0f, false);
 	auto vec = (right) ? -gameObject->mTransform->Left() : gameObject->mTransform->Left();
 	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Left()*Hx::DeltaTime()->GetDeltaTime()*side_speed);
 }
@@ -442,7 +463,7 @@ void EnemyMinotaur::MoveBack()
 {
 	auto player = m_Player;
 	if (!player)return;
-	LookPosition(player->mTransform->WorldPosition(), 270.0f, false);
+	LookPosition(player->mTransform->WorldPosition(), 400.0f, false);
 	gameObject->GetComponent<CharacterControllerComponent>()->Move(-gameObject->mTransform->Forward() *Hx::DeltaTime()->GetDeltaTime()*back_speed);
 
 }
@@ -485,11 +506,11 @@ void EnemyMinotaur::ThoughtRoutine()
 void EnemyMinotaur::InitThoughRoutineParam()
 {
 	//追跡用の距離
-	m_roucine_module.SetDistanceParam(DistanceType::DSI_EM_ATTACK, 4.5f);
-	m_roucine_module.SetDistanceParam(DistanceType::DSI_ATTACK, 6.0f);//in
-	m_roucine_module.SetDistanceParam(DistanceType::DSI_SIDE, 6.0f);//in
-	m_roucine_module.SetDistanceParam(DistanceType::DSI_MOVE, 8.0f);//in
-	m_roucine_module.SetDistanceParam(DistanceType::DSI_BACK, 5.0f);//in
+	m_roucine_module.SetDistanceParam(DistanceType::DSI_EM_ATTACK, 2.5f);
+	m_roucine_module.SetDistanceParam(DistanceType::DSI_ATTACK, 4.0f);//in
+	m_roucine_module.SetDistanceParam(DistanceType::DSI_SIDE, 4.0f);//in
+	m_roucine_module.SetDistanceParam(DistanceType::DSI_MOVE, 6.0f);//in
+	m_roucine_module.SetDistanceParam(DistanceType::DSI_BACK, 3.0f);//in
 
 	//バトル用の距離
 	m_roucine_module.SetDistanceParam(DistanceType::DSI_SEARCH, 1000.0f);//over
@@ -507,7 +528,7 @@ void EnemyMinotaur::InitThoughRoutineParam()
 		2.0f,1.0f,1.5f,1.5f,
 		1.4f,1.4f,1.4f,1.4f,
 		1.4f,1.4f,1.4f,2.0f,
-		1.0f,1.0f,1.0f,1.0f,
+		1.0f,1.0f,1.0f,2.0f,
 		2.0f,1.4f
 	};
 	for (int i = 0; i < 18; ++i) {
@@ -563,6 +584,7 @@ void EnemyMinotaur::Attack4()
 	auto rot = gameObject->mTransform->Rotate();
 	obj->mTransform->Rotate(rot);
 	m_action_func = nullptr;
+	m_attackd_func = [this]() {Move(1.0f); };
 }
 
 void EnemyMinotaur::Attack5()
@@ -576,6 +598,7 @@ void EnemyMinotaur::Attack5()
 	auto rot = gameObject->mTransform->Rotate();
 	obj->mTransform->Rotate(rot);
 	m_action_func = nullptr;
+	m_attackd_func = [this]() {Move(1.0f); };
 }
 
 void EnemyMinotaur::Attack6()
