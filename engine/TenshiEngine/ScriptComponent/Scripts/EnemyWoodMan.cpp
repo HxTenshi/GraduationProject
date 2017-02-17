@@ -207,13 +207,13 @@ void EnemyWoodMan::ConfrontModeFinalize()
 
 void EnemyWoodMan::RunAttackModeInitilize()
 {
-	AnimChange(ANIM_ID::ANIM_RUNATTACK, 10.0f);
 	m_Attacked = false;
 	m_AttackHit = false;
 }
 
 void EnemyWoodMan::RunAttackModeUpdate()
 {
+	AnimChange(ANIM_ID::ANIM_RUNATTACK, 10.0f);
 	auto pPos = m_Player->mTransform->WorldPosition();
 	LookPosition(pPos, m_RotateSpeed);
 	m_Vec += XMVector3Normalize(gameObject->mTransform->Forward()) * m_TackleSpeed;
@@ -230,11 +230,11 @@ void EnemyWoodMan::RunAttackModeFinalize()
 
 void EnemyWoodMan::ComeBackModeInitilize()
 {
-	AnimChange(ANIM_ID::ANIM_MOVE, 10.0f);
 }
 
 void EnemyWoodMan::ComeBackModeUpdate()
 {
+	AnimChange(ANIM_ID::ANIM_MOVE, 10.0f);
 	LookPosition(m_StartPos, m_RotateSpeed);
 	m_Vec += XMVector3Normalize(m_StartPos - gameObject->mTransform->WorldPosition()) * m_TackleSpeed;
 	auto groundPos = gameObject->mTransform->WorldPosition();
