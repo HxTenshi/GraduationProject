@@ -33,6 +33,12 @@ void ReisSonicWave::Update(){
 		}
 		m_HitOnFrame++;
 	}
+	if (m_WaitTime != 0.0f && m_HintBox) {
+		auto s = 1.0f - m_Timer / m_WaitTime;
+		s = max(s, 0.0f);
+		s *= 0.5f;
+		m_HintBox->mTransform->Scale(XMVectorSet(s, s, 100.0f, 1.0f));
+	}
 	if (m_HitOnFrame >= 3) {
 		Hx::DestroyObject(gameObject);
 	}

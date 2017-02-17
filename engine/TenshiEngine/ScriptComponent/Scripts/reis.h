@@ -24,6 +24,14 @@ public:
 		};
 	};
 
+	struct DogdeMode {
+		enum Enum {
+			Back,
+			Rotate,
+			Count
+		};
+	};
+
 private:
 	void Teleport(const XMVECTOR& vect);
 	void Move(const XMVECTOR& vect);
@@ -62,7 +70,10 @@ private:
 	//ñ{ëÃ
 	SERIALIZE GameObject m_EnemyBase;
 
+	//effect
+	SERIALIZE PrefabAsset m_DamageParticle;
 	SERIALIZE PrefabAsset m_DeadParticle;
+	SERIALIZE PrefabAsset m_WarpParticle;
 
 	//É{Å[Éìí«è]é¸ÇË
 	SERIALIZE GameObject m_BoneMirrorObject;
@@ -73,12 +84,17 @@ private:
 	float m_SaveHp;
 	bool m_NowAttack;
 	float m_MoveCooldown;
+	int m_WinceCount;
+
 	MoveMode::Enum m_MoveMode;
 
+	//âÒî
+	bool m_AutoDogdeMode;
+	XMVECTOR m_DodgeBaseVect;
+	DogdeMode::Enum m_DogdeMode;
 
 	//CitrusBullet
 	GameObject m_CitrusBulletObject;
-	int m_CitrusBulletCount;
 
 	GameObject m_SonicWaveObject;
 

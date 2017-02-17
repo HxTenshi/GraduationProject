@@ -291,6 +291,7 @@ void PlayerController::Start(){
 
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 9999.0f / 30.0f;
+		attack.Rotate = false;
 
 		attack.DamageScale = 1.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
@@ -304,6 +305,7 @@ void PlayerController::Start(){
 		attack.DamageType = DamageType::HighDamage;
 		attack.AttackTime = 16.0f / 30.0f;
 		//attack.OnDamageStart = 6.0f / 60.0f;
+		attack.Rotate = true;
 
 		attack.OnDamageStart = 6.0f / 30.0f;
 		attack.OnDamageEnd = 16.0f / 30.0f;
@@ -372,6 +374,7 @@ void PlayerController::Start(){
 
 		attack.KnockbackEffect = BATTLEACTION::BEATDOWNACTION;
 		attack.KnockbackEffectPower = 1.0f;
+		attack.Rotate = false;
 
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 24.0f / 30.0f;
@@ -406,6 +409,7 @@ void PlayerController::Start(){
 		attack.DamageType = DamageType::LowDamage;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attacklist[attack.ID] = attack;
+		attack.Rotate = true;
 
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::HighFloatLow;
@@ -1068,8 +1072,9 @@ void PlayerController::AttackExcute()
 	moveUpdate();
 
 	lockOn();
-
-	rotate();
+	if (m_CurrentAttack.Rotate) {
+		rotate();
+	}
 
 	
 	//if (m_NextAttack==-1) {
@@ -1956,6 +1961,7 @@ void PlayerController::lockOn()
 
 			if (!getenemy)return;
 			auto enemy = getenemy->GetMinEnemy();
+			//auto enemy = getenemy->GetPointMinEnemy(gameObject, GetEnemy::MinVect::right);
 			if (!enemy)return;
 
 			if (camera) {

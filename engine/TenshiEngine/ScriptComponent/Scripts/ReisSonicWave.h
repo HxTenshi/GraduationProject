@@ -19,6 +19,7 @@ private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE PrefabAsset m_WaveEffect;
 	SERIALIZE GameObject m_HitBox;
+	SERIALIZE GameObject m_HintBox;
 
 	SERIALIZE float m_WaitTime;
 

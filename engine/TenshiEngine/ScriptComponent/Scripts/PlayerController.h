@@ -28,6 +28,7 @@ struct AttackState {
 	float OnDamageStart = 0.0f;
 	float OnDamageEnd = 999999.0f;
 	bool FreeDogde = false;
+	bool Rotate = true;
 	std::function<void(void)> AttackFunc = []() {};
 	DamageType DamageType = DamageType::LowDamage;
 	BATTLEACTION::Enum KnockbackEffect = BATTLEACTION::WINCEACTION;

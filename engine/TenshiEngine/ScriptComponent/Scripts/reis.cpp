@@ -20,6 +20,7 @@ struct ReisMode {
 		Idle,
 		Move,
 		Wince,
+		Dogde,
 		Dead,
 		Counter,
 		Attack_Bullet,
@@ -29,6 +30,7 @@ struct ReisMode {
 		Attack_v1,
 		Attack_v2,
 		Attack_v3,
+		Attack_Counter,
 		Count,
 	};
 };
@@ -55,10 +57,10 @@ const AttackIf mode_melee[] = {
 };
 const int mid_num = 4;
 const AttackIf mode_mid[] = { 
-	AttackIf(ReisMode::Attack_Bullet		,reis::MoveMode::In	,0.5f),
-	AttackIf(ReisMode::Attack_CitrusBullet	,reis::MoveMode::In	,1.0f,false),
-	AttackIf(ReisMode::Attack_SonicWaveV	,reis::MoveMode::Idle	,1.0f,false),
-	AttackIf(ReisMode::Attack_WarpMelee		,reis::MoveMode::In	,1.0f,false)
+	AttackIf(ReisMode::Attack_Bullet		,reis::MoveMode::In		,0.5f),
+	AttackIf(ReisMode::Attack_CitrusBullet	,reis::MoveMode::In		,1.0f),
+	AttackIf(ReisMode::Attack_SonicWaveV	,reis::MoveMode::Idle	,1.0f),
+	AttackIf(ReisMode::Attack_WarpMelee		,reis::MoveMode::In		,1.0f)
 };
 
 struct AnimeID {
@@ -76,6 +78,9 @@ struct AnimeID {
 		Attack_Ch_v3,
 		Wince,
 		Dead,
+		Dogde,
+		WarpOut,
+		WarpIn,
 	};
 };
 
@@ -85,14 +90,17 @@ void reis::Initialize(){
 	m_Player = NULL;
 	m_ReisMode = ReisMode::Idle;
 	m_CitrusBulletObject = NULL;
-	m_CitrusBulletCount = 0;
 	m_ReisLastAttackMode = 0;
 	m_SonicWaveObject = NULL;
 	m_SuperArmor = false;
 	m_SaveHp = 0.0f;
 	m_MoveCooldown = 0.0f;
 	m_MoveMode = MoveMode::Idle;
+	m_DogdeMode = DogdeMode::Back;
+	m_WinceCount = 0;
+	m_AutoDogdeMode = false;
 
+	m_DodgeBaseVect = XMVectorZero();
 	m_BoneBackPos = XMVectorZero();
 
 	m_MoveFunc.resize(ReisMode::Count);
@@ -151,7 +159,7 @@ void reis::Start(){
 					m_MoveMode = mode_melee[atk].moveMode;
 					m_MoveCooldown = mode_melee[atk].cooldown;
 				}
-				if (GetPlayerLen() > 4.0f) {
+				if (GetPlayerLen() > 7.0f) {
 					int atk = rand() % mid_num;
 					m_ReisMode = mode_mid[atk].mode;
 					f = mode_mid[atk].enable;
@@ -171,16 +179,79 @@ void reis::Start(){
 		}
 	};
 	m_MoveFunc[ReisMode::Wince] = [&]() {
+
+		if (m_CurrentAnimeID != AnimeID::Wince) {
+			m_WinceCount++;
+		}
 		m_AttackStage = AttackStage();
 		ChangeAnime(AnimeID::Wince);
+
+		if (m_WinceCount > 8) {
+			m_ReisMode = ReisMode::Dogde;
+			m_DogdeMode = DogdeMode::Back;
+			m_WinceCount = 0;
+		}
 		if (IsCurrentAnimeEnd()) {
 			m_ReisMode = ReisMode::Idle;
+			m_WinceCount = 0;
 		}
 	};
-	m_MoveFunc[ReisMode::Dead] = [&]() {
-		//if(m_CurrentAnimeID != AnimeID::Dead){
+	m_MoveFunc[ReisMode::Dogde] = [&]() {
+		m_AutoDogdeMode = false;
+		SetSuperArmor(true);
+		if (m_CurrentAnimeID != AnimeID::Dogde) {
 			m_AttackStage = AttackStage();
-		//}
+		}
+
+		ChangeAnime(AnimeID::Dogde);
+
+		if (m_DogdeMode == DogdeMode::Back) {
+			if (m_AttackStage.stage == 0) {
+				m_DodgeBaseVect = -GetPlayerVectH() * 6.0f;
+			}
+			m_AttackStage.stage += Hx::DeltaTime()->GetDeltaTime()*1000.0f;
+			if (m_AttackStage.stage <= 1*1000) {
+				Move(m_DodgeBaseVect * Hx::DeltaTime()->GetDeltaTime());
+				Move(XMVectorSet(0.0f, -4.0f, 0.0f, 1.0f));
+			}
+			if (IsCurrentAnimeEnd()) {
+				SetSuperArmor(false);
+				m_AttackStage = AttackStage();
+				m_ReisMode = ReisMode::Idle;
+			}
+		}
+		else if (m_DogdeMode == DogdeMode::Rotate){
+			Rotate(GetPlayerVectH());
+			if (m_AttackStage.stage == 0) {
+
+				m_DodgeBaseVect = GetPlayerVectH()*-GetPlayerLenH();
+			}
+			m_AttackStage.stage += (int)(Hx::DeltaTime()->GetDeltaTime()*1000.0f);
+			if (m_AttackStage.stage <= 1 * 1000) {
+				auto ppos = m_Player->mTransform->WorldPosition();
+				float t = m_AttackStage.stage / 1000.0f;
+				auto q = XMQuaternionRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), t*XM_PI);
+				auto addpos = XMVector3Rotate(m_DodgeBaseVect, q);
+
+				auto tpos = ppos + addpos;
+				tpos.y += 4.0f;
+				Teleport(tpos);
+				Move(XMVectorSet(0.0f, -4.0f, 0.0f, 1.0f));
+			}
+			if (IsCurrentAnimeEnd()) {
+				SetSuperArmor(false);
+				m_AttackStage = AttackStage();
+				m_ReisMode = ReisMode::Attack_Counter;
+			}
+		}
+
+
+
+	};
+	m_MoveFunc[ReisMode::Dead] = [&]() {
+		if(m_CurrentAnimeID != AnimeID::Dead){
+			m_AttackStage = AttackStage();
+		}
 		ChangeAnime(AnimeID::Dead);
 		if (m_AttackStage.stage == 0) {
 			m_AttackStage.stage++;
@@ -191,12 +262,13 @@ void reis::Start(){
 		}
 		else if (m_AttackStage.stage == 1) {
 			if (IsCurrentAnimeEnd()) {
-				//Hx::DestroyObject(gameObject);
+				Hx::DestroyObject(gameObject);
 			}
 		}
 	};
 	
 	m_MoveFunc[ReisMode::Attack_v1] = [&]() {
+		m_AutoDogdeMode = true;
 		if (m_AttackStage.stage == 0) {
 			ChangeAnime(AnimeID::Attack_Ch_v1);
 			if (IsCurrentAnimeEnd()) {
@@ -210,6 +282,7 @@ void reis::Start(){
 				SetWeapon(false);
 				m_ReisMode = ReisMode::Idle;
 				m_AttackStage = AttackStage();
+				m_AutoDogdeMode = false;
 			}
 		}
 		
@@ -243,6 +316,7 @@ void reis::Start(){
 		}
 	};
 	m_MoveFunc[ReisMode::Attack_v3] = [&]() {
+		m_AutoDogdeMode = true;
 		if (m_AttackStage.stage == 0) {
 			ChangeAnime(AnimeID::Attack_Ch_v3);
 			if (IsCurrentAnimeEnd()) {
@@ -250,10 +324,27 @@ void reis::Start(){
 			}
 		}
 		else if (m_AttackStage.stage == 1) {
+			SetWeapon(true, 10.0f);
 			ChangeAnime(AnimeID::Attack_v3);
 			if (IsCurrentAnimeEnd()) {
 				m_ReisMode = ReisMode::Idle;
 				m_AttackStage = AttackStage();
+				m_AutoDogdeMode = false;
+				SetWeapon(false);
+			}
+		}
+	};
+	m_MoveFunc[ReisMode::Attack_Counter] = [&]() {
+		Rotate(GetPlayerVectH());
+		SetSuperArmor(true);
+		if (m_AttackStage.stage == 0) {
+			ChangeAnime(AnimeID::Attack_v1);
+			SetWeapon(true, 10.0f);
+			if (IsCurrentAnimeEnd()) {
+				m_ReisMode = ReisMode::Idle;
+				m_AttackStage = AttackStage();
+				SetWeapon(false);
+				SetSuperArmor(false);
 			}
 		}
 	};
@@ -272,8 +363,11 @@ void reis::Start(){
 		}
 	};
 	m_MoveFunc[ReisMode::Attack_CitrusBullet] = [&]() {
+		SetSuperArmor(true);
 		Rotate(GetPlayerVectH());
-		if (m_CurrentAnimeID != AnimeID::Attack_Bullet) {
+
+		int step = 4;
+		if (m_AttackStage.stage %step == 0) {
 			if (m_CitrusBulletObject = Hx::Instance(m_CitrusBullet)) {
 				auto pos = gameObject->mTransform->WorldPosition();
 				pos.y += 1.0f;
@@ -282,29 +376,46 @@ void reis::Start(){
 					scr->SetVector(GetPlayerVectH());
 				}
 			}
+			m_AttackStage.stage++;
+		}
+		if (m_AttackStage.stage%step == 1) {
+			ChangeAnime(AnimeID::Attack_Bullet);
+			if (IsCurrentAnimeEnd()) {
+				m_AttackStage.stage++;
+			}
+		}else if (m_AttackStage.stage%step == 2) {
+			ChangeAnime(AnimeID::WarpOut);
+			if (IsCurrentAnimeEnd()) {
+				if (auto obj = Hx::Instance(m_WarpParticle)) {
+					obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+				}
+				if (m_CitrusBulletObject) {
+					auto pos = m_CitrusBulletObject->mTransform->WorldPosition();
+					pos.y += 3.0f;
+					Teleport(pos);
+					Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
+
+					Hx::DestroyObject(m_CitrusBulletObject);
+					m_CitrusBulletObject = NULL;
+				}
+				if (auto obj = Hx::Instance(m_WarpParticle)) {
+					obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+				}
+				m_AttackStage.stage++;
+			}
+		}
+		else if (m_AttackStage.stage%step == 3) {
+			ChangeAnime(AnimeID::WarpIn);
+			if (IsCurrentAnimeEnd()) {
+				m_AttackStage.stage++;
+			}
 		}
 
-		ChangeAnime(AnimeID::Attack_Bullet);
-		if (IsCurrentAnimeEnd()) {
-
-			if (m_CitrusBulletObject) {
-				auto pos = m_CitrusBulletObject->mTransform->WorldPosition();
-				pos.y += 3.0f;
-				Teleport(pos);
-				Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
-
-				Hx::DestroyObject(m_CitrusBulletObject);
-				m_CitrusBulletObject = NULL;
-			}
-
-			if (m_CitrusBulletCount >= 2) {
-				m_CitrusBulletCount = 0;
-				m_ReisMode = ReisMode::Idle;
-			}
-			else {
-				ChangeAnime(AnimeID::Idle);
-				m_CitrusBulletCount++;
-			}
+		if (IsCurrentAnimeEnd() && m_AttackStage.stage == step*3) {
+			ChangeAnime(AnimeID::Idle);
+			m_ReisMode = ReisMode::Idle;
+			SetSuperArmor(false);
+			m_AttackStage = AttackStage();
 		}
 	};
 	m_MoveFunc[ReisMode::Attack_SonicWaveV] = [&]() {
@@ -357,30 +468,45 @@ void reis::Start(){
 	//};
 
 	m_MoveFunc[ReisMode::Attack_WarpMelee] = [&]() {
-		if (m_AttackStage.stage == 0) {
-			m_AttackStage.stage++;
-			if (m_Player) {
-				auto pos = m_Player->mTransform->WorldPosition();
-
-				auto agnel = rand() / (float)RAND_MAX * XM_2PI;
-				auto add = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), XMMatrixRotationY(agnel));
-
-				pos += add * 2.0f;
-				pos.y += 3.0f;
-				Teleport(pos);
-				Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
-			}
-		}
 		Rotate(GetPlayerVectH());
 
-		if (m_AttackStage.stage == 1) {
-			ChangeAnime(AnimeID::Attack_Ch_v1);
+		if (m_AttackStage.stage == 0) {
+			ChangeAnime(AnimeID::WarpOut);
+			if (IsCurrentAnimeEnd()) {
+				if (auto obj = Hx::Instance(m_WarpParticle)) {
+					obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+				}
+				if (m_Player) {
+					auto pos = m_Player->mTransform->WorldPosition();
+
+					auto agnel = rand() / (float)RAND_MAX * XM_2PI;
+					auto add = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), XMMatrixRotationY(agnel));
+
+					pos += add * 2.0f;
+					pos.y += 3.0f;
+					Teleport(pos);
+					Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
+				}
+				if (auto obj = Hx::Instance(m_WarpParticle)) {
+					obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+				}
+				m_AttackStage.stage++;
+			}
+		}
+		else if (m_AttackStage.stage == 1) {
+			ChangeAnime(AnimeID::WarpIn);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
 			}
 		}
 		else if (m_AttackStage.stage == 2) {
-			SetWeapon(true,10.0f);
+			ChangeAnime(AnimeID::Attack_Ch_v1);
+			if (IsCurrentAnimeEnd()) {
+				m_AttackStage.stage++;
+			}
+		}
+		else if (m_AttackStage.stage == 3) {
+			SetWeapon(true, 10.0f);
 			ChangeAnime(AnimeID::Attack_v1);
 			if (IsCurrentAnimeEnd()) {
 
@@ -522,12 +648,37 @@ float reis::GetHp()
 
 void reis::OnDamage()
 {
-	if (m_SuperArmor)return;
 	if (auto enemy = Enemy::GetEnemy(m_EnemyBase)) {
-		if (enemy->GetEnemyAllParameter(false).battleModeParameter.id == BATTLEACTION::WINCEACTION) {
-			ChangeAnime(AnimeID::Idle);
-			m_ReisMode = ReisMode::Wince;
-			m_AttackStage = AttackStage();
+		if (enemy->GetEnemyAllParameter(false).battleModeParameter.id == BATTLEACTION::WINCEACTION ||
+			enemy->GetEnemyAllParameter(false).battleModeParameter.id == BATTLEACTION::BEATDOWNACTION ||
+			enemy->GetEnemyAllParameter(false).battleModeParameter.id == BATTLEACTION::UPPERDOWNACTION){
+
+			if (auto obj = Hx::Instance(m_DamageParticle)) {
+				auto p = gameObject->mTransform->WorldPosition();
+				p.y += 1.0f;
+				obj->mTransform->WorldPosition(p);
+				if (m_Player) {
+					auto pp = m_Player->mTransform->WorldPosition();
+					auto ep = gameObject->mTransform->WorldPosition();
+					pp.y = 0.0f;
+					ep.y = 0.0f;
+					auto m = XMMatrixLookAtLH(pp, ep, XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f));
+					auto q = XMQuaternionRotationMatrix(XMMatrixTranspose(m));
+					obj->mTransform->WorldQuaternion(q);
+				}
+			}
+
+			if (!m_SuperArmor) {
+				ChangeAnime(AnimeID::Idle);
+				m_ReisMode = ReisMode::Wince;
+				m_AttackStage = AttackStage();
+				SetWeapon(false);
+			}
+			if (m_AutoDogdeMode) {
+				m_ReisMode = ReisMode::Dogde;
+				m_DogdeMode = DogdeMode::Rotate;
+				SetWeapon(false);
+			}
 		}
 		if (enemy->GetEnemyAllParameter(false).battleModeParameter.id == BATTLEACTION::DEADACTION) {
 			m_ReisMode = ReisMode::Dead;
