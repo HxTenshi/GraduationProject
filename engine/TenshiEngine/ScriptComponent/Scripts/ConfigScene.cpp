@@ -13,6 +13,7 @@ void ConfigScene::Initialize(){
 	m_texObjs.push_back(m_comboTexObj);
 	m_texObjs.push_back(m_toTitleTexObj);
 	num = 0;
+	m_stickInterval = 0.0f;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -48,16 +49,29 @@ void ConfigScene::OnCollideExit(GameObject target){
 }
 
 //カーソルの移動
-void ConfigScene::CursourMove(){
+void ConfigScene::CursourMove() {
 	//nullチェック
 	if (m_texObjs[0] == NULL)return;
 	if (m_texObjs[1] == NULL)return;
 	if (m_texObjs[2] == NULL)return;
 	if (m_texObjs[3] == NULL)return;
 
+	m_stickInterval += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+	m_stickInterval = min(m_stickInterval, 1.0f);
+	bool isStickInterval = m_stickInterval > STICK_INTERVAL;
 
-	if (Input::Trigger(KeyCode::Key_UP)) num--;
-	if (Input::Trigger(KeyCode::Key_DOWN)) num++;
+	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+	bool isUpLS = ls.y > 0.5f;
+	bool isDownLS = ls.y < -0.5f;
+	if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && isStickInterval) {
+		num--;
+		m_stickInterval = 0.0f;
+	}
+	if (Input::Trigger(KeyCode::Key_DOWN) || isDownLS && isStickInterval) {
+		num++;
+		m_stickInterval = 0.0f;
+	}
+	
 
 	//クランプ処理
 	int minNum = 0;
@@ -71,7 +85,9 @@ void ConfigScene::CursourMove(){
 
 //シーンの決定
 void ConfigScene::EnterScene(int num){
-	if (Input::Trigger(KeyCode::Key_SPACE)) {
+	bool isSpaceKey = Input::Trigger(KeyCode::Key_SPACE);
+	bool isPad_B_Button = Input::Trigger(PAD_X_KeyCode::Button_B);
+	if (isSpaceKey || isPad_B_Button) {
 		std::string nextScenePass = GetScenePass(num);
 		Hx::Debug()->Log(nextScenePass + "に遷移しました");
 		Hx::LoadScene(nextScenePass);

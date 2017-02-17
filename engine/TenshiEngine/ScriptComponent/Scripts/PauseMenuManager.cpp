@@ -135,10 +135,11 @@ void PauseMenuManager::UpdateClose(){
 			}
 			m_objMap[i][j]->m_texObj->mTransform->Position(tempPos);
 			//マテリアルのカラー　アルファー値減算
-			auto material = m_objMap[i][j]->m_texObj->GetComponent<MaterialComponent>();
-			XMFLOAT4 tempColor = material->GetMaterialPtr(0)->GetAlbedo();
+			auto mat = m_objMap[i][j]->m_texObj->GetComponent<MaterialComponent>();
+			XMFLOAT4 tempColor = mat->GetMaterialPtr(0)->GetAlbedo();
 			tempColor.w -= m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
-			material->SetAlbedoColor(tempColor);
+			if (tempColor.w <= 0.0f) tempColor.w = 0.0f;
+			mat->SetAlbedoColor(tempColor);
 		}
 	}
 

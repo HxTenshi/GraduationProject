@@ -62,15 +62,19 @@ namespace funifuni {
 
 	//毎フレーム呼ばれます
 	void TitleManager::Update() {
-
-		if (Input::Trigger(KeyCode::Key_A) && !is_next) {
+		
+		//左スティックの入力を取得
+		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+		bool isRightLS = ls.x > 0.5f;	//右に倒したか？
+		bool isLeftLS = ls.x < -0.5f;	//左に倒したか？
+		if ((Input::Trigger(KeyCode::Key_A) || isLeftLS) && !is_next) {
 			is_next = true;
 			is_arrow = false;
 			InitPosition(is_arrow);
 			Back();
 			SetArrowPosition();
 		}
-		if (Input::Trigger(KeyCode::Key_D) && !is_next) {
+		if ((Input::Trigger(KeyCode::Key_D) || isRightLS) && !is_next) {
 			is_next = true;
 			is_arrow = true;
 			InitPosition(is_arrow);
@@ -78,7 +82,10 @@ namespace funifuni {
 			SetArrowPosition();
 
 		}
-		if (Input::Trigger(KeyCode::Key_SPACE)) {
+
+		//決定キーを押されたか
+		bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
+		if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
 			Select();
 		}
 		if (is_next) {
@@ -211,11 +218,11 @@ namespace funifuni {
 	{
 		switch (m_button_state)
 		{
-		case TitleButtonRoll::GameStart: //Hx::LoadScene("");
+		case TitleButtonRoll::GameStart: Hx::LoadScene(gameStartScenePass);
 			break;
-		case TitleButtonRoll::Config: Hx::LoadScene("Assets/Mossan/Config.scene");
+		case TitleButtonRoll::Config: Hx::LoadScene(configScenePass);
 			break;
-		case TitleButtonRoll::GameEnd: //Hx::LoadScene("");
+		case TitleButtonRoll::GameEnd: Hx::Shutdown();
 			break;
 		default:
 			break;
