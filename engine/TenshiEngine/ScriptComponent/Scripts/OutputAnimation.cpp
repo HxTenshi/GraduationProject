@@ -33,7 +33,7 @@ void OutputAnimation::Update()
 		for (auto i : enemyObj->mTransform->Children()) {
 			child = i;
 		}
-		auto rezardScr = static_cast<EnemyRezardMan*>(Enemy::GetEnemy(child));
+		auto rezardScr = static_cast<EnemyOrc*>(Enemy::GetEnemy(child));
 		if (!rezardScr) {
 			Hx::Debug()->Log("script‚ªŒ©‚¦‚È‚¢");
 			return;
@@ -84,12 +84,7 @@ void OutputAnimation::SetUpOrcChild(GameObject gen, GameObject point)
 	for (auto i : enemyObj->mTransform->Children()) {
 		child = i;
 	}
-	auto rezardScr = static_cast<EnemyRezardMan*>(Enemy::GetEnemy(child));
-	if (!rezardScr) {
-		Hx::Debug()->Log("script‚ªŒ©‚¦‚È‚¢");
-		return;
-	}
-	static_cast<EnemyOrc*>(Enemy::GetEnemy(child))->SetMovePoint(point);
-	rezardScr->SetMovePoint(point);
-	rezardScr->MoveFrontStart(m_WalkTime);
+	auto orcSrc = static_cast<EnemyOrc*>(Enemy::GetEnemy(child));
+	orcSrc->SetMovePoint(point);
+	orcSrc->MoveFrontStart(m_ChildWallTime);
 }

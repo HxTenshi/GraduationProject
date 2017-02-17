@@ -12,27 +12,70 @@
 
 #include "ReisSonicWave.h"
 
+#include "Enemy.h"
+
 
 struct ReisMode {
 	enum Enum {
 		Idle,
 		Move,
-		Attack,
+		Wince,
+		Dead,
+		Counter,
 		Attack_Bullet,
 		Attack_CitrusBullet,
 		Attack_SonicWaveV,
 		Attack_WarpMelee,
+		Attack_v1,
+		Attack_v2,
+		Attack_v3,
+		Count,
 	};
+};
+
+struct AttackIf
+{
+	AttackIf(ReisMode::Enum _mode, reis::MoveMode::Enum _mmode = reis::MoveMode::Idle,float time = 0.0f,bool f = true) {
+		enable = f;
+		mode = _mode;
+		moveMode = _mmode;
+		cooldown = time;
+	}
+	bool enable;
+	float cooldown;
+	reis::MoveMode::Enum moveMode;
+	ReisMode::Enum mode;
+};
+
+const int melee_num = 3;
+const AttackIf mode_melee[] = { 
+	AttackIf(ReisMode::Attack_v1,reis::MoveMode::Out,0.5f),
+	AttackIf(ReisMode::Attack_v2,reis::MoveMode::Out,0.5f,false),
+	AttackIf(ReisMode::Attack_v3,reis::MoveMode::Out,0.5f,false),
+};
+const int mid_num = 4;
+const AttackIf mode_mid[] = { 
+	AttackIf(ReisMode::Attack_Bullet		,reis::MoveMode::In	,0.5f),
+	AttackIf(ReisMode::Attack_CitrusBullet	,reis::MoveMode::In	,1.0f,false),
+	AttackIf(ReisMode::Attack_SonicWaveV	,reis::MoveMode::Idle	,1.0f,false),
+	AttackIf(ReisMode::Attack_WarpMelee		,reis::MoveMode::In	,1.0f,false)
 };
 
 struct AnimeID {
 	enum Enum {
 		Idle,
 		Move,
-		Attack,
+		Attack_v1,
 		Attack_Bullet,
 		Attack_SonicWaveV,
 		Attack_WarpMelee,
+		Attack_v2,
+		Attack_v3,
+		Attack_Ch_v1,
+		Attack_Ch_v2,
+		Attack_Ch_v3,
+		Wince,
+		Dead,
 	};
 };
 
@@ -43,70 +86,179 @@ void reis::Initialize(){
 	m_ReisMode = ReisMode::Idle;
 	m_CitrusBulletObject = NULL;
 	m_CitrusBulletCount = 0;
-	m_CitrusBulletCollDown = 0.0f;
 	m_ReisLastAttackMode = 0;
 	m_SonicWaveObject = NULL;
+	m_SuperArmor = false;
+	m_SaveHp = 0.0f;
+	m_MoveCooldown = 0.0f;
+	m_MoveMode = MoveMode::Idle;
+
+	m_BoneBackPos = XMVectorZero();
+
+	m_MoveFunc.resize(ReisMode::Count);
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void reis::Start(){
 
 	m_Player = UniqueObject::GetPlayer();
-}
 
-//毎フレーム呼ばれます
-void reis::Update(){
-
-	m_CitrusBulletCollDown -= Hx::DeltaTime()->GetDeltaTime();
-
-	if (m_ReisMode == ReisMode::Idle) {
+	m_MoveFunc[ReisMode::Idle] = [&](){
 		ChangeAnime(AnimeID::Idle);
 		m_ReisMode = ReisMode::Move;
+	};
+	m_MoveFunc[ReisMode::Move] = [&]() {
+		auto v = XMVectorZero();
 
-	}else if (m_ReisMode == ReisMode::Move) {
-		ChangeAnime(AnimeID::Move);
-		auto v = GetPlayerVect() * m_MoveSpeed * Hx::DeltaTime()->GetDeltaTime();
+		if (MoveMode::Idle == m_MoveMode) {
+			ChangeAnime(AnimeID::Idle);
+		}else if (MoveMode::In == m_MoveMode) {
+			ChangeAnime(AnimeID::Move);
+			v = GetPlayerVect() * m_MoveSpeed * Hx::DeltaTime()->GetDeltaTime();
 
-		Move(v);
-		Rotate(v);
-
-		if (GetPlayerLen() < 2.0f) {
-
-			m_ReisMode = ReisMode::Attack;
+		}else if (MoveMode::Out == m_MoveMode) {
+			ChangeAnime(AnimeID::Move);
+			v = -GetPlayerVect() * m_MoveSpeed * Hx::DeltaTime()->GetDeltaTime();
 		}
 
-		if (GetPlayerLen() > 10.0f) {
-			for (;;) {
-				auto r = rand() / (float)RAND_MAX;
-				auto numPar = 1.0f / 4.0f;
-				if (r < numPar) {
-					m_ReisMode = ReisMode::Attack_CitrusBullet;
+		Move(v);
+		Rotate(GetPlayerVectH());
+
+		m_MoveCooldown -= Hx::DeltaTime()->GetDeltaTime();
+
+		if(m_MoveCooldown<=0.0f){
+			for (int i = 0;i<100;i++) {
+				//auto r = rand() / (float)RAND_MAX;
+				//auto numPar = 1.0f / 4.0f;
+				//if (r < numPar) {
+				//	m_ReisMode = ReisMode::Attack_CitrusBullet;
+				//}
+				//else if (r < numPar * 2) {
+				//	m_ReisMode = ReisMode::Attack_Bullet;
+				//}
+				//else if (r<numPar * 3) {
+				//	m_ReisMode = ReisMode::Attack_SonicWaveV;
+				//}
+				//else {
+				//	m_ReisMode = ReisMode::Attack_WarpMelee;
+				//}
+
+				bool f = false;
+				if (GetPlayerLen() <= 3.0f) {
+					int atk = rand() % melee_num;
+					m_ReisMode = mode_melee[atk].mode;
+					f = mode_melee[atk].enable;
+					m_MoveMode = mode_melee[atk].moveMode;
+					m_MoveCooldown = mode_melee[atk].cooldown;
 				}
-				else if (r < numPar*2){
-					m_ReisMode = ReisMode::Attack_Bullet;
+				if (GetPlayerLen() > 4.0f) {
+					int atk = rand() % mid_num;
+					m_ReisMode = mode_mid[atk].mode;
+					f = mode_mid[atk].enable;
+					m_MoveMode = mode_mid[atk].moveMode;
+					m_MoveCooldown = mode_mid[atk].cooldown;
 				}
-				else if(r<numPar*3){
-					m_ReisMode = ReisMode::Attack_SonicWaveV;
-				}
-				else {
-					m_ReisMode = ReisMode::Attack_WarpMelee;
-				}
-				if (m_ReisLastAttackMode == m_ReisMode) {
+				bool f2 = false;//m_ReisLastAttackMode == m_ReisMode;
+				if (f2 || !f) {
+					m_ReisMode = ReisMode::Move;
 					continue;
 				}
+
+				//m_ReisMode = ReisMode::Attack_v1;
 				m_ReisLastAttackMode = m_ReisMode;
 				break;
 			}
 		}
-
-	}else if (m_ReisMode == ReisMode::Attack) {
-		ChangeAnime(AnimeID::Attack);
+	};
+	m_MoveFunc[ReisMode::Wince] = [&]() {
+		m_AttackStage = AttackStage();
+		ChangeAnime(AnimeID::Wince);
 		if (IsCurrentAnimeEnd()) {
 			m_ReisMode = ReisMode::Idle;
 		}
-	}
-	else if (m_ReisMode == ReisMode::Attack_Bullet) {
-		Rotate(GetPlayerVect());
+	};
+	m_MoveFunc[ReisMode::Dead] = [&]() {
+		//if(m_CurrentAnimeID != AnimeID::Dead){
+			m_AttackStage = AttackStage();
+		//}
+		ChangeAnime(AnimeID::Dead);
+		if (m_AttackStage.stage == 0) {
+			m_AttackStage.stage++;
+			if (auto obj = Hx::Instance(m_DeadParticle)) {
+				obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+			}
+			gameObject->RemoveComponent<CharacterControllerComponent>();
+		}
+		else if (m_AttackStage.stage == 1) {
+			if (IsCurrentAnimeEnd()) {
+				//Hx::DestroyObject(gameObject);
+			}
+		}
+	};
+	
+	m_MoveFunc[ReisMode::Attack_v1] = [&]() {
+		if (m_AttackStage.stage == 0) {
+			ChangeAnime(AnimeID::Attack_Ch_v1);
+			if (IsCurrentAnimeEnd()) {
+				m_AttackStage.stage++;
+			}
+		}
+		else if(m_AttackStage.stage == 1) {
+			SetWeapon(true, 10.0f);
+			ChangeAnime(AnimeID::Attack_v1);
+			if (IsCurrentAnimeEnd()) {
+				SetWeapon(false);
+				m_ReisMode = ReisMode::Idle;
+				m_AttackStage = AttackStage();
+			}
+		}
+		
+	};
+	m_MoveFunc[ReisMode::Attack_v2] = [&]() {
+		
+		if (m_AttackStage.stage == 0) {
+			m_AttackStage.stage++;
+			m_SaveHp = GetHp();
+			SetSuperArmor(true);
+		}
+		else if (m_AttackStage.stage == 1) {
+			ChangeAnime(AnimeID::Attack_Ch_v2);
+			if (IsCurrentAnimeEnd()) {
+				m_AttackStage.stage++;
+			}
+		}
+		else if (m_AttackStage.stage == 2) {
+			SetWeapon(true, 50.0f);
+			ChangeAnime(AnimeID::Attack_v2);
+			if (IsCurrentAnimeEnd()) {
+				m_ReisMode = ReisMode::Idle;
+				m_AttackStage = AttackStage();
+				SetSuperArmor(false);
+				SetWeapon(false);
+			}
+		}
+		if (m_SaveHp - GetHp() > 20.0f) {
+			SetSuperArmor(false);
+			SetWeapon(false);
+		}
+	};
+	m_MoveFunc[ReisMode::Attack_v3] = [&]() {
+		if (m_AttackStage.stage == 0) {
+			ChangeAnime(AnimeID::Attack_Ch_v3);
+			if (IsCurrentAnimeEnd()) {
+				m_AttackStage.stage++;
+			}
+		}
+		else if (m_AttackStage.stage == 1) {
+			ChangeAnime(AnimeID::Attack_v3);
+			if (IsCurrentAnimeEnd()) {
+				m_ReisMode = ReisMode::Idle;
+				m_AttackStage = AttackStage();
+			}
+		}
+	};
+	m_MoveFunc[ReisMode::Attack_Bullet] = [&]() {
+		Rotate(GetPlayerVectH());
 		if (m_CurrentAnimeID != AnimeID::Attack_Bullet) {
 			if (auto obj = Hx::Instance(m_Bullets)) {
 				obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
@@ -118,38 +270,9 @@ void reis::Update(){
 		if (IsCurrentAnimeEnd()) {
 			m_ReisMode = ReisMode::Idle;
 		}
-	}
-	else if (m_ReisMode == ReisMode::Attack_SonicWaveV) {
-		Rotate(GetPlayerVect());
-
-		if (m_CurrentAnimeID != AnimeID::Attack_SonicWaveV) {
-			WeaponEffect(0, true);
-			m_SonicWaveObject = Hx::Instance(m_SonicWaveV);
-			m_SonicWaveObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
-		}
-		
-		if (m_Player) {
-			auto pc = m_Player->GetScript<PlayerController>();
-			if (!(pc->GetPlayerState() == PlayerController::PlayerState::Dodge)) {
-				if (m_SonicWaveObject) {
-					auto wave = m_SonicWaveObject->GetScript<ReisSonicWave>();
-					wave->PlayerLockOn();
-				}
-			}
-		}
-
-		ChangeAnime(AnimeID::Attack_SonicWaveV);
-		if (IsCurrentAnimeEnd()) {
-			m_SonicWaveObject = NULL;
-			m_ReisMode = ReisMode::Idle;
-
-			WeaponEffect(0, false);
-		}
-
-	}
-	else if (m_ReisMode == ReisMode::Attack_CitrusBullet) {
-		Rotate(GetPlayerVect());
-		m_CitrusBulletCollDown = 5.0f;
+	};
+	m_MoveFunc[ReisMode::Attack_CitrusBullet] = [&]() {
+		Rotate(GetPlayerVectH());
 		if (m_CurrentAnimeID != AnimeID::Attack_Bullet) {
 			if (m_CitrusBulletObject = Hx::Instance(m_CitrusBullet)) {
 				auto pos = gameObject->mTransform->WorldPosition();
@@ -183,15 +306,64 @@ void reis::Update(){
 				m_CitrusBulletCount++;
 			}
 		}
-	}
-	else if (m_ReisMode == ReisMode::Attack_WarpMelee) {
-		
-		if (m_CurrentAnimeID != AnimeID::Attack_WarpMelee) {
+	};
+	m_MoveFunc[ReisMode::Attack_SonicWaveV] = [&]() {
+		Rotate(GetPlayerVectH());
+
+		if (m_CurrentAnimeID != AnimeID::Attack_SonicWaveV) {
+			WeaponEffect(0, true);
+			m_SonicWaveObject = Hx::Instance(m_SonicWaveV);
+			m_SonicWaveObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+		}
+
+		if (m_Player) {
+			auto pc = m_Player->GetScript<PlayerController>();
+			if (!(pc->GetPlayerState() == PlayerController::PlayerState::Dodge)) {
+				if (m_SonicWaveObject) {
+					auto wave = m_SonicWaveObject->GetScript<ReisSonicWave>();
+					wave->PlayerLockOn();
+				}
+			}
+		}
+
+		ChangeAnime(AnimeID::Attack_SonicWaveV);
+		if (IsCurrentAnimeEnd()) {
+			m_SonicWaveObject = NULL;
+			m_ReisMode = ReisMode::Idle;
+
+			WeaponEffect(0, false);
+		}
+	};
+	//m_MoveFunc[ReisMode::Attack_WarpMelee] = [&]() {
+	//	if (m_CurrentAnimeID != AnimeID::Attack_WarpMelee) {
+	//		if (m_Player) {
+	//			auto pos = m_Player->mTransform->WorldPosition();
+
+	//			auto agnel = rand() / (float)RAND_MAX * XM_2PI;
+	//			auto add = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), XMMatrixRotationY(agnel));
+
+	//			pos += add * 2.0f;
+	//			pos.y += 3.0f;
+	//			Teleport(pos);
+	//			Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
+	//		}
+	//	}
+	//	Rotate(GetPlayerVectH());
+
+	//	ChangeAnime(AnimeID::Attack_WarpMelee);
+	//	if (IsCurrentAnimeEnd()) {
+	//		m_ReisMode = ReisMode::Idle;
+	//	}
+	//};
+
+	m_MoveFunc[ReisMode::Attack_WarpMelee] = [&]() {
+		if (m_AttackStage.stage == 0) {
+			m_AttackStage.stage++;
 			if (m_Player) {
 				auto pos = m_Player->mTransform->WorldPosition();
 
 				auto agnel = rand() / (float)RAND_MAX * XM_2PI;
-				auto add = XMVector3Transform(XMVectorSet(0.0f,0.0f,1.0f,1.0f), XMMatrixRotationY(agnel));
+				auto add = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), XMMatrixRotationY(agnel));
 
 				pos += add * 2.0f;
 				pos.y += 3.0f;
@@ -199,13 +371,36 @@ void reis::Update(){
 				Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
 			}
 		}
-		Rotate(GetPlayerVect());
+		Rotate(GetPlayerVectH());
 
-		ChangeAnime(AnimeID::Attack_WarpMelee);
-		if (IsCurrentAnimeEnd()) {
-			m_ReisMode = ReisMode::Idle;
+		if (m_AttackStage.stage == 1) {
+			ChangeAnime(AnimeID::Attack_Ch_v1);
+			if (IsCurrentAnimeEnd()) {
+				m_AttackStage.stage++;
+			}
 		}
-	}
+		else if (m_AttackStage.stage == 2) {
+			SetWeapon(true,10.0f);
+			ChangeAnime(AnimeID::Attack_v1);
+			if (IsCurrentAnimeEnd()) {
+
+				SetWeapon(false);
+				m_ReisMode = ReisMode::Idle;
+				m_AttackStage = AttackStage();
+			}
+		}
+
+	};
+}
+
+//毎フレーム呼ばれます
+void reis::Update(){
+
+	OnDamage();
+
+	m_MoveFunc[m_ReisMode]();
+
+	BoneMoveUpdate();
 }
 
 
@@ -227,6 +422,20 @@ void reis::OnCollideEnter(GameObject target){
 //コライダーとのロスト時に呼ばれます
 void reis::OnCollideExit(GameObject target){
 	(void)target;
+}
+
+void reis::WeaponCallHit()
+{
+	if (!m_NowAttack)return;
+	if (!m_Player)return;
+	{
+		float time = Hx::DeltaTime()->GetDeltaTime();
+		auto player = m_Player->GetScript<PlayerController>();
+		if (player) {
+			auto v = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
+			player->Damage(20.0f, XMVector3Normalize(v), PlayerController::KnockBack::Low, false, false);
+		}
+	}
 }
 
 
@@ -303,6 +512,43 @@ float reis::GetPlayerLenV()
 	return abs(m_Player->mTransform->WorldPosition().y - gameObject->mTransform->WorldPosition().y);
 }
 
+float reis::GetHp()
+{
+	if (auto enemy = Enemy::GetEnemy(m_EnemyBase)) {
+		return enemy->GetEnemyAllParameter(false).hp;
+	}
+	return 0.0f;
+}
+
+void reis::OnDamage()
+{
+	if (m_SuperArmor)return;
+	if (auto enemy = Enemy::GetEnemy(m_EnemyBase)) {
+		if (enemy->GetEnemyAllParameter(false).battleModeParameter.id == BATTLEACTION::WINCEACTION) {
+			ChangeAnime(AnimeID::Idle);
+			m_ReisMode = ReisMode::Wince;
+			m_AttackStage = AttackStage();
+		}
+		if (enemy->GetEnemyAllParameter(false).battleModeParameter.id == BATTLEACTION::DEADACTION) {
+			m_ReisMode = ReisMode::Dead;
+		}
+	}
+}
+
+
+void reis::SetWeapon(bool enable, float damage)
+{
+	m_NowAttack = enable;
+}
+
+void reis::SetSuperArmor(bool f)
+{
+	if (auto enemy = Enemy::GetEnemy(m_EnemyBase)) {
+		enemy->SetParentAlive(!f);
+		m_SuperArmor = f;
+	}
+}
+
 void reis::ChangeAnime(int id)
 {
 
@@ -350,5 +596,28 @@ void reis::WeaponEffect(int id, bool enable)
 		else {
 			com->mParticleParam.Param.x = 0;
 		}
+	}
+}
+
+void reis::BoneMoveUpdate()
+{
+	if (m_AnimeModel&&m_BoneMirrorObject) {
+		auto model = m_AnimeModel->mTransform->WorldPosition();
+		auto bone = m_BoneMirrorObject->mTransform->WorldPosition();
+	
+		bool flag = false;
+		if (XMVector3Length(m_BoneMirrorObject->mTransform->Position()).x > 0.01f) {
+			flag = true;
+		}
+		bone -= model;
+		bone.y = 0.0f;
+		//m_AnimeModel->mTransform->Position(m_BoneMirrorObject->mTransform->Position()*0.02);
+		if (flag) {
+			auto move = bone - m_BoneBackPos;
+	
+			Move(move);
+		}
+	
+		m_BoneBackPos = bone;
 	}
 }

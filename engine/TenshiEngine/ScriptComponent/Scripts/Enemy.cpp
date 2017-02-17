@@ -9,6 +9,7 @@
 #include "EnemyEbilEye.h"
 #include "EnemyWoodMan.h"
 #include "UniqueObject.h"
+#include "EnemyMinotaur.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Enemy::Initialize() {
@@ -299,6 +300,7 @@ if (auto scr = target->GetScript<EnemyWoodMan>())return scr;
 if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
 if (auto scr = target->GetScript<EnemyOrc>())return (Enemy*)scr;
 if (auto scr = target->GetScript<EnemyGate>())return (Enemy*)scr;
+if (auto scr = target->GetScript<EnemyMinotaur>())return (Enemy*)scr;
 
 	return NULL;
 }
@@ -352,6 +354,9 @@ XMVECTOR Enemy::NaviMeshTracking(GameObject destination,float speed) {
 	if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
 		navi->RootCreate(gameObject, destination);
 	}
+	auto naviPos = navi->GetPosition();
+	naviPos.y = gameObject->mTransform->WorldPosition().y;
+	if(XMVector3Length(gameObject->mTransform->WorldPosition() - naviPos).x < 1.0f)
 	navi->Move(speed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
 	return navi->GetPosition();
 }

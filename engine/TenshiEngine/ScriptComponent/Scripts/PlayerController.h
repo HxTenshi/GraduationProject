@@ -99,6 +99,8 @@ public:
 
 	void SpeedJump(const XMVECTOR& vect);
 	void SpeedJumpWeaponCatch(GameObject weapon);
+
+	void AddMove(XMVECTOR v);
 private:
 
 	Weapon* GetWeapon();

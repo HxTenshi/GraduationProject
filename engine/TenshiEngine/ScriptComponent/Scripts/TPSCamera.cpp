@@ -21,21 +21,25 @@ void TPSCamera::Start(){
 
 	Hx::System()->LockCursorPositionToWindowCenter(true);
 
-	auto currentPos = gameObject->mTransform->WorldPosition();
-	auto pos = mTarget->mTransform->WorldPosition();
-	auto back = -gameObject->mTransform->Forward() * mDistance;
-	auto up = XMVectorSet(0.0f,1.0f,0.0f,1.0f) * mUp;
-	float l = 1.0f;
-	if (mLookTarget) {
-		l = XMVector3Length(mTarget->mTransform->WorldPosition() - mLookTarget->mTransform->WorldPosition()).x;
-		l *= 0.1f;
-		l = min(l, 0.1f);
-
-	}
-	auto left = gameObject->mTransform->Left() * mLeft * l;
-	auto campos = pos + back + up + left;
-
-	gameObject->mTransform->WorldPosition(campos);
+	//auto currentPos = gameObject->mTransform->WorldPosition();
+	//auto pos = mTarget->mTransform->WorldPosition();
+	//auto back = -gameObject->mTransform->Forward() * mDistance;
+	//auto up = XMVectorSet(0.0f,1.0f,0.0f,1.0f) * mUp;
+	//float l = 1.0f;
+	//if (mLookTarget) {
+	//	l = XMVector3Length(mTarget->mTransform->WorldPosition() - mLookTarget->mTransform->WorldPosition()).x;
+	//	l *= 0.1f;
+	//	l = min(l, 0.1f);
+	//
+	//}
+	//auto left = gameObject->mTransform->Left() * mLeft * l;
+	//auto campos = pos + back + up + left;
+	//
+	//gameObject->mTransform->WorldPosition(campos);
+	//if (m_CharacterControllerComponent) {
+	//
+	//	m_CharacterControllerComponent->Teleport(campos);
+	//}
 }
 
 //毎フレーム呼ばれます
@@ -79,14 +83,14 @@ void TPSCamera::Update(){
 			m_CharacterControllerComponent->Move(campos);
 
 			campos = gameObject->mTransform->WorldPosition();
-			auto p = spring(currentPos, campos);
+			auto p = spring(campos, currentPos);
 			//m_CharacterControllerComponent->Teleport(p);
 			auto nan = XMVectorIsNaN(p);
 			if (!nan.x&&!nan.y&&!nan.z&&!nan.w)
 				gameObject->mTransform->WorldPosition(p);
 		}
 		else {
-			auto p = spring(currentPos, campos);
+			auto p = spring(campos, currentPos);
 			gameObject->mTransform->WorldPosition(p);
 		}
 
@@ -128,6 +132,29 @@ void TPSCamera::Update(){
 		q = XMQuaternionSlerp(wq, q, t);
 		if(!XMQuaternionIsNaN(q))
 			gameObject->mTransform->WorldQuaternion(q);
+		{
+			auto nf = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+			auto up = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f);
+			auto nl = XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
+			auto f1 = gameObject->mTransform->Forward();
+			f1.y = 0.0f;
+			f1 = XMVector3Normalize(f1);
+			float n = 1;
+			if (XMVector3Dot(nf, f1).x > 0.0f) {
+				n = -1;
+				if (XMVector3Dot(nl, f1).x > 0.0f) {
+					n *= -1;
+				}
+			}
+			else {
+				if (XMVector3Dot(nl, f1).x < 0.0f) {
+					n *= -1;
+				}
+			}
+
+			mRotate.y = acos(max(min(XMVector3Dot(nf, f1).x, 1.0f), -1.0f)) * n;
+		}
+		
 	}
 	else {
 		int mx, my;
@@ -188,18 +215,25 @@ void TPSCamera::OnCollideExit(GameObject target){
 
 XMVECTOR TPSCamera::spring(XMVECTOR position, const XMVECTOR& desiredPosition)
 {
-	float time = Hx::DeltaTime()->GetNoScaleDeltaTime();
-	// バネの力を計算
-	auto stretch = position - desiredPosition;
-	auto force = -m_SpringStiffness * stretch - m_SpringDamping * m_SpringVelocity;
+	//(void)position;
+	//return desiredPosition;
+	float time = Hx::DeltaTime()->GetDeltaTime();
+	float t = 1.0f / 180.0f;
+	for (float i=0.0f;i<=time;i+=t) {
+		// バネの力を計算
+		auto stretch = position - desiredPosition;
+		auto force = -m_SpringStiffness * stretch - m_SpringDamping * m_SpringVelocity;
 
-	float mass = 1.0f;
-	// 加速度の分を追加
-	auto acceleration = force / mass;
-	m_SpringVelocity += acceleration * time;
+		float mass = 1.0f;
+		// 加速度の分を追加
+		auto acceleration = force / mass;
+		m_SpringVelocity += acceleration * t;
 
-	// 速度の分を追加
-	position += m_SpringVelocity * time;
-	position.w = 1.0f;
+		auto v = XMVector3Normalize(m_SpringVelocity);
+		m_SpringVelocity = max(XMVector3Length(m_SpringVelocity).x, 3.0f) * v;
+		// 速度の分を追加
+		position += m_SpringVelocity * t;
+		position.w = 1.0f;
+	}
 	return position;
 }

@@ -97,10 +97,18 @@ void EmptyEnemy::Attack(GameObject player, COL_TYPE colType)
 
 bool EmptyEnemy::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
+	if (!m_TrackingModeParam.parentAlive) {
+		damage_ *= 0.1f;
+	}
 	m_Damage = damage_;
 	m_Accel = accelPower_;
 	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
 		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
+
+
+		if (m_objective_flag) {
+			hp = m_MaxHp;
+		}
 		return true;
 	}
 	return false;
@@ -145,9 +153,6 @@ void EmptyEnemy::TrackingMoveModeInitilize()
 
 void EmptyEnemy::TrackingMoveModeUpdate()
 {
-	if (m_objective_flag) {
-		hp = m_MaxHp;
-	}
 }
 
 void EmptyEnemy::TrackingMoveModeFinalize()
@@ -210,9 +215,15 @@ void EmptyEnemy::RotateTackleModeFinalize()
 }
 
 void EmptyEnemy::WinceModeInitilize() {
+	m_Hp -= m_Damage;
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
 }
 
 void EmptyEnemy::WinceModeUpdate() {
+	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 }
 
 void EmptyEnemy::WinceModeFinalize() {
@@ -221,10 +232,16 @@ void EmptyEnemy::WinceModeFinalize() {
 
 void EmptyEnemy::UpperDownInitilize()
 {
+	m_Hp -= m_Damage;
+	if (m_Hp <= 0) {
+		ChangeBattleAction(BATTLEACTION::DEADACTION);
+		return;
+	}
 }
 
 void EmptyEnemy::UpperDownUpdate()
 {
+	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 }
 
 void EmptyEnemy::UpperDownFinalize()
@@ -239,21 +256,11 @@ void EmptyEnemy::BeatDownInitilize()
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
-	m_BattleModeParam.count = 0.0f;
-	m_AccelVec += m_Accel;
-	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 }
 
 void EmptyEnemy::BeatDownUpdate()
 {
-	m_BattleModeParam.canChangeAttackAction = false;
-
-	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-	if (!cc)return;
-
-	if (cc->IsGround()) {
-		ChangeBattleAction(BATTLEACTION::DOWNACTION);
-	}
+	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 
 }
 
