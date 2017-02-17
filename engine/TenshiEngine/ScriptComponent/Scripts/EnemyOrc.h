@@ -16,9 +16,8 @@ public:
 	bool LostPlayer() override;
 	void ChildFinalize() override;
 
-	void SetMovePoint(GameObject target);
+	void SetMovePoint(GameObject target);// { Hx::Debug()->Log("ƒZƒbƒg‚µ‚½!!!"); m_MovePoints = target; if (m_MovePoints)Hx::Debug()->Log(m_MovePoints->Name()); }
 	void MoveFrontStart(float time);
-
 private:
 	void MoveFront();
 	float m_MoveFrontCounter;

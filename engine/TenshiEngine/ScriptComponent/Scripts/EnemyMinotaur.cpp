@@ -49,6 +49,7 @@ void EnemyMinotaur::ChildInitialize()
 	change_battle_counter = 0;
 	anim_cast = 0.0f;
 	is_changed_take_over = false;
+	m_AttackHit = true;
 }
 void EnemyMinotaur::SoloAction()
 {
@@ -72,9 +73,14 @@ float EnemyMinotaur::GetOnBattleRange()
 
 void EnemyMinotaur::Attack(GameObject player, COL_TYPE colType)
 {
+	if (m_AttackHit)return;
 	if (!m_Player)return;
 	auto playerScript = player->GetScript<PlayerController>();
 	if (!playerScript)return;
+
+		m_AttackHit = true;
+		playerScript->Damage(8.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+
 }
 
 bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
@@ -106,6 +112,7 @@ void EnemyMinotaur::ChildFinalize()
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
+
 }
 
 void EnemyMinotaur::BattleModeInitilize()
@@ -147,6 +154,7 @@ void EnemyMinotaur::BattleModeUpdate()
 	if (auto anim = m_ModelObject->GetComponent<AnimationComponent>()) {
 		if (anim->IsAnimationEnd(m_anim_state)&m_attack_flag) {
 			m_attack_flag = false;
+			m_AttackHit = true;
 			if (is_changed_take_over) {
 				is_changed_take_over = false;
 				m_action_func = [this]() {MoveSide(); };
@@ -244,11 +252,23 @@ void EnemyMinotaur::HuntRoutine()
 		auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
 		//”½Œ‚UŒ‚‚ð‚·‚é
 		if (m_roucine_module.DistanceCheck(DSI_EM_ATTACK, distance, funifuni::ModuleDistanceType::In) && RecastCheck()) {
-			m_action_func = [this]() {Attack2(); };
+
+			m_AttackHit = false;
+			int r = std::rand() % 100;
+			AnimType t;
+			if (r > 50) {
+				m_action_func = [this]() { Attack2(); };
+				t = ANIM_ATTACK2;
+			}
+			else {
+				m_action_func = [this]() { Attack1(); };
+				t = ANIM_ATTACK1;
+			}
+
 			recast = 0.0f;
 			m_attack_flag = true;
 			anim_loop = false;
-			RoutineSetUp(ANIM_ATTACK2);
+			RoutineSetUp(t);
 		}//UŒ‚”ÍˆÍ“à‚É‚¢‚½‚ç
 		else if (m_roucine_module.DistanceCheck(DSI_SIDE, distance, funifuni::ModuleDistanceType::In)) {
 			m_action_func = [this]() {MoveSide(); };
@@ -292,13 +312,29 @@ void EnemyMinotaur::BattleRoutine()
 		Hx::Debug()->Log(std::to_string(recast));
 
 		if (m_roucine_module.DistanceCheck(DSI_BATTLE_ATTACK,distance,funifuni::ModuleDistanceType::In) && RecastCheck()) {
+			m_AttackHit = false;
 			m_action_func = [this]() {Attack3(); };
-			recast = 3.0f;
+			int r = std::rand() % 100;
+			AnimType t;
+			if (r > 50) {
+				m_action_func = [this]() {Attack3(); };
+				t = ANIM_ATTACK3;
+			}
+			else if (r > 20) {
+				m_action_func = [this]() {Attack4(); };
+				t = ANIM_ATTACK4;
+			}
+			else {
+				m_action_func = [this]() {Attack5(); };
+				t = ANIM_ATTACK5;
+			}
+
+			recast = 1.0f;
 			m_attack_flag = true;
 			anim_loop = false;
 			change_battle_counter++;
 			is_changed_take_over = true;
-			RoutineSetUp(ANIM_ATTACK3);
+			RoutineSetUp(t);
 		}
 		//else if (m_roucine_module.DistanceCheck(DSI_BATTLE_BACK, distance, funifuni::ModuleDistanceType::In)) {
 		//	m_action_func = [this]() {MoveBack(); };
@@ -491,6 +527,7 @@ void EnemyMinotaur::Attack4()
 	obj->mTransform->WorldPosition(pos);
 	auto rot = gameObject->mTransform->Rotate();
 	obj->mTransform->Rotate(rot);
+	m_action_func = nullptr;
 }
 
 void EnemyMinotaur::Attack5()
@@ -508,6 +545,7 @@ void EnemyMinotaur::Attack5()
 	obj->mTransform->WorldPosition(pos);
 	auto rot = gameObject->mTransform->Rotate();
 	obj->mTransform->Rotate(rot);
+	m_action_func = nullptr;
 }
 
 void EnemyMinotaur::Attack6()
@@ -531,6 +569,7 @@ void EnemyMinotaur::Attack6()
 	obj1->mTransform->WorldPosition(pos1);
 	auto rot = gameObject->mTransform->Rotate();
 	obj1->mTransform->Rotate(rot);
+	m_action_func = nullptr;
 }
 
 void EnemyMinotaur::Attack7()
@@ -542,6 +581,22 @@ void EnemyMinotaur::Attack7()
 	pos.y -= 0.3f;
 	obj->mTransform->WorldPosition(pos);
 	m_action_func = nullptr;
+}
+
+void EnemyMinotaur::ChestThump()
+{
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	AnimChange(14, 1.0f, false, true);
+}
+
+void EnemyMinotaur::Stan()
+{
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	AnimChange(14, 1.0f, false, true);
+}
+
+void EnemyMinotaur::NoAnimtionMove()
+{
 }
 
 void EnemyMinotaur::None()
