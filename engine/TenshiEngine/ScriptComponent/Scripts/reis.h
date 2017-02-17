@@ -13,6 +13,8 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
+	void WeaponCallHit();
+
 private:
 	void Teleport(const XMVECTOR& vect);
 	void Move(const XMVECTOR& vect);
@@ -22,6 +24,12 @@ private:
 	float GetPlayerLen();
 	float GetPlayerLenH();
 	float GetPlayerLenV();
+	float GetHp();
+
+	void OnDamage();
+
+	void SetWeapon(bool enable,float damage = 0);
+	void SetSuperArmor(bool f);
 
 	void ChangeAnime(int id);
 
@@ -42,10 +50,17 @@ private:
 
 	SERIALIZE GameObject m_WeaponEffect;
 	
+	//ñ{ëÃ
+	SERIALIZE GameObject m_EnemyBase;
+
 	//É{Å[Éìí«è]é¸ÇË
 	SERIALIZE GameObject m_BoneMirrorObject;
 	XMVECTOR m_BoneBackPos;
 	
+	bool m_SuperArmor;
+	float m_SaveHp;
+
+	bool m_NowAttack;
 
 	GameObject m_CitrusBulletObject;
 	int m_CitrusBulletCount;

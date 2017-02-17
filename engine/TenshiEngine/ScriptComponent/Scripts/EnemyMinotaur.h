@@ -191,8 +191,6 @@ private:
 	float m_thinking_time;
 	//前のフレームのアニメーションと比較するための変数
 	int m_anim_state;
-	//
-	COL_TYPE attack_type;
 	//怯み用のカウンタ
 	int stan_count;
 	//攻撃したときに別の関数が入らないように調整するためのフラグ
