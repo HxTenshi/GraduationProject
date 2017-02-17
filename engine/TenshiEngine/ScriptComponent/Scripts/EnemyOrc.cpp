@@ -73,8 +73,6 @@ void EnemyOrc::ChildInitialize()
 	ModelObject = m_ModelObject;
 	m_StartForward = gameObject->mTransform->Forward();
 	m_StartPos = gameObject->mTransform->WorldPosition();
-	auto navi = gameObject->GetComponent<NaviMeshComponent>();
-	navi->SetBaseNaviMeshObject(UniqueObject::GetNaviMesh(1));
 	//ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 }
 

@@ -98,6 +98,14 @@ void Enemy::Finish() {
 
 //コライダーとのヒット時に呼ばれます
 void Enemy::OnCollideBegin(GameObject target) {
+	auto navi = gameObject->GetComponent<NaviMeshComponent>();
+	if (!navi)gameObject->AddComponent<NaviMeshComponent>();
+	if (target->Name() == "NaviMeshColliderSegment1") {
+		navi->SetBaseNaviMeshObject(UniqueObject::GetNaviMesh(1));
+	}
+	else if (target->Name() == "NaviMeshColliderSegment2") {
+		navi->SetBaseNaviMeshObject(UniqueObject::GetNaviMesh(2));
+	}
 	(void)target;
 }
 
@@ -358,5 +366,27 @@ XMVECTOR Enemy::NaviMeshTracking(GameObject destination,float speed) {
 	naviPos.y = gameObject->mTransform->WorldPosition().y;
 	if(XMVector3Length(gameObject->mTransform->WorldPosition() - naviPos).x < 1.0f)
 	navi->Move(speed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
+	return navi->GetPosition();
+}
+
+XMVECTOR Enemy::NaviMeshBattle(GameObject destination, float speed)
+{
+	auto rayMyPos = gameObject->mTransform->WorldPosition();
+	auto rayYouPos = destination->mTransform->WorldPosition();
+	if (Hx::PhysX()->Raycast(rayMyPos,
+		XMVector3Normalize(rayYouPos - rayMyPos),
+		XMVector3Length(rayYouPos - rayMyPos).x,
+		Layer::UserTag12)) {
+		
+	}
+	auto navi = gameObject->GetComponent<NaviMeshComponent>();
+	if (!navi)return XMVectorSet(0, 0, 0, 0);
+	if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
+		navi->RootCreate(gameObject, destination);
+	}
+	auto naviPos = navi->GetPosition();
+	naviPos.y = gameObject->mTransform->WorldPosition().y;
+	if (XMVector3Length(gameObject->mTransform->WorldPosition() - naviPos).x < 1.0f)
+		navi->Move(speed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
 	return navi->GetPosition();
 }
