@@ -412,7 +412,6 @@ bool Enemy::Layer12RayHit(GameObject destination)
 		XMVector3Normalize(rayYouPos - rayMyPos),
 		XMVector3Length(rayYouPos - rayMyPos).x,
 		Layer::UserTag12)) {
-		Hx::Debug()->Log("hit");
 		return true;
 	}
 	return false;
