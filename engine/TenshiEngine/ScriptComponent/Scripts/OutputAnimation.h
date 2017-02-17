@@ -35,4 +35,6 @@ private:
 	SERIALIZE bool m_OrcChild;
 	SERIALIZE GameObject m_MovePointOne;
 	SERIALIZE GameObject m_MovePointSecond;
+
+	SERIALIZE float m_ChildWallTime;
 };
