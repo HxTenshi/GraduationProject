@@ -146,8 +146,6 @@ void EnemyRezardManTeam::TeamUpdate()
 		}
 		firstSearch++;
 	}
-	
-	Hx::Debug()->Log("teamMenberSize" + std::to_string(teamMember.size()));
 
 	for (auto& j : teamMember) {
 		auto jScript = Enemy::GetEnemy(j.enemyGameObject);

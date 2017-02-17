@@ -154,6 +154,7 @@ bool EnemyOrc::DiscoveryPlayer()
 			XMVector3Normalize(rayBossPos - rayMyPos),
 			XMVector3Length(rayBossPos - rayMyPos).x,
 			Layer::UserTag4)) {
+			if(m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION)
 			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 			return true;
 		}
@@ -179,6 +180,7 @@ bool EnemyOrc::LostPlayer()
 			XMVector3Normalize(rayBossPos - rayMyPos),
 			XMVector3Length(rayBossPos - rayMyPos).x,
 			Layer::UserTag4)) {
+		if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION)
 		ChangeActionAndTrackingAction(ACTIONMODE::TRACKINGMODE, TRACKINGACTION::PARENTTRACKING);
 		return true;
 	}
