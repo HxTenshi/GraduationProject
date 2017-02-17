@@ -74,6 +74,8 @@ private:
 	SERIALIZE PrefabAsset m_DamageParticle;
 	SERIALIZE PrefabAsset m_DeadParticle;
 	SERIALIZE PrefabAsset m_WarpParticle;
+	SERIALIZE PrefabAsset m_ChargeParticle;
+	SERIALIZE PrefabAsset m_BigBangParticle;
 
 	//É{Å[Éìí«è]é¸ÇË
 	SERIALIZE GameObject m_BoneMirrorObject;
@@ -81,7 +83,7 @@ private:
 	
 	//èÛë‘Ç‹ÇÌÇË
 	bool m_SuperArmor;
-	float m_SaveHp;
+	int m_SuperArmorHit;
 	bool m_NowAttack;
 	float m_MoveCooldown;
 	int m_WinceCount;
@@ -105,6 +107,7 @@ private:
 
 	struct AttackStage
 	{
+		float time = 0.0f;
 		int stage = 0;
 	} m_AttackStage;
 	std::vector<std::function<void(void)>> m_MoveFunc;

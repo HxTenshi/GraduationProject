@@ -379,7 +379,7 @@ void PlayerController::Start(){
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 24.0f / 30.0f;
 
-		attack.DamageScale = 3.0f;
+		attack.DamageScale = 2.0f;
 		attack.AttackMove = 0.0f;
 		attack.DamageType = DamageType::HighDamage;
 		attacklist[attack.ID] = attack;

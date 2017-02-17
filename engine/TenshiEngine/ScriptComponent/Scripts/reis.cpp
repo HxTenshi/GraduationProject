@@ -52,15 +52,15 @@ struct AttackIf
 const int melee_num = 3;
 const AttackIf mode_melee[] = { 
 	AttackIf(ReisMode::Attack_v1,reis::MoveMode::Out,0.5f),
-	AttackIf(ReisMode::Attack_v2,reis::MoveMode::Out,0.5f,false),
+	AttackIf(ReisMode::Attack_v2,reis::MoveMode::Out,0.5f),
 	AttackIf(ReisMode::Attack_v3,reis::MoveMode::Out,0.5f,false),
 };
 const int mid_num = 4;
 const AttackIf mode_mid[] = { 
 	AttackIf(ReisMode::Attack_Bullet		,reis::MoveMode::In		,0.5f),
 	AttackIf(ReisMode::Attack_CitrusBullet	,reis::MoveMode::In		,1.0f),
-	AttackIf(ReisMode::Attack_SonicWaveV	,reis::MoveMode::Idle	,1.0f),
-	AttackIf(ReisMode::Attack_WarpMelee		,reis::MoveMode::In		,1.0f)
+	AttackIf(ReisMode::Attack_SonicWaveV	,reis::MoveMode::Idle	,0.5f),
+	AttackIf(ReisMode::Attack_WarpMelee		,reis::MoveMode::Out	,0.5f)
 };
 
 struct AnimeID {
@@ -93,7 +93,7 @@ void reis::Initialize(){
 	m_ReisLastAttackMode = 0;
 	m_SonicWaveObject = NULL;
 	m_SuperArmor = false;
-	m_SaveHp = 0.0f;
+	m_SuperArmorHit = 0;
 	m_MoveCooldown = 0.0f;
 	m_MoveMode = MoveMode::Idle;
 	m_DogdeMode = DogdeMode::Back;
@@ -119,7 +119,7 @@ void reis::Start(){
 		auto v = XMVectorZero();
 
 		if (MoveMode::Idle == m_MoveMode) {
-			ChangeAnime(AnimeID::Idle);
+			ChangeAnime(AnimeID::Move);
 		}else if (MoveMode::In == m_MoveMode) {
 			ChangeAnime(AnimeID::Move);
 			v = GetPlayerVect() * m_MoveSpeed * Hx::DeltaTime()->GetDeltaTime();
@@ -130,6 +130,7 @@ void reis::Start(){
 		}
 
 		Move(v);
+		Move(XMVectorSet(0.0f, -9.81f, 0.0f, 1.0f)*Hx::DeltaTime()->GetDeltaTime());
 		Rotate(GetPlayerVectH());
 
 		m_MoveCooldown -= Hx::DeltaTime()->GetDeltaTime();
@@ -207,10 +208,10 @@ void reis::Start(){
 
 		if (m_DogdeMode == DogdeMode::Back) {
 			if (m_AttackStage.stage == 0) {
-				m_DodgeBaseVect = -GetPlayerVectH() * 6.0f;
+				m_DodgeBaseVect = -GetPlayerVectH() * 12.0f;
 			}
-			m_AttackStage.stage += Hx::DeltaTime()->GetDeltaTime()*1000.0f;
-			if (m_AttackStage.stage <= 1*1000) {
+			m_AttackStage.stage += Hx::DeltaTime()->GetDeltaTime()*1000.0f * 7;
+			if (m_AttackStage.stage <= 1*2400) {
 				Move(m_DodgeBaseVect * Hx::DeltaTime()->GetDeltaTime());
 				Move(XMVectorSet(0.0f, -4.0f, 0.0f, 1.0f));
 			}
@@ -226,10 +227,10 @@ void reis::Start(){
 
 				m_DodgeBaseVect = GetPlayerVectH()*-GetPlayerLenH();
 			}
-			m_AttackStage.stage += (int)(Hx::DeltaTime()->GetDeltaTime()*1000.0f);
-			if (m_AttackStage.stage <= 1 * 1000) {
+			m_AttackStage.stage += (int)(Hx::DeltaTime()->GetDeltaTime()*1000.0f) * 7;
+			if (m_AttackStage.stage <= 1 * 2400) {
 				auto ppos = m_Player->mTransform->WorldPosition();
-				float t = m_AttackStage.stage / 1000.0f;
+				float t = m_AttackStage.stage / 2400.0f;
 				auto q = XMQuaternionRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), t*XM_PI);
 				auto addpos = XMVector3Rotate(m_DodgeBaseVect, q);
 
@@ -268,11 +269,12 @@ void reis::Start(){
 	};
 	
 	m_MoveFunc[ReisMode::Attack_v1] = [&]() {
-		m_AutoDogdeMode = true;
 		if (m_AttackStage.stage == 0) {
+			m_AutoDogdeMode = true;
 			ChangeAnime(AnimeID::Attack_Ch_v1);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
+				m_AutoDogdeMode = false;
 			}
 		}
 		else if(m_AttackStage.stage == 1) {
@@ -282,26 +284,45 @@ void reis::Start(){
 				SetWeapon(false);
 				m_ReisMode = ReisMode::Idle;
 				m_AttackStage = AttackStage();
-				m_AutoDogdeMode = false;
 			}
 		}
 		
 	};
 	m_MoveFunc[ReisMode::Attack_v2] = [&]() {
-		
+
+		Rotate(GetPlayerVectH());
 		if (m_AttackStage.stage == 0) {
 			m_AttackStage.stage++;
-			m_SaveHp = GetHp();
+			m_SuperArmorHit = 0;
 			SetSuperArmor(true);
 		}
 		else if (m_AttackStage.stage == 1) {
+			auto backt = m_AttackStage.time;
+			m_AttackStage.time += Hx::DeltaTime()->GetDeltaTime();
 			ChangeAnime(AnimeID::Attack_Ch_v2);
+			//const float tt = 40.0f / 30.0f * 2.0f;
+			const float t[] = {0.0f,1.0f, 1.5f, 1.75f, 1.9f, 2.0f,2.1f, 2.2f, 2.3f, 2.4f, 2.5f, 2.5f, 2.6f, 2.6f, 2.7f, 2.7f, 2.7f, 2.75f, 2.75f};
+			for (int i = 0; i < 19; i++) {
+				if (backt < t[i]&&m_AttackStage.time >= t[i]) {
+					if (auto obj = Hx::Instance(m_ChargeParticle)) {
+						auto p = gameObject->mTransform->WorldPosition();
+						p.y += 1.0f;
+						obj->mTransform->WorldPosition(p);
+					}
+				}
+			}
+
 			if (IsCurrentAnimeEnd()) {
+				if (auto obj = Hx::Instance(m_BigBangParticle)) {
+					auto p = gameObject->mTransform->WorldPosition();
+					p.y += 1.0f;
+					obj->mTransform->WorldPosition(p);
+				}
 				m_AttackStage.stage++;
 			}
 		}
 		else if (m_AttackStage.stage == 2) {
-			SetWeapon(true, 50.0f);
+			SetWeapon(true, 30.0f);
 			ChangeAnime(AnimeID::Attack_v2);
 			if (IsCurrentAnimeEnd()) {
 				m_ReisMode = ReisMode::Idle;
@@ -310,17 +331,18 @@ void reis::Start(){
 				SetWeapon(false);
 			}
 		}
-		if (m_SaveHp - GetHp() > 20.0f) {
+		if (m_SuperArmorHit >= 5) {
 			SetSuperArmor(false);
 			SetWeapon(false);
 		}
 	};
 	m_MoveFunc[ReisMode::Attack_v3] = [&]() {
-		m_AutoDogdeMode = true;
 		if (m_AttackStage.stage == 0) {
+			m_AutoDogdeMode = true;
 			ChangeAnime(AnimeID::Attack_Ch_v3);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
+				m_AutoDogdeMode = false;
 			}
 		}
 		else if (m_AttackStage.stage == 1) {
@@ -329,12 +351,12 @@ void reis::Start(){
 			if (IsCurrentAnimeEnd()) {
 				m_ReisMode = ReisMode::Idle;
 				m_AttackStage = AttackStage();
-				m_AutoDogdeMode = false;
 				SetWeapon(false);
 			}
 		}
 	};
 	m_MoveFunc[ReisMode::Attack_Counter] = [&]() {
+		m_AutoDogdeMode = false;
 		Rotate(GetPlayerVectH());
 		SetSuperArmor(true);
 		if (m_AttackStage.stage == 0) {
@@ -445,30 +467,9 @@ void reis::Start(){
 			WeaponEffect(0, false);
 		}
 	};
-	//m_MoveFunc[ReisMode::Attack_WarpMelee] = [&]() {
-	//	if (m_CurrentAnimeID != AnimeID::Attack_WarpMelee) {
-	//		if (m_Player) {
-	//			auto pos = m_Player->mTransform->WorldPosition();
-
-	//			auto agnel = rand() / (float)RAND_MAX * XM_2PI;
-	//			auto add = XMVector3Transform(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), XMMatrixRotationY(agnel));
-
-	//			pos += add * 2.0f;
-	//			pos.y += 3.0f;
-	//			Teleport(pos);
-	//			Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
-	//		}
-	//	}
-	//	Rotate(GetPlayerVectH());
-
-	//	ChangeAnime(AnimeID::Attack_WarpMelee);
-	//	if (IsCurrentAnimeEnd()) {
-	//		m_ReisMode = ReisMode::Idle;
-	//	}
-	//};
-
 	m_MoveFunc[ReisMode::Attack_WarpMelee] = [&]() {
 		Rotate(GetPlayerVectH());
+		SetSuperArmor(true);
 
 		if (m_AttackStage.stage == 0) {
 			ChangeAnime(AnimeID::WarpOut);
@@ -513,6 +514,7 @@ void reis::Start(){
 				SetWeapon(false);
 				m_ReisMode = ReisMode::Idle;
 				m_AttackStage = AttackStage();
+				SetSuperArmor(false);
 			}
 		}
 
@@ -673,6 +675,9 @@ void reis::OnDamage()
 				m_ReisMode = ReisMode::Wince;
 				m_AttackStage = AttackStage();
 				SetWeapon(false);
+			}
+			else {
+				m_SuperArmorHit++;
 			}
 			if (m_AutoDogdeMode) {
 				m_ReisMode = ReisMode::Dogde;
