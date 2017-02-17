@@ -15,6 +15,15 @@ public:
 
 	void WeaponCallHit();
 
+	struct MoveMode {
+		enum Enum {
+			Idle,
+			In,
+			Out,
+			Count
+		};
+	};
+
 private:
 	void Teleport(const XMVECTOR& vect);
 	void Move(const XMVECTOR& vect);
@@ -53,18 +62,23 @@ private:
 	//ñ{ëÃ
 	SERIALIZE GameObject m_EnemyBase;
 
+	SERIALIZE PrefabAsset m_DeadParticle;
+
 	//É{Å[Éìí«è]é¸ÇË
 	SERIALIZE GameObject m_BoneMirrorObject;
 	XMVECTOR m_BoneBackPos;
 	
+	//èÛë‘Ç‹ÇÌÇË
 	bool m_SuperArmor;
 	float m_SaveHp;
-
 	bool m_NowAttack;
+	float m_MoveCooldown;
+	MoveMode::Enum m_MoveMode;
 
+
+	//CitrusBullet
 	GameObject m_CitrusBulletObject;
 	int m_CitrusBulletCount;
-	float m_CitrusBulletCollDown;
 
 	GameObject m_SonicWaveObject;
 
