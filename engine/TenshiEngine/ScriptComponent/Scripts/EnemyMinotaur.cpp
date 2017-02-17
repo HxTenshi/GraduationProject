@@ -450,6 +450,14 @@ void EnemyMinotaur::Move(float s)
 	LookPosition(player->mTransform->WorldPosition(), 400.0f, false);
 	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Forward()*Hx::DeltaTime()->GetDeltaTime()*s);
 }
+void EnemyMinotaur::MoveAttackd(float s)
+{
+	auto player = m_Player;
+
+	if (!player)return;
+	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Forward()*Hx::DeltaTime()->GetDeltaTime()*s);
+
+}
 void EnemyMinotaur::MoveSide(bool right)
 {
 	auto player = m_Player;
@@ -584,7 +592,7 @@ void EnemyMinotaur::Attack4()
 	auto rot = gameObject->mTransform->Rotate();
 	obj->mTransform->Rotate(rot);
 	m_action_func = nullptr;
-	m_attackd_func = [this]() {Move(1.0f); };
+	m_attackd_func = [this]() {MoveAttackd(1.0f); };
 }
 
 void EnemyMinotaur::Attack5()
@@ -598,7 +606,7 @@ void EnemyMinotaur::Attack5()
 	auto rot = gameObject->mTransform->Rotate();
 	obj->mTransform->Rotate(rot);
 	m_action_func = nullptr;
-	m_attackd_func = [this]() {Move(1.0f); };
+	m_attackd_func = [this]() {MoveAttackd(1.0f); };
 }
 
 void EnemyMinotaur::Attack6()
@@ -630,6 +638,7 @@ void EnemyMinotaur::Attack7()
 	pos.y -= 0.3f;
 	obj->mTransform->WorldPosition(pos);
 	m_action_func = nullptr;
+	m_attackd_func = [this]() {Move(7.0f); };
 }
 
 void EnemyMinotaur::ChestThump()
