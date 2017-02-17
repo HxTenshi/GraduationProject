@@ -14,7 +14,9 @@ void ComboScene::Start(){
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void ComboScene::Update(){
-	if (Input::Trigger(KeyCode::Key_SPACE)) {
+	bool isSpaceKey = Input::Trigger(KeyCode::Key_SPACE);
+	bool isPad_B_Button = Input::Trigger(PAD_X_KeyCode::Button_B);
+	if (isSpaceKey || isPad_B_Button) {
 		Hx::LoadScene(configPass);
 	}
 }

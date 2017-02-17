@@ -58,8 +58,9 @@ void GameOverScene::Update(){
 	}
 
 	if (isMessage) {
-		if (Input::Trigger(KeyCode::Key_SPACE)) {
-			Hx::LoadScene("Assets/TitleScene.scene");
+		bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
+		if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
+			Hx::LoadScene("Assets/Mossan/Credit.scene");
 		}
 	}
 }

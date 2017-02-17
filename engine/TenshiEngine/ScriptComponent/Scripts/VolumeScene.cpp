@@ -33,6 +33,8 @@ void VolumeScene::Initialize(){
 	m_objList.push_back(m_seBarObj);
 	m_objList.push_back(m_backConfigObj);
 	num = 0;
+
+	m_stickIntervalTime = 0.0f;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -47,18 +49,29 @@ void VolumeScene::Update(){
 	if (m_objList[Enum::SE] == NULL) return;
 	if (m_objList[Enum::BackConfig] == NULL) return;
 
-	if (Input::Trigger(KeyCode::Key_UP)) num--;
-	if (Input::Trigger(KeyCode::Key_DOWN)) num++;
+
+	m_stickIntervalTime += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+	m_stickIntervalTime = min(m_stickIntervalTime, 1.0f);
+	bool interval = m_stickIntervalTime > STICK_INTERVAL;
+
+	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+	bool isUp = ls.y > 0.5f;
+	bool isDown = ls.y < -0.5f;
+	bool isRight = ls.x > 0.5f;
+	bool isLeft = ls.x < -0.5f;
+	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
+
+	
 
 	//ボリュームの調整
-	if (Input::Trigger(KeyCode::Key_LEFT)) {
+	if ((Input::Trigger(KeyCode::Key_LEFT) || isLeft)) {
 		if (num >= Enum::BackConfig) return;
 		auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
 		//Nullチェック
 		if (!barCtrl) return;
 		//音量下げる
 		barCtrl->VolumeDown();
-	}else if (Input::Trigger(KeyCode::Key_RIGHT)) {
+	}else if ((Input::Trigger(KeyCode::Key_RIGHT) || isRight)) {
 		if (num >= Enum::BackConfig) return;
 		auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
 		//Nullチェック
@@ -67,8 +80,17 @@ void VolumeScene::Update(){
 		barCtrl->VolumeUp();
 	}
 
+	if ((Input::Trigger(KeyCode::Key_UP) || isUp) && interval) {
+		num--;
+		m_stickIntervalTime = 0.0f;
+	}
+	if ((Input::Trigger(KeyCode::Key_DOWN) || isDown) && interval) {
+		num++;
+		m_stickIntervalTime = 0.0f;
+	}
+
 	//Configに戻る
-	else if (Input::Trigger(KeyCode::Key_SPACE)) {
+	else if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
 		if (num != Enum::BackConfig) return;
 		//決定
 		Decision();

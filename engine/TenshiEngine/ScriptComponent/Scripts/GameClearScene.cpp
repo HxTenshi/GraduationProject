@@ -258,7 +258,8 @@ void GameClearScene::DoPhase3(){
 }
 
 void GameClearScene::DoPhase4(){
-	if (Input::Trigger(KeyCode::Key_SPACE)) {
-		Hx::LoadScene("TitleScene.scene");
+	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
+	if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
+		Hx::LoadScene("Assets/Mossan/Credit.scene");
 	}
 }

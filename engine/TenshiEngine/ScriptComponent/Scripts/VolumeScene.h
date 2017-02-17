@@ -31,4 +31,8 @@ private:
 	int num;
 	VolumeBarCtrl* bgmCtrl;
 	VolumeBarCtrl* seCtrl;
+
+	SERIALIZE
+		float STICK_INTERVAL;
+	float m_stickIntervalTime;
 };
