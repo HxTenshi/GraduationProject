@@ -51,6 +51,7 @@ bool EnemyRezardManTeam::Alive()
 			Enemy::GetEnemy(j->enemyGameObject)->ChildFinalize();
 			j = teamMember.erase(j);
 			if (m_DrawFlag)Hx::Debug()->Log("RezardManTeam : " + std::to_string(teamMember.size()) + "l");
+			battlePosFirst = 0;
 			if (teamMember.size() == 0) {
 				if (m_DrawFlag)Hx::Debug()->Log("RezardManTeam‚ª‰ó–Å‚µ‚½");
 				return false;
@@ -115,7 +116,9 @@ void EnemyRezardManTeam::TeamUpdate()
 
 	XMVECTOR firstBattlePos;
 	auto firstScript = Enemy::GetEnemy(teamMember[battlePosFirst].enemyGameObject);
-	if (!firstScript)return;
+	if (!firstScript) {
+		return;
+	}
 	parentMoveVec = XMVector3Normalize(teamMember[battlePosFirst].enemyGameObject->mTransform->WorldPosition() - playerPos);
 	auto moveToBattlePos = XMMatrixTranslationFromVector(parentMoveVec * firstScript->GetOnBattleRange());
 	firstBattlePos = XMMatrixMultiply(moveToBattlePos, XMMatrixTranslationFromVector(playerPos)).r[3];
@@ -143,7 +146,7 @@ void EnemyRezardManTeam::TeamUpdate()
 		}
 		firstSearch++;
 	}
-	
+
 	for (auto& j : teamMember) {
 		auto jScript = Enemy::GetEnemy(j.enemyGameObject);
 		if (!jScript)return;

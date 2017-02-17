@@ -39,7 +39,7 @@ void EnemyMinotaur::ChildInitialize()
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
 	m_before_pos = gameObject->mTransform->WorldPosition();
-	Hx::Debug()->Log("CI");
+	if (m_Debug_flag)Hx::Debug()->Log("CI");
 	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 	InitThoughRoutineParam();
 	m_action_func = [this]() {Move(walk_speed); };
@@ -48,8 +48,10 @@ void EnemyMinotaur::ChildInitialize()
 	change_battle_time = 0.0f;
 	change_battle_counter = 0;
 	anim_cast = 0.0f;
-	is_changed_take_over = false;
-	m_AttackHit = true;
+	is_changed_take_over = false;//攻撃時のアニメーションから次のアニメーションへ安全に変更するフラグ
+	m_AttackHit = true;//攻撃のヒット
+	is_dead = false;//死んだとき
+	is_damage = false;
 }
 void EnemyMinotaur::SoloAction()
 {
@@ -85,13 +87,20 @@ void EnemyMinotaur::Attack(GameObject player, COL_TYPE colType)
 
 bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
-	m_Damage = damage_;
+	if (is_dead)return false;
+	if (is_damage)return false;
+	m_Damage= damage_;
 	m_Accel = accelPower_;
-	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
-		//ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
-		return true;
-	}
-	return false;
+	is_damage = true;
+	//if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
+	//	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
+	//	return true;
+	//}
+	anim_loop = false;
+	RoutineSetUp(ANIM_STUNNED);
+	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+
+	return true;
 }
 
 bool EnemyMinotaur::DiscoveryPlayer()
@@ -110,20 +119,25 @@ void EnemyMinotaur::ChildFinalize()
 {
 	gameObject->RemoveComponent<CharacterControllerComponent>();
 	////gameObject->Disable();
-	Hx::Debug()->Log(gameObject->Name());
-	Hx::DestroyObject(this->gameObject);
+	if (m_Debug_flag)Hx::Debug()->Log(gameObject->Name());
+	if (m_Debug_flag)Hx::DestroyObject(this->gameObject);
 
 }
 
 void EnemyMinotaur::BattleModeInitilize()
 {
+	if (is_damage) {
+		m_Hp -= m_Damage;
+		m_Damage = 0.0f;
+		is_damage = false;
+		if(!m_action_func)m_action_func = nullptr;
+		m_attack_flag = true;
+	}
 	//攻撃
-	if (m_roucine_module.GetStateParam() == StateType::STATE_BATTLE)Attack1();
-
-	auto nav = gameObject->GetComponent<NaviMeshComponent>();
+	m_Hp -= m_Damage;
+	m_Damage = 0.0f;
+	if (is_dead)return;
 	if (!m_Player)return;
-	if (!nav)return;
-	nav->RootCreate(gameObject, m_Player);
 	battleActionInitilize[m_BattleModeParam.id]();
 
 	
@@ -136,13 +150,24 @@ void EnemyMinotaur::BattleModeInitilize()
 	};
 
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
-	Hx::Debug()->Log("Anim:" + debug_draw_anim[m_roucine_module.GetAnimState()] + ":Loop:" + std::to_string(anim_loop));
+	if (m_Debug_flag)Hx::Debug()->Log("Anim:" + debug_draw_anim[m_roucine_module.GetAnimState()] + ":Loop:" + std::to_string(anim_loop));
 	AnimChange(m_roucine_module.GetAnimState(), 10.0f,anim_loop, true);
 }
 void EnemyMinotaur::BattleModeUpdate()
 {
+
 	battleActionUpdate[m_BattleModeParam.id]();
-	
+	if (is_dead)return;
+	//デバッグデッドコード
+	DebugDead();
+	//HPが０以下になったら死亡処理
+	if (m_Hp <= 0) {
+		is_dead = true;
+		if (m_Debug_flag)Hx::Debug()->Log("dead");
+		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::DEADACTION);
+		battleActionInitilize[m_BattleModeParam.id]();
+	}
+
 	if (is_change_attack) {
 		BattleRoutine();
 	}
@@ -151,7 +176,7 @@ void EnemyMinotaur::BattleModeUpdate()
 	}
 	//攻撃時のアニメーションが終わるまで
 	if (auto anim = m_ModelObject->GetComponent<AnimationComponent>()) {
-		if (anim->IsAnimationEnd(m_anim_state)&m_attack_flag) {
+		if (anim->IsAnimationEnd(m_roucine_module.GetAnimState())&m_attack_flag) {
 			m_attack_flag = false;
 			m_AttackHit = true;
 
@@ -160,10 +185,11 @@ void EnemyMinotaur::BattleModeUpdate()
 				m_action_func = [this]() {MoveSide(); };
 				anim_loop = true;
 				RoutineSetUp(ANIM_R_WALK);
-				Hx::Debug()->Log("AnimEnd");
+				if (m_Debug_flag)Hx::Debug()->Log("AnimEnd");
 			}
 		}
 	}
+	
 
 
 }
@@ -180,20 +206,7 @@ void EnemyMinotaur::ConfrontModeInitilize()
 
 void EnemyMinotaur::ConfrontModeUpdate()
 {
-	//プレイヤーの位置を考える時間
-	//m_thinking_time += Hx::DeltaTime()->GetDeltaTime();
-	//auto p = m_Player;
-	//if (!p)return;
-	//auto player_pos = p->mTransform->WorldPosition();
-	//auto now_pos = gameObject->mTransform->WorldPosition();
-	//auto distance = std::abs(XMVector3Length(player_pos - now_pos).x);
-	//if (m_thinking_time >= 5.0f) {
-	//	//プレイヤーがバトル範囲以外だったら
-	//	if (m_roucine_module.DistanceCheck(DistanceType::DSI_ATTACK, distance, funifuni::ModuleDistanceType::Over)) {
-	//		m_thinking_time = 0.0f;
-	//		//ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
-	//	}
-	//}
+
 
 
 
@@ -205,15 +218,34 @@ void EnemyMinotaur::ConfrontModeFinalize()
 
 void EnemyMinotaur::DeadInitilize()
 {
-
+	gameObject->GetComponent<CharacterControllerComponent>()->Disable();
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (m_Debug_flag)Hx::Debug()->Log("Anim:ANIM_DYING");
+	AnimChange(ANIM_DYING, 10.0f, false, true);
 }
 
 void EnemyMinotaur::DeadUpdate()
-{
+{	
+	//死んだときの削除処理
+	if (auto anim = m_ModelObject->GetComponent<AnimationComponent>()) {
+		if (anim->IsAnimationEnd(ANIM_DYING)) {
+			Hx::DestroyObject(gameObject);
+		}
+	}
 }
 
 void EnemyMinotaur::DeadFinalize()
 {
+}
+
+void EnemyMinotaur::DebugDead()
+{
+	if (m_Debug_flag) {
+		if (Input::Down(KeyCode::Key_0)) {
+			m_Hp = 0.0f;
+		}
+	}
+
 }
 
 void EnemyMinotaur::PositionReplaceBorn()
@@ -375,7 +407,7 @@ void EnemyMinotaur::RoutineSetUp(AnimType type)
 {
 	m_roucine_module.SetAnimState(type);
 	if (m_anim_state != m_roucine_module.GetAnimState()) {
-		Hx::Debug()->Log("BattleChange");
+		if (m_Debug_flag)Hx::Debug()->Log("BattleChange");
 		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 
 	}
@@ -388,9 +420,7 @@ void EnemyMinotaur::Move(float s)
 	auto nav = gameObject->GetComponent<NaviMeshComponent>();
 
 	if (!player)return;
-	if (!nav)return;/*
-					Hx::Debug()->Log("Move");
-					nav->RootCreate(gameObject,player);*/
+	if (!nav)return;
 
 
 	auto dir = nav->GetRouteVector();
@@ -428,7 +458,6 @@ void EnemyMinotaur::ThoughtRoutine()
 		auto player_pos = p->mTransform->WorldPosition();
 		auto now_pos = gameObject->mTransform->WorldPosition();
 		auto distance = std::abs(XMVector3Length(player_pos - now_pos).x);
-		//Hx::Debug()->Log(std::to_string(distance));
 
 		int state = m_roucine_module.GetStateParam();
 		std::function<void()> change_func;

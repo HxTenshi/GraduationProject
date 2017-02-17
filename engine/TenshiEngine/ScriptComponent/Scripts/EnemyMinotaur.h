@@ -120,6 +120,8 @@ private:
 	void DeadInitilize();
 	void DeadUpdate();
 	void DeadFinalize();
+	//強制殺害関数
+	void DebugDead();
 
 
 	void PositionReplaceBorn();
@@ -170,6 +172,9 @@ private:
 	SERIALIZE PrefabAsset m_Attack6Effect;//id 10
 	SERIALIZE PrefabAsset m_Attack7Effect;//id 14
 
+	//デバッグ用のフラグ
+	SERIALIZE bool m_Debug_flag;
+
 
 	//前方向のスピード
 	SERIALIZE float walk_speed;
@@ -206,6 +211,9 @@ private:
 	int change_battle_counter;
 	XMVECTOR m_before_pos;
 	float m_hip_z;
-	
+	//死んだときのフラグ
+	bool is_dead;
+	//ダメージが入ったときのフラグ
+	bool is_damage;
 
 };
