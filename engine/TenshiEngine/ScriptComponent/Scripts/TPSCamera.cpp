@@ -21,21 +21,25 @@ void TPSCamera::Start(){
 
 	Hx::System()->LockCursorPositionToWindowCenter(true);
 
-	auto currentPos = gameObject->mTransform->WorldPosition();
-	auto pos = mTarget->mTransform->WorldPosition();
-	auto back = -gameObject->mTransform->Forward() * mDistance;
-	auto up = XMVectorSet(0.0f,1.0f,0.0f,1.0f) * mUp;
-	float l = 1.0f;
-	if (mLookTarget) {
-		l = XMVector3Length(mTarget->mTransform->WorldPosition() - mLookTarget->mTransform->WorldPosition()).x;
-		l *= 0.1f;
-		l = min(l, 0.1f);
-
-	}
-	auto left = gameObject->mTransform->Left() * mLeft * l;
-	auto campos = pos + back + up + left;
-
-	gameObject->mTransform->WorldPosition(campos);
+	//auto currentPos = gameObject->mTransform->WorldPosition();
+	//auto pos = mTarget->mTransform->WorldPosition();
+	//auto back = -gameObject->mTransform->Forward() * mDistance;
+	//auto up = XMVectorSet(0.0f,1.0f,0.0f,1.0f) * mUp;
+	//float l = 1.0f;
+	//if (mLookTarget) {
+	//	l = XMVector3Length(mTarget->mTransform->WorldPosition() - mLookTarget->mTransform->WorldPosition()).x;
+	//	l *= 0.1f;
+	//	l = min(l, 0.1f);
+	//
+	//}
+	//auto left = gameObject->mTransform->Left() * mLeft * l;
+	//auto campos = pos + back + up + left;
+	//
+	//gameObject->mTransform->WorldPosition(campos);
+	//if (m_CharacterControllerComponent) {
+	//
+	//	m_CharacterControllerComponent->Teleport(campos);
+	//}
 }
 
 //毎フレーム呼ばれます
@@ -79,14 +83,14 @@ void TPSCamera::Update(){
 			m_CharacterControllerComponent->Move(campos);
 
 			campos = gameObject->mTransform->WorldPosition();
-			auto p = spring(currentPos, campos);
+			auto p = spring(campos, currentPos);
 			//m_CharacterControllerComponent->Teleport(p);
 			auto nan = XMVectorIsNaN(p);
 			if (!nan.x&&!nan.y&&!nan.z&&!nan.w)
 				gameObject->mTransform->WorldPosition(p);
 		}
 		else {
-			auto p = spring(currentPos, campos);
+			auto p = spring(campos, currentPos);
 			gameObject->mTransform->WorldPosition(p);
 		}
 
@@ -188,16 +192,20 @@ void TPSCamera::OnCollideExit(GameObject target){
 
 XMVECTOR TPSCamera::spring(XMVECTOR position, const XMVECTOR& desiredPosition)
 {
+	//(void)position;
+	//return desiredPosition;
 	float time = Hx::DeltaTime()->GetNoScaleDeltaTime();
 	// バネの力を計算
 	auto stretch = position - desiredPosition;
 	auto force = -m_SpringStiffness * stretch - m_SpringDamping * m_SpringVelocity;
-
+	
 	float mass = 1.0f;
 	// 加速度の分を追加
 	auto acceleration = force / mass;
 	m_SpringVelocity += acceleration * time;
-
+	
+	auto v = XMVector3Normalize(m_SpringVelocity);
+	m_SpringVelocity = max(XMVector3Length(m_SpringVelocity).x,10.0f) * v;
 	// 速度の分を追加
 	position += m_SpringVelocity * time;
 	position.w = 1.0f;

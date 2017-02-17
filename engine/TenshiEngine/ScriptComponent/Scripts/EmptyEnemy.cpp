@@ -97,6 +97,9 @@ void EmptyEnemy::Attack(GameObject player, COL_TYPE colType)
 
 bool EmptyEnemy::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
+	if (!m_TrackingModeParam.parentAlive) {
+		damage_ *= 0.1f;
+	}
 	m_Damage = damage_;
 	m_Accel = accelPower_;
 	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
@@ -220,6 +223,7 @@ void EmptyEnemy::WinceModeInitilize() {
 }
 
 void EmptyEnemy::WinceModeUpdate() {
+	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 }
 
 void EmptyEnemy::WinceModeFinalize() {
@@ -237,6 +241,7 @@ void EmptyEnemy::UpperDownInitilize()
 
 void EmptyEnemy::UpperDownUpdate()
 {
+	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 }
 
 void EmptyEnemy::UpperDownFinalize()
@@ -251,13 +256,11 @@ void EmptyEnemy::BeatDownInitilize()
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
-	m_BattleModeParam.count = 0.0f;
-	m_AccelVec += m_Accel;
-	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 }
 
 void EmptyEnemy::BeatDownUpdate()
 {
+	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 
 }
 
