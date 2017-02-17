@@ -371,22 +371,49 @@ XMVECTOR Enemy::NaviMeshTracking(GameObject destination,float speed) {
 
 XMVECTOR Enemy::NaviMeshBattle(GameObject destination, float speed)
 {
+	auto navi = gameObject->GetComponent<NaviMeshComponent>();
+	if (!navi)return XMVectorSet(0, 0, 0, 0);
+	if (Layer12RayHit(destination)) {
+		if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f || m_BeforeNormalMove) {
+			m_UseNaviMesh = true;
+			navi->RootCreate(gameObject, destination);
+		}
+	}
+	else {
+		m_BeforeNormalMove = true;
+		return destination->mTransform->WorldPosition();
+	}
+
+	if (m_UseNaviMesh) {
+		m_BeforeNormalMove = false;
+		auto naviPos = navi->GetPosition();
+		naviPos.y = gameObject->mTransform->WorldPosition().y;
+		if (XMVector3Length(gameObject->mTransform->WorldPosition() - naviPos).x < 1.0f)
+			navi->Move(speed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
+
+		if (!Layer12RayHit(destination)) {
+			if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
+				m_UseNaviMesh = false;
+			}
+		}
+		return navi->GetPosition();
+	}
+
+	return XMVectorSet(0, 0, 0, 0);
+}
+
+bool Enemy::Layer12RayHit(GameObject destination)
+{
 	auto rayMyPos = gameObject->mTransform->WorldPosition();
 	auto rayYouPos = destination->mTransform->WorldPosition();
+	rayMyPos.y += 0.5f;
+	rayYouPos.y += 0.5f;
 	if (Hx::PhysX()->Raycast(rayMyPos,
 		XMVector3Normalize(rayYouPos - rayMyPos),
 		XMVector3Length(rayYouPos - rayMyPos).x,
 		Layer::UserTag12)) {
-		
+		Hx::Debug()->Log("hit");
+		return true;
 	}
-	auto navi = gameObject->GetComponent<NaviMeshComponent>();
-	if (!navi)return XMVectorSet(0, 0, 0, 0);
-	if (navi->IsMoveEnd() || XMVector3Length(destination->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x < 2.0f) {
-		navi->RootCreate(gameObject, destination);
-	}
-	auto naviPos = navi->GetPosition();
-	naviPos.y = gameObject->mTransform->WorldPosition().y;
-	if (XMVector3Length(gameObject->mTransform->WorldPosition() - naviPos).x < 1.0f)
-		navi->Move(speed * m_ChildTranckingSpeed * Hx::DeltaTime()->GetDeltaTime());
-	return navi->GetPosition();
+	return false;
 }

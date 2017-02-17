@@ -163,6 +163,7 @@ bool EnemyOrc::DiscoveryPlayer()
 //“G‚ðŒ©Ž¸‚Á‚½‚©
 bool EnemyOrc::LostPlayer()
 {
+	return false;
 	if (!m_Player) {
 		return false;
 	}
@@ -301,7 +302,7 @@ void EnemyOrc::ConfrontModeUpdate()
 {
 	auto playerPos = m_Player->mTransform->WorldPosition();
 	auto myPos = gameObject->mTransform->WorldPosition();		
-	LookPosition(NaviMeshTracking(m_Player, m_TrackingSpeed), m_TrackingRotateSpeed);
+	LookPosition(NaviMeshBattle(m_Player, m_TrackingSpeed), m_TrackingRotateSpeed);
 	m_Forward = gameObject->mTransform->Forward();
 	m_Vec += m_Forward * m_TrackingSpeed;
 	if (XMVector3Length(myPos - playerPos).x < m_BattleRange) {
