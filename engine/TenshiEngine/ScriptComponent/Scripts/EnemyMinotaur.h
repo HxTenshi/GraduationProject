@@ -132,6 +132,8 @@ private:
 	//ルーチンのアニメーションが変わったときの設定関数
 	void RoutineSetUp(AnimType type);
 	void Move(float s);
+	//攻撃中の前移動処理
+	void MoveAttackd(float s);
 	void MoveSide(bool right = true);
 	void MoveBack();
 	//連続攻撃禁止のための関数
