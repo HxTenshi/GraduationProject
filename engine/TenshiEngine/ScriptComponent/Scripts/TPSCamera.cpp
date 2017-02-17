@@ -132,6 +132,29 @@ void TPSCamera::Update(){
 		q = XMQuaternionSlerp(wq, q, t);
 		if(!XMQuaternionIsNaN(q))
 			gameObject->mTransform->WorldQuaternion(q);
+		{
+			auto nf = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+			auto up = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f);
+			auto nl = XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
+			auto f1 = gameObject->mTransform->Forward();
+			f1.y = 0.0f;
+			f1 = XMVector3Normalize(f1);
+			float n = 1;
+			if (XMVector3Dot(nf, f1).x > 0.0f) {
+				n = -1;
+				if (XMVector3Dot(nl, f1).x > 0.0f) {
+					n *= -1;
+				}
+			}
+			else {
+				if (XMVector3Dot(nl, f1).x < 0.0f) {
+					n *= -1;
+				}
+			}
+
+			mRotate.y = acos(max(min(XMVector3Dot(nf, f1).x, 1.0f), -1.0f)) * n;
+		}
+		
 	}
 	else {
 		int mx, my;
@@ -194,20 +217,23 @@ XMVECTOR TPSCamera::spring(XMVECTOR position, const XMVECTOR& desiredPosition)
 {
 	//(void)position;
 	//return desiredPosition;
-	float time = Hx::DeltaTime()->GetNoScaleDeltaTime();
-	// バネの力を計算
-	auto stretch = position - desiredPosition;
-	auto force = -m_SpringStiffness * stretch - m_SpringDamping * m_SpringVelocity;
-	
-	float mass = 1.0f;
-	// 加速度の分を追加
-	auto acceleration = force / mass;
-	m_SpringVelocity += acceleration * time;
-	
-	auto v = XMVector3Normalize(m_SpringVelocity);
-	m_SpringVelocity = max(XMVector3Length(m_SpringVelocity).x,10.0f) * v;
-	// 速度の分を追加
-	position += m_SpringVelocity * time;
-	position.w = 1.0f;
+	float time = Hx::DeltaTime()->GetDeltaTime();
+	float t = 1.0f / 180.0f;
+	for (float i=0.0f;i<=time;i+=t) {
+		// バネの力を計算
+		auto stretch = position - desiredPosition;
+		auto force = -m_SpringStiffness * stretch - m_SpringDamping * m_SpringVelocity;
+
+		float mass = 1.0f;
+		// 加速度の分を追加
+		auto acceleration = force / mass;
+		m_SpringVelocity += acceleration * t;
+
+		auto v = XMVector3Normalize(m_SpringVelocity);
+		m_SpringVelocity = max(XMVector3Length(m_SpringVelocity).x, 3.0f) * v;
+		// 速度の分を追加
+		position += m_SpringVelocity * t;
+		position.w = 1.0f;
+	}
 	return position;
 }

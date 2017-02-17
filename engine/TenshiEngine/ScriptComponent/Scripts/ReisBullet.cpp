@@ -71,7 +71,7 @@ void ReisBullet::OnCollideBegin(GameObject target){
 
 	if (m_BulletModel) {
 		if (auto scr = m_BulletModel->GetScript<BurstDamageArea>()) {
-			scr->OnCollideEnter(target);
+			scr->OnCollideBegin(target);
 		}
 	}
 }
