@@ -73,8 +73,6 @@ void EnemyOrc::ChildInitialize()
 	ModelObject = m_ModelObject;
 	m_StartForward = gameObject->mTransform->Forward();
 	m_StartPos = gameObject->mTransform->WorldPosition();
-	auto navi = gameObject->GetComponent<NaviMeshComponent>();
-	navi->SetBaseNaviMeshObject(UniqueObject::GetNaviMesh(1));
 	//ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 }
 
@@ -154,6 +152,7 @@ bool EnemyOrc::DiscoveryPlayer()
 			XMVector3Normalize(rayBossPos - rayMyPos),
 			XMVector3Length(rayBossPos - rayMyPos).x,
 			Layer::UserTag4)) {
+			if(m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION)
 			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 			return true;
 		}
@@ -164,6 +163,7 @@ bool EnemyOrc::DiscoveryPlayer()
 //“G‚ðŒ©Ž¸‚Á‚½‚©
 bool EnemyOrc::LostPlayer()
 {
+	return false;
 	if (!m_Player) {
 		return false;
 	}
@@ -179,6 +179,7 @@ bool EnemyOrc::LostPlayer()
 			XMVector3Normalize(rayBossPos - rayMyPos),
 			XMVector3Length(rayBossPos - rayMyPos).x,
 			Layer::UserTag4)) {
+		if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION)
 		ChangeActionAndTrackingAction(ACTIONMODE::TRACKINGMODE, TRACKINGACTION::PARENTTRACKING);
 		return true;
 	}
@@ -301,7 +302,7 @@ void EnemyOrc::ConfrontModeUpdate()
 {
 	auto playerPos = m_Player->mTransform->WorldPosition();
 	auto myPos = gameObject->mTransform->WorldPosition();		
-	LookPosition(NaviMeshTracking(m_Player, m_TrackingSpeed), m_TrackingRotateSpeed);
+	LookPosition(NaviMeshBattle(m_Player, m_TrackingSpeed), m_TrackingRotateSpeed);
 	m_Forward = gameObject->mTransform->Forward();
 	m_Vec += m_Forward * m_TrackingSpeed;
 	if (XMVector3Length(myPos - playerPos).x < m_BattleRange) {

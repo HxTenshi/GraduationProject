@@ -178,6 +178,9 @@ public:
 
 private:
 	void AnimLerp();
+
+	bool m_BeforeNormalMove = true;
+	bool m_UseNaviMesh = false;
 	
 protected:
 	GameObject ModelObject;
@@ -185,6 +188,8 @@ protected:
 	GameObject NextDestinationDecide();
 	GameObject NextDestinationDeciceInit();
 	XMVECTOR NaviMeshTracking(GameObject destination,float speed);
+	XMVECTOR NaviMeshBattle(GameObject destination, float speed);
+	bool Layer12RayHit(GameObject destination);
 	void LookPosition(XMVECTOR position_, float rotateSpeed, bool zReset = false);
 
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
