@@ -1,4 +1,5 @@
 #include "TitleManager.h"
+#include "Fader.h"
 
 namespace funifuni {
 
@@ -52,6 +53,7 @@ namespace funifuni {
 		m_button_state = GameStart;
 		m_MoveObject = m_GameStartButton;
 		is_next = false;
+		OnBGM();
 
 	}
 
@@ -73,6 +75,7 @@ namespace funifuni {
 			InitPosition(is_arrow);
 			Back();
 			SetArrowPosition();
+			OnSE(SoundManager::SoundSE_ID::Enum::CursorMove);
 		}
 		if ((Input::Trigger(KeyCode::Key_D) || isRightLS) && !is_next) {
 			is_next = true;
@@ -80,12 +83,13 @@ namespace funifuni {
 			InitPosition(is_arrow);
 			Next();
 			SetArrowPosition();
-
+			OnSE(SoundManager::SoundSE_ID::Enum::CursorMove);
 		}
 
 		//Œˆ’èƒL[‚ð‰Ÿ‚³‚ê‚½‚©
 		bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 		if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
+			OnSE(SoundManager::SoundSE_ID::Enum::Enter);
 			Select();
 		}
 		if (is_next) {
@@ -216,15 +220,33 @@ namespace funifuni {
 
 	void TitleManager::Select()
 	{
+		if (!m_fader) return;
+		auto fader = m_fader->GetScript<Fader>();
+
 		switch (m_button_state)
 		{
-		case TitleButtonRoll::GameStart: Hx::LoadScene(gameStartScenePass);
+		case TitleButtonRoll::GameStart: fader->OnSceneChnage(gameStartScenePass);
 			break;
-		case TitleButtonRoll::Config: Hx::LoadScene(configScenePass);
+		case TitleButtonRoll::Config: fader->OnSceneChnage(configScenePass);
 			break;
 		case TitleButtonRoll::GameEnd: Hx::Shutdown();
 			break;
 		default:
 			break;
 		}
+	}
+
+	void TitleManager::OnBGM(){
+		if (!m_soundManager) return;
+		auto sound = m_soundManager->GetScript<SoundManager>();
+		if (!sound) return;
+		sound->GetSoundBGM(SoundManager::SoundBGM_ID::Enum::Title);
+	}
+
+	void TitleManager::OnSE(SoundManager::SoundSE_ID::Enum seID)
+	{
+		if (!m_soundManager) return;
+		auto sound = m_soundManager->GetScript<SoundManager>();
+		if (!sound) return;
+		sound->GetSoundSE(seID, XMVectorZero());
 	}

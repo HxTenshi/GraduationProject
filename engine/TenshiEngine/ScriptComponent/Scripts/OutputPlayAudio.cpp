@@ -11,6 +11,7 @@ bool OutputPlayAudio::OnStart(GameObject Sender)
 	if (!sound)return false;
 	
 	Hx::Debug()->Log("SE‚ÌÄ¶");
+	m_PlayTarget->GetComponent<SoundComponent>()->Set3DSound(false);
 	m_PlayTarget->GetComponent<SoundComponent>()->Play();
 	
 	auto scr = OutputGimic::GetOutputGimic(m_OutputGimic);

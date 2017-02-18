@@ -1,6 +1,7 @@
 #include "h_standard.h""
 #include "VolumeScene.h"
 #include "SoundManager.h"
+#include "Fader.h"
 #include "FuckTenshiEngine.h"
 #include <istream>
 #include <fstream>
@@ -136,6 +137,10 @@ void VolumeScene::Decision(){
 
 	writeCSV("Assets/data/Volume.csv", bgm, se);
 	Hx::LoadScene("Assets/Mossan/Config.scene");
+
+	if (!m_fader) return;
+	auto fader = m_fader->GetScript<Fader>();
+	fader->OnSceneChnage("Assets/Mossan/Config.scene");
 }
 
 

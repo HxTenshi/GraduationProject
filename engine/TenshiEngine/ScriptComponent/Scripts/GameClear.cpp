@@ -1,5 +1,4 @@
 #include "GameClear.h"
-
 #include <sstream>
 
 //生成時に呼ばれます（エディター中も呼ばれます）

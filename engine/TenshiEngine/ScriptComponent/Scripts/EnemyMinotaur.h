@@ -132,6 +132,8 @@ private:
 	//ルーチンのアニメーションが変わったときの設定関数
 	void RoutineSetUp(AnimType type);
 	void Move(float s);
+	//攻撃中の前移動処理
+	void MoveAttackd(float s);
 	void MoveSide(bool right = true);
 	void MoveBack();
 	//連続攻撃禁止のための関数
@@ -171,7 +173,7 @@ private:
 	SERIALIZE PrefabAsset m_Attack5Effect;//id 9
 	SERIALIZE PrefabAsset m_Attack6Effect;//id 10
 	SERIALIZE PrefabAsset m_Attack7Effect;//id 14
-
+	SERIALIZE PrefabAsset m_DeadEffect;
 	//デバッグ用のフラグ
 	SERIALIZE bool m_Debug_flag;
 
@@ -190,6 +192,8 @@ private:
 	bool is_changed_take_over;
 	//ミノタウロスの行動を左右するファンクション
 	std::function<void()> m_action_func;
+	//攻撃時の移動用ファンクション
+	std::function<void()> m_attackd_func;
 	//追跡時の行動アニメーションの変更時間
 	float anim_cast;
 	//まだ使ってない
@@ -215,5 +219,9 @@ private:
 	bool is_dead;
 	//ダメージが入ったときのフラグ
 	bool is_damage;
+	//死んだときにエフェクトを生成するタイマー
+	float m_crate_dead_effect_timer;
+	//死亡状態でアニメーションが終わったら
+	bool is_dead_anim_end;
 
 };

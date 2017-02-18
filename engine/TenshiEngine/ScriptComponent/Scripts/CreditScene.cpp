@@ -1,5 +1,6 @@
 #include "CreditScene.h"
 #include "CreditDraw.h"
+#include "Fader.h"	
 #include <h_standard.h>
 #include <h_component.h>
 
@@ -18,9 +19,6 @@ void CreditScene::Initialize(){
 	m_objList.push_back(m_weaponObj8);
 	m_objList.push_back(m_weaponObj9);
 	m_objList.push_back(m_weaponObj10);
-	m_objList.push_back(m_weaponObj11);
-	m_objList.push_back(m_weaponObj12);
-	m_objList.push_back(m_weaponObj13);
 	m_curNum--;
 	m_preNum = m_curNum;
 	m_lerpTime = 0.0f;
@@ -85,7 +83,9 @@ void CreditScene::Update(){
 	
 	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
-		Hx::LoadScene("Assets/TitleScene.scene");
+		if (!m_fader) return;
+		auto fader = m_fader->GetScript<Fader>();
+		fader->OnSceneChnage("Assets/TitleScene.scene");
 	}
 }
 

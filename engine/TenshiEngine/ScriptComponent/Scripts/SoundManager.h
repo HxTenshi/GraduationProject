@@ -6,12 +6,17 @@ class SoundManager :public IDllScriptComponent{
 public:
 	struct  SoundSE_ID{
 		enum Enum {
-			kiru = 0
+			CursorMove = 0,
+			Enter
 		};
 	};
 	struct SoundBGM_ID {
 		enum Enum {
-			test = 0
+			Title = 0,
+			GamePlay,
+			GameClear,
+			GameOver,
+			Credit
 		};
 	};
 
@@ -27,12 +32,12 @@ public:
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
-	SoundAsset sound;
+		std::vector<SoundAsset> m_soundSEs;
+	SERIALIZE
+		std::vector<SoundAsset> m_soundBGMs;
 	SERIALIZE
 	PrefabAsset soundBox;
 
 	float se_master_volume;
 	float bgm_master_volume;
-	std::map<SoundSE_ID::Enum, SoundAsset> m_SoundSEMap;
-	std::map<SoundBGM_ID::Enum, SoundAsset> m_SoundBGMMap;
 };

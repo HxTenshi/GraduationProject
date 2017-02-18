@@ -2139,7 +2139,6 @@ void PlayerController::GettingWeapon(){
 				Hx::Debug()->Log("SoundManager‚È‚¢‚æ");
 				return;
 			};
-			sound->GetSoundSE(SoundManager::SoundSE_ID::Enum::kiru, gameObject->mTransform->WorldPosition());
 		}
 		throwAway();
 		if (m_tempWeapon) { 
