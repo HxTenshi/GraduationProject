@@ -1,0 +1,9 @@
+diff a/engine/TenshiEngine/ScriptComponent/Scripts/EnemyOrc.h b/engine/TenshiEngine/ScriptComponent/Scripts/EnemyOrc.h	(rejected hunks)
+@@ -16,7 +16,6 @@
+ 	bool LostPlayer() override;
+ 	void ChildFinalize() override;
+ 
+-	void MoveFrontStart(float time);
+ 	void SetMovePoint(GameObject target) { Hx::Debug()->Log("�Z�b�g����!!!"); m_MovePoints = target; if(m_MovePoints)Hx::Debug()->Log(m_MovePoints->Name()); }
+ 
+ private:

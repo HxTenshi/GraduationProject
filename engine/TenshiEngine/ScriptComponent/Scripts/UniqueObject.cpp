@@ -29,3 +29,14 @@ GameObject UniqueObject::GetCamera()
 	if (!g_UniqueObject)return NULL;
 	return g_UniqueObject->m_Camera;
 }
+
+GameObject UniqueObject::GetNaviMesh(int segmentNum)
+{
+	GameObject mesh = NULL;
+	for (auto i : g_UniqueObject->m_NaviMesh->mTransform->Children()) {
+		if (i->Name() == std::to_string(segmentNum)) {
+			mesh = i;
+		}
+	}
+	return mesh;
+}
