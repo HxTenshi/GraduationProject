@@ -110,7 +110,7 @@ void WeaponTable::LoadWeaponParametor(std::string paramname)
 
 void WeaponTable::DebugLog()
 {
-
+	return;
 	for (auto i = m_Param.begin(); i != m_Param.end(); ++i) {
 		std::ostringstream attack;
 		attack << i->second.AttackParam();
@@ -120,14 +120,14 @@ void WeaponTable::DebugLog()
 			"攻撃力:" + attack.str() + "\n" +
 			"耐久値:" + durable.str());
 	}
-	Hx::Debug()->Log(std::to_string(m_Param["メイス"].AttackParam()));
+	//Hx::Debug()->Log(std::to_string(m_Param["メイス"].AttackParam()));
 
 }
 
 funifuni::WeaponParametor& WeaponTable::GetWeaponParametor(std::string name)
 {
 
-	Hx::Debug()->Log(std::to_string(m_Param[name].AttackParam()));
+	//Hx::Debug()->Log(std::to_string(m_Param[name].AttackParam()));
 	return m_Param[name];
 }
 
