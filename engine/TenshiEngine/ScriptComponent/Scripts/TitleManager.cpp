@@ -75,7 +75,6 @@ namespace funifuni {
 			InitPosition(is_arrow);
 			Back();
 			SetArrowPosition();
-			OnSE(SoundManager::SoundSE_ID::Enum::CursorMove);
 		}
 		if ((Input::Trigger(KeyCode::Key_D) || isRightLS) && !is_next) {
 			is_next = true;
@@ -83,13 +82,11 @@ namespace funifuni {
 			InitPosition(is_arrow);
 			Next();
 			SetArrowPosition();
-			OnSE(SoundManager::SoundSE_ID::Enum::CursorMove);
 		}
 
 		//Œˆ’èƒL[‚ð‰Ÿ‚³‚ê‚½‚©
 		bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 		if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
-			OnSE(SoundManager::SoundSE_ID::Enum::Enter);
 			Select();
 		}
 		if (is_next) {
@@ -240,7 +237,7 @@ namespace funifuni {
 		if (!m_soundManager) return;
 		auto sound = m_soundManager->GetScript<SoundManager>();
 		if (!sound) return;
-		sound->GetSoundBGM(SoundManager::SoundBGM_ID::Enum::Title);
+		sound->PlayBGM(SoundManager::SoundBGM_ID::Enum::Title);
 	}
 
 	void TitleManager::OnSE(SoundManager::SoundSE_ID::Enum seID)
@@ -248,5 +245,5 @@ namespace funifuni {
 		if (!m_soundManager) return;
 		auto sound = m_soundManager->GetScript<SoundManager>();
 		if (!sound) return;
-		sound->GetSoundSE(seID, XMVectorZero());
+		sound->PlaySE(seID, XMVectorZero());
 	}

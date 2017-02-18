@@ -2,6 +2,7 @@
 #include "h_standard.h"
 #include "h_component.h"
 #include "Fader.h"
+#include "UniqueObject.h"
 
 ConfigScene::ConfigScene() {
 	
@@ -67,14 +68,11 @@ void ConfigScene::CursourMove() {
 	if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && isStickInterval) {
 		num--;
 		m_stickInterval = 0.0f;
-		SE(SoundManager::SoundSE_ID::Enum::CursorMove);
 	}
 	if (Input::Trigger(KeyCode::Key_DOWN) || isDownLS && isStickInterval) {
 		num++;
 		m_stickInterval = 0.0f;
-		SE(SoundManager::SoundSE_ID::Enum::CursorMove);
 	}
-	
 
 	//ƒNƒ‰ƒ“ƒvˆ—
 	int minNum = 0;
@@ -91,7 +89,6 @@ void ConfigScene::EnterScene(int num){
 	bool isSpaceKey = Input::Trigger(KeyCode::Key_SPACE);
 	bool isPad_B_Button = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (isSpaceKey || isPad_B_Button) {
-		SE(SoundManager::SoundSE_ID::Enum::Enter);
 		std::string nextScenePass = GetScenePass(num);
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
@@ -111,8 +108,5 @@ std::string ConfigScene::GetScenePass(int num){
 }
 
 void ConfigScene::SE(SoundManager::SoundSE_ID::Enum seID){
-	if (m_soundManager == NULL) return;
-	auto sound = m_soundManager->GetScript<SoundManager>();
-	if (sound == NULL) return;
-	sound->GetSoundSE(seID, XMVectorZero());
+	SoundManager::PlaySE(seID, XMVectorZero());
 }

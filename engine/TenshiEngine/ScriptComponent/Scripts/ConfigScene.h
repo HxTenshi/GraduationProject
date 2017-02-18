@@ -46,7 +46,5 @@ private:
 	SERIALIZE
 		float STICK_INTERVAL;
 	SERIALIZE
-		GameObject m_soundManager;
-	SERIALIZE
 		GameObject m_fader;
 };
