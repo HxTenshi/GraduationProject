@@ -271,7 +271,7 @@ void EnemyWoodMan::WinceModeUpdate() {
 	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId) && m_WinceCount < 0) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId) && m_WinceCount < 0) {
 		if (!m_UpperdownNow)
 			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, m_WinceBeforeId);
 		else {
@@ -362,7 +362,7 @@ void EnemyWoodMan::DownUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 	};
 }

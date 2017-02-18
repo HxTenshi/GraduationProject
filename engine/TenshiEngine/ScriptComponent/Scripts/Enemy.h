@@ -5,10 +5,9 @@
 struct AnimParameter {
 	int beforeAnimId = 0;
 	int afterAnimId = 0;
-	int nowAnimId = 0;
 	float nowLerpTime = 0;
-	bool animLerpFlag = false;
 	float lerpSpeed = 1.0f;
+	bool changeFlag = false;
 	bool beforeAnimLoop = true;
 	bool afterAnimLoop = true;
 };

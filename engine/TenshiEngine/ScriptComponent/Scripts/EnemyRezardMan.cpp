@@ -436,7 +436,7 @@ void EnemyRezardMan::AttackDownModeUpdate()
 		LookPosition(m_PlayerVec, m_CorrectionRotateSpeed);
 	}
 
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		m_AttackHit = false;
 		m_BattleModeParam.actionFinish = true;
 	};
@@ -464,7 +464,7 @@ void EnemyRezardMan::JumpAttackModeUpdate()
 	if (GetNowAnimTime() < 12.5f) {
 		m_Vec += m_Forward * 20.0f;
 	}
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		m_AttackHit = false;
 		m_BattleModeParam.actionFinish = true;
 	};
@@ -586,7 +586,7 @@ void EnemyRezardMan::WinceModeUpdate() {
 	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		m_BattleModeParam.actionFinish = true;
 	};
 }
@@ -674,7 +674,7 @@ void EnemyRezardMan::DownUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		m_BattleModeParam.actionFinish = true;
 	};
 }
@@ -700,7 +700,7 @@ void EnemyRezardMan::HitInGuardModeUpdate() {
 	if (PatienceInThisTime > m_BattleModeParam.sameActionCount) {
 		auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
-		if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+		if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 			m_BattleModeParam.actionFinish = true;
 		};
 	}
@@ -742,7 +742,7 @@ void EnemyRezardMan::AttackMonckeyModeUpdate() {
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		m_AttackHit = false;
 		m_BattleModeParam.actionFinish = true;
 	};
@@ -768,7 +768,7 @@ void EnemyRezardMan::DeadModeUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		if (!m_MyWeapon)return;
 		//gameObject->Enable();
 		m_Isend = true;

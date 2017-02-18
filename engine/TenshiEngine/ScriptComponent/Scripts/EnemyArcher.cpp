@@ -219,7 +219,7 @@ void EnemyArcher::WinceModeUpdate() {
 	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		m_BattleModeParam.actionFinish = true;
 	};
 }
@@ -307,7 +307,7 @@ void EnemyArcher::DownUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		m_BattleModeParam.actionFinish = true;
 	};
 }
@@ -331,7 +331,7 @@ void EnemyArcher::DeadModeUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (anim->IsAnimationEnd(m_Animparam.nowAnimId)) {
+	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
 		if (!m_MyWeapon)return;
 		//gameObject->Enable();
 		gameObject->RemoveComponent<CharacterControllerComponent>();

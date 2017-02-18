@@ -40,8 +40,8 @@ void Enemy::Update() {
 	if (Input::Trigger(KeyCode::Key_N)){
 		static_cast<EnemyRezardMan*>(this)->MoveFrontStart(3.0f);
 	}
+	AnimLerp();
 	if (m_MovieActionFlag) {
-		AnimLerp();
 		m_MovieAction();
 		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 		if (!cc)return;
@@ -70,8 +70,6 @@ void Enemy::Update() {
 	if (gameObject->mTransform->WorldPosition().y < -100) {
 		m_Isend = true;
 	}
-
-	AnimLerp();
 
 	actionModeUpdate[m_ActionModeID]();
 
@@ -122,73 +120,89 @@ void Enemy::OnCollideExit(GameObject target) {
 /**************************************************アニメーションの処理****************************************************/
 void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
 {
-	if (forcingChange) {
-
-		AnimeParam ap;
+	//if (forcingChange) {
+	//
+	//	AnimeParam ap;
+	//	if (!ModelObject)return;
+	//	auto anim = ModelObject->GetComponent<AnimationComponent>();
+	//	if (!anim)return;
+	//
+	//	ap = anim->GetAnimetionParam(m_Animparam.beforeAnimId);
+	//	ap.mWeight = 0.0f;
+	//	ap.mLoop = m_Animparam.beforeAnimLoop;
+	//	anim->SetAnimetionParam(m_Animparam.beforeAnimId, ap);
+	//
+	//	ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
+	//	ap.mWeight = 0.0f;
+	//	ap.mLoop = m_Animparam.afterAnimLoop;
+	//	anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
+	//
+	//	m_Animparam.afterAnimId = id;
+	//	m_Animparam.afterAnimId = id;
+	//	m_Animparam.beforeAnimId = id;
+	//	m_Animparam.lerpSpeed = speed;
+	//	m_Animparam.afterAnimLoop = roop;
+	//
+	//	m_Animparam.nowLerpTime = 0.0f;
+	//	m_Animparam.animLerpFlag = false;
+	//	m_Animparam.beforeAnimLoop = m_Animparam.afterAnimLoop;
+	//
+	//	ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
+	//	ap.mTime = 0.0f;
+	//
+	//	ap.mWeight = 1.0f;
+	//	ap.mLoop = m_Animparam.beforeAnimLoop;
+	//	anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
+	//
+	//	return;
+	//}
+	if (id != m_Animparam.beforeAnimId) {
+		Hx::Debug()->Log("change: " + std::to_string(id));
 		if (!ModelObject)return;
 		auto anim = ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
-
-		ap = anim->GetAnimetionParam(m_Animparam.beforeAnimId);
-		ap.mWeight = 0.0f;
-		ap.mLoop = m_Animparam.beforeAnimLoop;
-		anim->SetAnimetionParam(m_Animparam.beforeAnimId, ap);
-
-		ap = anim->GetAnimetionParam(m_Animparam.nowAnimId);
-		ap.mWeight = 0.0f;
-		ap.mLoop = m_Animparam.afterAnimLoop;
-		anim->SetAnimetionParam(m_Animparam.nowAnimId, ap);
-
-		m_Animparam.nowAnimId = id;
-		m_Animparam.afterAnimId = id;
-		m_Animparam.beforeAnimId = id;
-		m_Animparam.lerpSpeed = speed;
-		m_Animparam.afterAnimLoop = roop;
-
+		AnimeParam ap;
 		m_Animparam.nowLerpTime = 0.0f;
-		m_Animparam.animLerpFlag = false;
+		ap = anim->GetAnimetionParam(m_Animparam.beforeAnimId);
+		ap.mWeight = 0;
+		ap.mLoop = m_Animparam.beforeAnimLoop;
+		anim->SetAnimetionParam(m_Animparam.beforeAnimId,ap);
+
+		ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
+		ap.mWeight = 1;
+		ap.mLoop = m_Animparam.afterAnimLoop;
+		anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
+
+		m_Animparam.beforeAnimId = m_Animparam.afterAnimId;
 		m_Animparam.beforeAnimLoop = m_Animparam.afterAnimLoop;
 
-		ap = anim->GetAnimetionParam(m_Animparam.nowAnimId);
+		m_Animparam.afterAnimId = id;
+		m_Animparam.afterAnimLoop = roop;
+
+		m_Animparam.lerpSpeed = speed;
+
+		ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
 		ap.mTime = 0.0f;
+		ap.mWeight = 0;
+		ap.mLoop = m_Animparam.afterAnimLoop;
+		anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
 
-		ap.mWeight = 1.0f;
-		ap.mLoop = m_Animparam.beforeAnimLoop;
-		anim->SetAnimetionParam(m_Animparam.nowAnimId, ap);
-
-		return;
-	}
-	if (id != m_Animparam.beforeAnimId) {
-		if (!m_Animparam.animLerpFlag) {
-			m_Animparam.nowAnimId = id;
-			m_Animparam.afterAnimId = id;
-			m_Animparam.animLerpFlag = true;
-			m_Animparam.lerpSpeed = speed;
-			m_Animparam.afterAnimLoop = roop;
-			AnimeParam ap;
-			if (!ModelObject)return;
-			auto anim = ModelObject->GetComponent<AnimationComponent>();
-			if (!anim)return;
-			ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
-			ap.mTime = 0.0f;
-			anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
-		}
+		m_Animparam.changeFlag = true;
 	}
 }
 
 void Enemy::AnimLerp()
 {
-	if (m_Animparam.animLerpFlag) {
+	if (m_Animparam.changeFlag) {
 		if (!ModelObject)return;
 		auto anim = ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
 
 		m_Animparam.nowLerpTime += m_Animparam.lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
 
-		bool endFlag = false;
 		if (m_Animparam.nowLerpTime >= 1.0f) {
 			m_Animparam.nowLerpTime = 1.0f;
-			endFlag = true;
+			m_Animparam.changeFlag = false;
 		}
 
 		AnimeParam ap;
@@ -201,13 +215,6 @@ void Enemy::AnimLerp()
 		ap.mWeight = m_Animparam.nowLerpTime;
 		ap.mLoop = m_Animparam.afterAnimLoop;
 		anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
-
-		if (endFlag) {
-			m_Animparam.beforeAnimId = m_Animparam.afterAnimId;
-			m_Animparam.nowLerpTime = 0.0f;
-			m_Animparam.animLerpFlag = false;
-			m_Animparam.beforeAnimLoop = m_Animparam.afterAnimLoop;
-		}
 	}
 }
 
@@ -245,7 +252,7 @@ float Enemy::GetNowAnimTime() {
 	if (!anim)return 0;
 
 	AnimeParam ap;
-	ap = anim->GetAnimetionParam(m_Animparam.nowAnimId);
+	ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
 
 	return ap.mTime;
 }
