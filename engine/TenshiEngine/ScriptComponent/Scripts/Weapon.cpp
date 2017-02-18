@@ -47,14 +47,6 @@ void Weapon::Update(){
 	if (is_attack == 2) {
 		is_attack = 3;
 	}
-	if (Input::Trigger(KeyCode::Key_C)) {
-		if (m_WeaponEffect) {
-			auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
-			scr->Action();
-		}
-	
-
-	}
 	BreakWeapon();
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
@@ -346,6 +338,10 @@ void Weapon::SetAttackFlag(bool flag)
 	if (flag) {
 		if (is_attack == 0) {
 			is_attack = 1;
+			if (m_WeaponEffect) {
+				auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
+				scr->Action();
+			}
 		}
 	}
 	else {
