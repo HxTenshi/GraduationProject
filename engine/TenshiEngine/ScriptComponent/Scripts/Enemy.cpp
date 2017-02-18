@@ -120,7 +120,7 @@ void Enemy::OnCollideExit(GameObject target) {
 /**************************************************アニメーションの処理****************************************************/
 void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
 {
-	if (id != m_Animparam.afterAnimId) {
+	if (id != m_Animparam.afterAnimId || m_Animparam.afterAnimLoop != roop) {
 		if (!ModelObject)return;
 		auto anim = ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
