@@ -8,6 +8,7 @@
 #include <sstream>
 #include "MossanBall.h"
 #include <random>
+//d—Í‚ª’x‚¢
 EnemyMinotaur::EnemyMinotaur()
 {
 
@@ -56,12 +57,6 @@ void EnemyMinotaur::ChildInitialize()
 }
 void EnemyMinotaur::SoloAction()
 {
-	if (m_AccelVec.y >= 0 || m_BattleModeParam.id == BATTLEACTION::UPPERDOWNACTION || m_BattleModeParam.id == BATTLEACTION::DEADACTION) {
-		m_Gravity = XMVectorSet(0, -9.8f, 0, 0);
-	}
-	else {
-		m_Gravity = XMVectorSet(0, 0, 0, 0);
-	}
 }
 
 ENEMY_TYPE EnemyMinotaur::GetEnemyType()
