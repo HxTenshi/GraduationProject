@@ -1,5 +1,6 @@
 #include "CreditScene.h"
 #include "CreditDraw.h"
+#include "Fader.h"	
 #include <h_standard.h>
 #include <h_component.h>
 
@@ -85,7 +86,9 @@ void CreditScene::Update(){
 	
 	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
-		Hx::LoadScene("Assets/TitleScene.scene");
+		if (!m_fader) return;
+		auto fader = m_fader->GetScript<Fader>();
+		fader->OnSceneChnage("Assets/TitleScene.scene");
 	}
 }
 

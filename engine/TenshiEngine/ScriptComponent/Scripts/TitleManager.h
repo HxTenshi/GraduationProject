@@ -3,6 +3,8 @@
 #include "main.h"
 #include <vector>
 #include "h_standard.h"
+#include "SoundManager.h"
+
 enum TitleButtonRoll {
 	Start = 0,
 	GameStart,
@@ -43,6 +45,8 @@ public:
 	void SetMoveObject();
 	void SetArrowPosition();
 	void Select();
+	void OnBGM();
+	void OnSE(SoundManager::SoundSE_ID::Enum seID);
 private:
 	//ÉÅÉìÉoïœêî
 	SERIALIZE
@@ -77,5 +81,9 @@ private:
 		std::string gameStartScenePass;
 	SERIALIZE
 		std::string configScenePass;
+	SERIALIZE
+		GameObject m_soundManager;
+	SERIALIZE
+		GameObject m_fader;
 };
 

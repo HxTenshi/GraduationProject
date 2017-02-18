@@ -1,6 +1,7 @@
 
 #pragma once
 #include "main.h"
+#include "SoundManager.h"
 
 
 class ConfigScene :public IDllScriptComponent{
@@ -16,6 +17,7 @@ public:
 	void CursourMove();
 	void EnterScene(int num);
 	std::string GetScenePass(int num);
+	void SE(SoundManager::SoundSE_ID::Enum seID);
 
 private:
 	//ƒƒ“ƒo•Ï”
@@ -43,4 +45,8 @@ private:
 	float m_stickInterval;
 	SERIALIZE
 		float STICK_INTERVAL;
+	SERIALIZE
+		GameObject m_soundManager;
+	SERIALIZE
+		GameObject m_fader;
 };

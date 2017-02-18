@@ -18,4 +18,6 @@ private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
 	std::string configPass;
+	SERIALIZE
+		GameObject m_fader;
 };

@@ -8,8 +8,6 @@ using namespace Mossan;
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void SoundManager::Initialize(){
-	m_SoundSEMap[SoundSE_ID::Enum::kiru] = sound;
-	//m_SoundBGMMap[SoundBGM_ID::Enum::test] = nanka;
 	//音量のCSVを取得
 	std::vector<std::vector<std::string>> arrays = CSVScript::readCSV("Assets/data/Volume.csv");
 	bgm_master_volume = std::stof(arrays[0][0]) / VOLUME_RATE;
@@ -58,7 +56,7 @@ void SoundManager::GetSoundSE(SoundSE_ID::Enum key, XMVECTOR pos){
 
 	//コンポーネントの音量とマスターの音量の値を掛ける
 	auto volume = s->GetVolume() * se_master_volume;
-	s->LoadFile(m_SoundSEMap[key]);
+	s->LoadFile(m_soundSEs[(int)key]);
 	s->SetVolume(volume);
 	s->Set3DSound(true);
 	s->SetLoop(false);
@@ -80,7 +78,7 @@ void SoundManager::GetSoundBGM(SoundBGM_ID::Enum key){
 
 	//コンポーネントの音量とマスターの音量の値を掛ける
 	auto volume = s->GetVolume() * bgm_master_volume;
-	s->LoadFile(m_SoundBGMMap[key]);
+	s->LoadFile(m_soundBGMs[(int)key]);
 	s->SetVolume(volume);
 	s->Set3DSound(false);
 	s->SetLoop(true);

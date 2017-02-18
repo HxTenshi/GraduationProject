@@ -76,6 +76,8 @@ private:
 		GameObject m_textKill;
 	SERIALIZE
 		GameObject m_textTime;
+	SERIALIZE
+		GameObject m_fader;
 
 	Mossan::GameClearTexObj m_texClearObj;
 	Mossan::GameClearTexObj m_texKillObj;

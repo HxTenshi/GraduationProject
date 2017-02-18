@@ -39,6 +39,8 @@ public:
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
+		GameObject m_fader;
+	SERIALIZE
 		GameObject m_CameraObj;
 	SERIALIZE
 		XMVECTOR m_CameraDistance;
