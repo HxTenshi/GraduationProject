@@ -218,12 +218,15 @@ void Enemy::LookPosition(XMVECTOR position_, float rotateSpeed, bool zReset)
 	auto naviVec = XMVector3Normalize(moveVec - myPos);
 	naviVec.y = 0;
 	m_Forward = gameObject->mTransform->Forward();
-	auto cross = XMVector3Normalize(XMVector3Cross(m_Forward, naviVec));
-	m_View = acos(clamp(XMVector3Dot(m_Forward, naviVec).x, -1.0f, 1.0f));
+	auto fo = m_Forward;
+	fo.y = 0;
+	auto cross = XMVector3Normalize(XMVector3Cross(fo, naviVec));
+	m_View = acos(clamp(XMVector3Dot(fo, naviVec).x, -1.0f, 1.0f));
 	if (m_View < 0.1f)m_View = 0.0f;
 	auto trackingNowAngle = rotateSpeed * 3.14f / 180.0f * Hx::DeltaTime()->GetDeltaTime();
-	if (m_View < trackingNowAngle)
+	if (m_View < trackingNowAngle) {
 		trackingNowAngle = m_View;
+	}
 	gameObject->mTransform->WorldQuaternion(
 		XMQuaternionMultiply(gameObject->mTransform->WorldQuaternion(), XMQuaternionRotationAxis(cross, trackingNowAngle)));
 	if (zReset) {
