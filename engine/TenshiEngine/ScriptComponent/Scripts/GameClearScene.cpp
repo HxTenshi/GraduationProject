@@ -97,6 +97,7 @@ namespace Mossan{
 	GameClearTextObj::GameClearTextObj(GameObject gameObject){
 		if (gameObject == NULL) return;
 		m_textObj = gameObject;
+		m_numberf = 0.0f;
 		m_number = 0;
 		m_pivotNum = 0;
 		m_isEnd = false;
@@ -107,7 +108,8 @@ namespace Mossan{
 
 	void GameClearTextObj::UpdateScore(){
 		//スコアを加算
-		m_number += m_pivotNum * Hx::DeltaTime()->GetDeltaTime();
+		m_numberf += m_pivotNum * Hx::DeltaTime()->GetDeltaTime();
+		m_number = (int)m_numberf;
 		//上限を制限
 		if (m_number > m_pivotNum) {
 			m_number = m_pivotNum;
@@ -121,7 +123,8 @@ namespace Mossan{
 
 	void GameClearTextObj::UpdateTime() {
 		//スコアを加算
-		m_number += m_pivotNum * Hx::DeltaTime()->GetDeltaTime();
+		m_numberf += m_pivotNum * Hx::DeltaTime()->GetDeltaTime();
+		m_number = (int)m_numberf;
 		//上限を制限
 		if (m_number > m_pivotNum) {
 			m_number = m_pivotNum;

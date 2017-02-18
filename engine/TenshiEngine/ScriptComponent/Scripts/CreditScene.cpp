@@ -85,7 +85,7 @@ void CreditScene::Update(){
 	if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
-		fader->OnSceneChnage("Assets/TitleScene.scene");
+		fader->OnSceneChnage("Assets/Title.scene");
 	}
 }
 

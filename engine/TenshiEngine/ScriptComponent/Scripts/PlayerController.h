@@ -246,6 +246,11 @@ private:
 	SERIALIZE
 	GameObject m_BoneHips;
 
+	//ゲームオーバー
+	SERIALIZE
+	GameObject m_ChangeSceneGameOver;
+	float m_GameOverTime;
+
 	float m_FloatJumpTimer;
 
 	int m_HitCount;

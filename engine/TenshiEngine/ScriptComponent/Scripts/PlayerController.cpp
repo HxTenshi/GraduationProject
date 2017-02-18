@@ -177,6 +177,8 @@ void PlayerController::Initialize(){
 	m_ChangeAnime = false;
 	m_FreeAIMMode = false;
 
+	m_GameOverTime = 0.0f;
+
 	m_HitCount = 0;
 	m_MoveSpeed_ComboAdd = 0.0f;
 	m_MoutionSpeed_ComboAdd = 0.0f;
@@ -1533,10 +1535,21 @@ void PlayerController::DeadEnter()
 	mJump = XMVectorZero();
 }
 
+#include "ChangeScene.h"
 void PlayerController::DeadExcute()
 {
 	lockOn();
 	changeAnime(AnimeID::Down);
+
+	m_GameOverTime += Hx::DeltaTime()->GetDeltaTime();
+	if (m_GameOverTime >= 3.0f) {
+		if (m_ChangeSceneGameOver) {
+			if (auto c = m_ChangeSceneGameOver->GetScript<ChangeScene>()) {
+				c->Next();
+			}
+
+		}
+	}
 }
 
 void PlayerController::DeadExit()

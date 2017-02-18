@@ -32,6 +32,8 @@ public:
 		};
 	};
 
+	void BattleStart();
+
 private:
 	void Teleport(const XMVECTOR& vect);
 	void Move(const XMVECTOR& vect);
@@ -57,7 +59,7 @@ private:
 	void BoneMoveUpdate();
 
 	//ƒƒ“ƒo•Ï”
-
+	SERIALIZE bool _m_DefaultStandby;
 
 	SERIALIZE GameObject m_AnimeModel;
 	SERIALIZE float m_MoveSpeed;

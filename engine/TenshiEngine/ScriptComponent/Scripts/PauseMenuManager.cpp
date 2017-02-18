@@ -241,7 +241,7 @@ void PauseMenuManager::BackMenu(){
 
 //タイトルに飛ぶ
 void PauseMenuManager::BackToTitle(){
-	Hx::LoadScene("Assets/TitleScene.scene");
+	Hx::LoadScene("Assets/Title.scene");
 }
 
 //Lerpを用いた処理

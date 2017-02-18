@@ -17,6 +17,7 @@
 
 struct ReisMode {
 	enum Enum {
+		Standby,
 		Idle,
 		Move,
 		Wince,
@@ -53,7 +54,7 @@ const int melee_num = 3;
 const AttackIf mode_melee[] = { 
 	AttackIf(ReisMode::Attack_v1,reis::MoveMode::Out,0.5f),
 	AttackIf(ReisMode::Attack_v2,reis::MoveMode::Out,0.5f),
-	AttackIf(ReisMode::Attack_v3,reis::MoveMode::Out,0.5f,false),
+	AttackIf(ReisMode::Attack_v3,reis::MoveMode::Out,0.5f),
 };
 const int mid_num = 4;
 const AttackIf mode_mid[] = { 
@@ -95,6 +96,12 @@ void reis::Initialize(){
 	m_SuperArmor = false;
 	m_SuperArmorHit = 0;
 	m_MoveCooldown = 0.0f;
+	if (_m_DefaultStandby) {
+		m_ReisMode = ReisMode::Standby;
+	}
+	else {
+		m_ReisMode = ReisMode::Idle;
+	}
 	m_MoveMode = MoveMode::Idle;
 	m_DogdeMode = DogdeMode::Back;
 	m_WinceCount = 0;
@@ -110,7 +117,9 @@ void reis::Initialize(){
 void reis::Start(){
 
 	m_Player = UniqueObject::GetPlayer();
-
+	m_MoveFunc[ReisMode::Standby] = [&]() {
+		ChangeAnime(AnimeID::Idle);
+	};
 	m_MoveFunc[ReisMode::Idle] = [&](){
 		ChangeAnime(AnimeID::Idle);
 		m_ReisMode = ReisMode::Move;
@@ -566,6 +575,13 @@ void reis::WeaponCallHit()
 	}
 }
 
+
+void reis::BattleStart()
+{
+	if (m_ReisMode == ReisMode::Standby) {
+		m_ReisMode = ReisMode::Idle;
+	}
+}
 
 void reis::Teleport(const XMVECTOR & vect)
 {

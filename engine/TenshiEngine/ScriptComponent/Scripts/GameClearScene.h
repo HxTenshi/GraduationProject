@@ -37,6 +37,7 @@ namespace Mossan {
 		bool IsEnd();
 	private:
 		GameObject m_textObj;	//テキストオブジェ
+		float m_numberf;			//表示する数値(float)
 		int	m_number;			//表示する数値
 		int m_pivotNum;			//基準値
 		bool m_isEnd;

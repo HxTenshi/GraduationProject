@@ -18,6 +18,8 @@
 #include "EnemyGate.h"
 # include "OutPlayEnemyAnimation.h"
 # include "OutputInstaanceObject.h"
+# include "OutputChangeSceneGimick.h"
+#include "OutputReisStartGimick.h"
 
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 {
@@ -34,7 +36,8 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 	if (auto scr = target->GetScript<OutputPlayAudio>())return scr;
 	if (auto scr = target->GetScript<OutputColliderActive>())return scr;
 	if (auto scr = target->GetScript<OutputConnectorCooldownGimic>())return scr;
-	if (auto scr = target->GetScript<OutputConnectorCountGimick>())return scr;
+	if (auto scr = target->GetScript<OutputChangeSceneGimick>())return scr;
+	if (auto scr = target->GetScript<OutputReisStartGimick>())return scr;
 
 	if (auto scr = target->GetScript<OutputChangePhysicesGimic>())return scr;
 	if (auto scr = target->GetScript<OutputAnimation>())return scr;
