@@ -93,8 +93,8 @@ bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTO
 	//	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
 	//	return true;
 	//}
-	anim_loop = false;
-	RoutineSetUp(ANIM_STUNNED);
+	//anim_loop = false;
+	//RoutineSetUp(ANIM_STUNNED);
 	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 
 	return true;
@@ -123,12 +123,11 @@ void EnemyMinotaur::ChildFinalize()
 
 void EnemyMinotaur::BattleModeInitilize()
 {
+	//プレイヤーからの攻撃ダメージ
 	if (is_damage) {
 		m_Hp -= m_Damage;
 		m_Damage = 0.0f;
 		is_damage = false;
-		if(!m_action_func)m_action_func = nullptr;
-		m_attack_flag = true;
 	}
 	//攻撃
 	m_Hp -= m_Damage;
@@ -148,7 +147,8 @@ void EnemyMinotaur::BattleModeInitilize()
 
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (m_Debug_flag)Hx::Debug()->Log("Anim:" + debug_draw_anim[m_roucine_module.GetAnimState()] + ":Loop:" + std::to_string(anim_loop));
-	AnimChange(m_roucine_module.GetAnimState(), 10.0f,anim_loop, true);
+	if(m_anim_state != m_roucine_module.GetAnimState())AnimChange(m_roucine_module.GetAnimState(), 10.0f,anim_loop, true);
+
 }
 void EnemyMinotaur::BattleModeUpdate()
 {
