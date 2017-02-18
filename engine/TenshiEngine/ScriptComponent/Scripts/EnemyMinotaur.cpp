@@ -367,12 +367,17 @@ void EnemyMinotaur::BattleRoutine()
 			int r = std::rand() % 100;
 			AnimType t;
 			if (r > 50) {
-				m_action_func = [this]() {Attack3(); };
-				t = ANIM_ATTACK3;
-			}
-			else if (r > 20) {
 				m_action_func = [this]() {Attack4(); };
 				t = ANIM_ATTACK4;
+			}
+			else if (r > 30) {
+				m_AttackHit = true;
+				m_action_func = nullptr;
+				t = ANIM_CHEST_THUMP;
+			}
+			else if (r > 10) {
+				m_action_func = [this]() {Attack3(); };
+				t = ANIM_ATTACK3;
 			}
 			else {
 				m_action_func = [this]() {Attack5(); };
