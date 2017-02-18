@@ -56,35 +56,11 @@ void EnemyArcher::ChildInitialize()
 	if (!m_Child) {
 		if (!m_MovePoints)return;
 	}
-
-	if (m_DrawLog) {
-		Hx::Debug()->Log("捜索時の歩くスピード：" + std::to_string(m_TrackingSpeed));
-		Hx::Debug()->Log("捜索時の視界の距離：" + std::to_string(m_TrackingRange));
-		Hx::Debug()->Log("捜索時の視界の範囲：" + std::to_string(m_TrackingAngle) + "度");
-		Hx::Debug()->Log("捜索時の回転スピード：" + std::to_string(m_TrackingRotateSpeed));
-		Hx::Debug()->Log("攻撃をする範囲に入る距離：" + std::to_string(m_OnBattleRange));
-		Hx::Debug()->Log("攻撃をする範囲から抜ける距離：" + std::to_string(m_OffBattleRange));
-		Hx::Debug()->Log("体力：" + std::to_string(m_Hp));
-		Hx::Debug()->Log("周りをうろつく時の回転スピード：" + std::to_string(m_AproachRotateSpeed));
-		Hx::Debug()->Log("攻撃時の回転の補正時の回転スピード：" + std::to_string(m_CorrectionRotateSpeed));
-		Hx::Debug()->Log("ログを表示するかどうか：" + m_DrawLog ? "TRUE" : "FALSE");
-		Hx::Debug()->Log("ガードした時に反撃するまでの回数の最低：" + std::to_string(m_HitInGuardMinCount) + "回から");
-		Hx::Debug()->Log("ガードした時に反撃するまでの回数の最高：" + std::to_string(m_HitInGuardMaxCount) + "回までをランダムで選択します");
-		Hx::Debug()->Log("攻撃を受けた際絶対回避する確率：" + std::to_string(m_AbsolutelyAvoidInHitAttackProbability) + "%");
-		Hx::Debug()->Log("m_Playerにはm_PlayerのGameObjectを入れてください");
-		Hx::Debug()->Log("m_ModelObjectにはenemyのモデルを表示しているのGameObject(例:子に入っているRezardMan)を入れてください");
-		Hx::Debug()->Log("m_MovePointsには敵を動かしたい地点を子にまとめた親のGameObject(例:enemyMovePoint)を入れてください");
-	}
+	ChangeActionAndTrackingAction(ACTIONMODE::TRACKINGMODE, TRACKINGACTION::CHILDTRACKING);
 }
 
 void EnemyArcher::SoloAction()
 {
-	if (m_BattleModeParam.id == BATTLEACTION::CONFRONTACTION) {
-		ChangeBattleAction(BATTLEACTION::SHOTACTION);
-	}
-	else if (m_BattleModeParam.id == BATTLEACTION::SHOTACTION) {
-		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
-	}
 }
 
 ENEMY_TYPE EnemyArcher::GetEnemyType()
@@ -146,7 +122,7 @@ void EnemyArcher::ConfrontModeUpdate()
 
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
-		m_BattleModeParam.actionFinish = true;
+		ChangeBattleAction(BATTLEACTION::SHOTACTION);
 		m_BattleModeParam.count = 0.0f;
 	}
 }
@@ -173,7 +149,7 @@ void EnemyArcher::ShotModeUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(ANIM_ID::ANIM_JUMPATTACK)) {
-		m_BattleModeParam.actionFinish = true;
+		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 	};
 }
 
@@ -220,7 +196,7 @@ void EnemyArcher::WinceModeUpdate() {
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
-		m_BattleModeParam.actionFinish = true;
+		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 	};
 }
 
@@ -308,7 +284,7 @@ void EnemyArcher::DownUpdate()
 	if (!anim)return;
 
 	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
-		m_BattleModeParam.actionFinish = true;
+		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 	};
 }
 
@@ -356,7 +332,7 @@ void EnemyArcher::Attack(GameObject player, COL_TYPE colType)
 	if (!player)return;
 	auto playerScript = player->GetScript<PlayerController>();
 	if (!playerScript)return;
-	//playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+	playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 }
 
 /****************************************************ダメージの処理********************************************************/
@@ -400,6 +376,9 @@ bool EnemyArcher::DiscoveryPlayer()
 	m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x, -1.0f, 1.0f));
 	if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
 	if ((XMVector3Length(m_PlayerVec).x < m_TrackingRange && m_View / 3.14f * 180.0f < m_TrackingAngle)) {
+		Hx::Debug()->Log("dis");
+		if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION)
+			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 		return true;
 	}
 
@@ -416,6 +395,8 @@ bool EnemyArcher::LostPlayer()
 	XMVECTOR playerPos = m_Player->mTransform->WorldPosition();
 	m_PlayerVec = playerPos - gameObject->mTransform->WorldPosition();
 	if (XMVector3Length(m_PlayerVec).x > m_LostRange) {
+		if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION)
+			ChangeActionAndTrackingAction(ACTIONMODE::TRACKINGMODE, TRACKINGACTION::CHILDTRACKING);
 		return true;
 	}
 	return false;
