@@ -78,6 +78,7 @@ namespace funifuni {
 
 	void WeaponParametor::DebugLog()
 	{
+		return;
 		std::ostringstream atk;
 		atk << m_AttackParam;
 		std::ostringstream durable;

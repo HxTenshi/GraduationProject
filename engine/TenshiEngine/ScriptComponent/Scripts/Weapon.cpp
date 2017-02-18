@@ -39,7 +39,7 @@ void Weapon::Start(){
 	if (m_table) {
 		m_param = m_table->GetWeaponParametor(m_name);
 	}
-	m_param.DebugLog();
+	//m_param.DebugLog();
 }
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
@@ -389,7 +389,7 @@ void Weapon::BreakWeapon()
 			//Hx::Debug()->Log("ishand");
 			if (break_time > weapon_break) {
 				Hx::DestroyObject(gameObject);
-				Hx::Debug()->Log("break");
+				//Hx::Debug()->Log("break");
 			}
 		}
 	}
