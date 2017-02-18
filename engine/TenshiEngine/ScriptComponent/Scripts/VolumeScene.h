@@ -35,4 +35,7 @@ private:
 	SERIALIZE
 		float STICK_INTERVAL;
 	float m_stickIntervalTime;
+
+	SERIALIZE
+		GameObject m_fader;
 };

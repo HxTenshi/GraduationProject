@@ -1,5 +1,6 @@
 #include "ComboScene.h"
 #include "SoundManager.h"
+#include "Fader.h"
 
 
 //生成時に呼ばれます（エディター中も呼ばれます）
@@ -17,7 +18,9 @@ void ComboScene::Update(){
 	bool isSpaceKey = Input::Trigger(KeyCode::Key_SPACE);
 	bool isPad_B_Button = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (isSpaceKey || isPad_B_Button) {
-		Hx::LoadScene(configPass);
+		if (!m_fader) return;
+		auto fader = m_fader->GetScript<Fader>();
+		fader->OnSceneChnage(configPass);
 	}
 }
 

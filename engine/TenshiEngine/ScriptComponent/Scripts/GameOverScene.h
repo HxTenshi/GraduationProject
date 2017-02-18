@@ -16,8 +16,11 @@ public:
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
-	GameObject m_texRogo;
+		GameObject m_texRogo;
 	SERIALIZE
-	GameObject m_texMessage;
+		GameObject m_texMessage;
+	SERIALIZE
+		GameObject m_fader;
+
 	float m_intervalTime;
 };

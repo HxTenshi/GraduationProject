@@ -16,6 +16,7 @@ void PauseMenuManager::Initialize(){
 	m_objMap[1].push_back(new Struct(m_texToTitle,XMVectorSet(960,340,0,0)));
 	m_objMap[1].push_back(new Struct(m_texMigisita,XMVectorSet(1680,140,0,0)));
 	m_objMap[2].push_back(new Struct(m_texItimie, XMVectorSet(1680,540,0,0)));
+	this->gameObject->Enable();
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -24,12 +25,18 @@ void PauseMenuManager::Start(){
 }
 
 //毎フレーム呼ばれます
-void PauseMenuManager::Update(){
-	if (Input::Trigger(KeyCode::Key_M)) {
+void PauseMenuManager::Update() {
+	bool isStartKey = Input::Trigger(PAD_X_KeyCode::Button_START);
+	if (Input::Trigger(KeyCode::Key_M) || isStartKey) {
 		OpenPauseMenu();
 	}
-	if (m_state == State::Open) UpdateOpne();
-	else if (m_state == State::Close) UpdateClose();
+	if (m_state == State::Open) { 
+		Hx::DeltaTime()->SetTimeScale(0.0f);
+		UpdateOpne(); 
+	}
+	else if (m_state == State::Close) { 
+		UpdateClose(); 
+	}
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -64,14 +71,14 @@ void PauseMenuManager::UpdateOpne() {
 	}
 
 	//左上のポーズテクスチャ
-	m_lerpTimers[0] += m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+	m_lerpTimers[0] += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 	m_lerpTimers[0] = min(max(0.0f, m_lerpTimers[0]), 1.0f);
 	LerpFunc(m_objMap[0][0], m_lerpTimers[0]);
 
 	if (!m_isItimie) {
 		//lerpの計算
-		m_lerpTimers[1] += m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
-		m_lerpTimers[2] -= m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+		m_lerpTimers[1] += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
+		m_lerpTimers[2] -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 		m_lerpTimers[1] = min(max(0.0f, m_lerpTimers[1]), 1.0f);
 		m_lerpTimers[2] = min(max(0.0f, m_lerpTimers[2]), 1.0f);
 		//0～3の間にクランプ
@@ -89,8 +96,8 @@ void PauseMenuManager::UpdateOpne() {
 	}
 	else {
 		//lerpの計算
-		m_lerpTimers[1] -= m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
-		m_lerpTimers[2] += m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+		m_lerpTimers[1] -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
+		m_lerpTimers[2] += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 		m_lerpTimers[1] = min(max(0.0f, m_lerpTimers[1]), 1.0f);
 		m_lerpTimers[2] = min(max(0.0f, m_lerpTimers[2]), 1.0f);
 
@@ -115,7 +122,7 @@ void PauseMenuManager::UpdateOpne() {
 	//フェードイン
 	auto material = m_texBlack->GetComponent<MaterialComponent>();
 	XMFLOAT4 color = material->GetMaterialPtr(0)->GetAlbedo();
-	color.w += m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+	color.w += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 	if (color.w >= 0.8f) color.w = 0.8f;
 	material->SetAlbedoColor(color);
 }
@@ -127,7 +134,7 @@ void PauseMenuManager::UpdateClose(){
 		for (int j = 0; j < m_objMap[i].size(); j++) {
 			//左にスライド移動
 			XMVECTOR tempPos = m_objMap[i][j]->m_texObj->mTransform->Position();
-			tempPos.x -= 100.0f * Hx::DeltaTime()->GetDeltaTime();
+			tempPos.x -= 100.0f * Hx::DeltaTime()->GetNoScaleDeltaTime();
 			//x座標が0を下回らないように処理
 			if (m_objMap[i][j]->m_texObj->mTransform->Position().x < 0.0f) {
 				tempPos = m_objMap[i][j]->m_texObj->mTransform->Position();
@@ -137,7 +144,7 @@ void PauseMenuManager::UpdateClose(){
 			//マテリアルのカラー　アルファー値減算
 			auto mat = m_objMap[i][j]->m_texObj->GetComponent<MaterialComponent>();
 			XMFLOAT4 tempColor = mat->GetMaterialPtr(0)->GetAlbedo();
-			tempColor.w -= m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+			tempColor.w -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 			if (tempColor.w <= 0.0f) tempColor.w = 0.0f;
 			mat->SetAlbedoColor(tempColor);
 		}
@@ -146,7 +153,7 @@ void PauseMenuManager::UpdateClose(){
 	//フェードアウト
 	auto material = m_texBlack->GetComponent<MaterialComponent>();
 	XMFLOAT4 color = material->GetMaterialPtr(0)->GetAlbedo();
-	color.w -= m_lerpSpeed * Hx::DeltaTime()->GetDeltaTime();
+	color.w -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 	if (color.w <= 0.0f) color.w = 0.0f;
 	material->SetAlbedoColor(color);
 }
@@ -179,6 +186,7 @@ void PauseMenuManager::OpenPauseMenu(){
 
 //ポーズメニューを閉じる
 void PauseMenuManager::ClosePauseMenu(){
+	Hx::DeltaTime()->SetTimeScale(1.0f);
 	m_state = State::Close;
 }
 
