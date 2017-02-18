@@ -18,9 +18,6 @@ void CreditScene::Initialize(){
 	m_objList.push_back(m_weaponObj8);
 	m_objList.push_back(m_weaponObj9);
 	m_objList.push_back(m_weaponObj10);
-	m_objList.push_back(m_weaponObj11);
-	m_objList.push_back(m_weaponObj12);
-	m_objList.push_back(m_weaponObj13);
 	m_curNum--;
 	m_preNum = m_curNum;
 	m_lerpTime = 0.0f;

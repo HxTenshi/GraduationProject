@@ -64,12 +64,6 @@ private:
 		GameObject m_weaponObj9;
 	SERIALIZE
 		GameObject m_weaponObj10;
-	SERIALIZE
-		GameObject m_weaponObj11;
-	SERIALIZE
-		GameObject m_weaponObj12;
-	SERIALIZE
-		GameObject m_weaponObj13;
 
 	SERIALIZE
 		GameObject arrowRight;
