@@ -83,6 +83,7 @@ private:
 	SERIALIZE float m_TackleStartRandMax;
 	SERIALIZE float m_WinceTime;
 	SERIALIZE float hp;
+	SERIALIZE float m_AttackDamage;
 
 	float m_RotateAngle;
 	float m_Count;
