@@ -111,7 +111,7 @@ void EnemyOrc::Attack(GameObject player, COL_TYPE colType)
 	if (m_ActionModeID != ACTIONMODE::BATTLEMODE)return;
 	if (colType == COL_TYPE::NORMAL && m_BattleModeParam.id == BATTLEACTION::ATTACK1ACTION) {
 		m_AttackHit = true;
-		playerScript->Damage(1.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+		playerScript->Damage(m_AttackDamage, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 	}
 }
 
@@ -334,7 +334,6 @@ void EnemyOrc::WeakAttackModeUpdate()
 
 void EnemyOrc::WeakAttackModeFinalize()
 {
-	Hx::Debug()->Log("fd");
 	m_AttackHit = false;
 }
 

@@ -120,44 +120,7 @@ void Enemy::OnCollideExit(GameObject target) {
 /**************************************************アニメーションの処理****************************************************/
 void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
 {
-	//if (forcingChange) {
-	//
-	//	AnimeParam ap;
-	//	if (!ModelObject)return;
-	//	auto anim = ModelObject->GetComponent<AnimationComponent>();
-	//	if (!anim)return;
-	//
-	//	ap = anim->GetAnimetionParam(m_Animparam.beforeAnimId);
-	//	ap.mWeight = 0.0f;
-	//	ap.mLoop = m_Animparam.beforeAnimLoop;
-	//	anim->SetAnimetionParam(m_Animparam.beforeAnimId, ap);
-	//
-	//	ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
-	//	ap.mWeight = 0.0f;
-	//	ap.mLoop = m_Animparam.afterAnimLoop;
-	//	anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
-	//
-	//	m_Animparam.afterAnimId = id;
-	//	m_Animparam.afterAnimId = id;
-	//	m_Animparam.beforeAnimId = id;
-	//	m_Animparam.lerpSpeed = speed;
-	//	m_Animparam.afterAnimLoop = roop;
-	//
-	//	m_Animparam.nowLerpTime = 0.0f;
-	//	m_Animparam.animLerpFlag = false;
-	//	m_Animparam.beforeAnimLoop = m_Animparam.afterAnimLoop;
-	//
-	//	ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
-	//	ap.mTime = 0.0f;
-	//
-	//	ap.mWeight = 1.0f;
-	//	ap.mLoop = m_Animparam.beforeAnimLoop;
-	//	anim->SetAnimetionParam(m_Animparam.afterAnimId, ap);
-	//
-	//	return;
-	//}
-	if (id != m_Animparam.beforeAnimId) {
-		Hx::Debug()->Log("change: " + std::to_string(id));
+	if (id != m_Animparam.afterAnimId) {
 		if (!ModelObject)return;
 		auto anim = ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
