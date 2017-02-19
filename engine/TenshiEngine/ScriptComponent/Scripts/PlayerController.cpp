@@ -12,6 +12,7 @@
 #include "SoundManager.h"
 #include "WeaponControl.h"
 #include "GetWeapon.h"
+#include "SoundManager.h"
 
 namespace Init {
 	static const float RotateLimit_default = 360.0f * 3.0f;
@@ -184,8 +185,10 @@ void PlayerController::Initialize(){
 	m_CurrentWeaponType = 0;
 	m_ChangeAnime = false;
 	m_FreeAIMMode = false;
+	m_DownUp = false;
 	m_BoneBackPos = XMVectorZero();
 	m_GameOverTime = 0.0f;
+	m_MoveSETimer = 0.0f;
 
 	m_HitCount = 0;
 	m_MoveSpeed_ComboAdd = 0.0f;
@@ -1160,6 +1163,8 @@ void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBac
 		particle->mTransform->Position(addpos);
 	}
 
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Damage, gameObject->mTransform->WorldPosition());
+
 }
 
 bool PlayerController::IsInvisible()
@@ -1190,8 +1195,19 @@ void PlayerController::SetSpecial(float power)
 
 void PlayerController::AddSpecial(float power)
 {
+	bool playSE = false;
+	if (m_SpecialPower < m_SpecialPowerMax) {
+		playSE = true;
+	}
 	m_SpecialPower += power;
 	m_SpecialPower = min(max(m_SpecialPower,0.0f), m_SpecialPowerMax);
+	if (playSE) {
+		if (m_SpecialPower == m_SpecialPowerMax) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SP, gameObject->mTransform->WorldPosition());
+		}
+	}
+
+
 }
 
 float PlayerController::GetSpecial()
@@ -1432,6 +1448,8 @@ void PlayerController::GuardExcute()
 	guard();
 
 	if (m_GuardParam.AttackGuard) {
+
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Gurad, gameObject->mTransform->WorldPosition());
 
 		if (m_GuardParam.JustTime > 0.0f) {
 			m_GuardParam.JustTimeCooldomn = 0.0f;
@@ -1776,6 +1794,9 @@ void PlayerController::DodgeEnter()
 	}
 
 	rotate();
+
+
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Duchroll, gameObject->mTransform->WorldPosition());
 }
 
 void PlayerController::DodgeExcute()
@@ -1973,6 +1994,9 @@ void PlayerController::DownEnter()
 	mJump = XMVectorZero();
 	m_MoveVelo = XMVectorZero();
 	rotate();
+
+
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Down, gameObject->mTransform->WorldPosition());
 }
 
 void PlayerController::DownExcute()
@@ -2819,6 +2843,7 @@ void PlayerController::freeAnimeUpdate()
 	}
 	else {
 		if (m_CurrentAnimeID == AnimeID::Fall) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Landing, gameObject->mTransform->WorldPosition());
 			changeAnime(AnimeID::FallGround);
 		}
 		else {
@@ -2839,6 +2864,12 @@ void PlayerController::freeAnimeUpdate()
 				}
 			}
 			else {
+				m_MoveSETimer += Hx::DeltaTime()->GetDeltaTime();
+				if (m_MoveSETimer >= 0.5f) {
+					m_MoveSETimer = 0.0f;
+					SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Run2, gameObject->mTransform->WorldPosition());
+				}
+
 				if (t == WeaponType::Rance) {
 					changeAnime(AnimeID::RMove);
 				}

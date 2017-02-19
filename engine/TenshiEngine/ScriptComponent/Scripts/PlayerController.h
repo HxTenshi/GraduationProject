@@ -262,6 +262,8 @@ private:
 	int m_HitCount;
 	float m_ComboTimer;
 
+	float m_MoveSETimer;
+
 	bool m_DownUp;
 
 	XMVECTOR m_MoveVelo;

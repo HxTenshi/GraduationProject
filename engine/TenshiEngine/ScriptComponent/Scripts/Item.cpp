@@ -1,6 +1,7 @@
 #include "Item.h"
 #include "PlayerController.h"
 #include "h_standard.h"
+#include "SoundManager.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Item::Initialize(){
@@ -50,7 +51,9 @@ void Item::OnCollideBegin(GameObject target){
 				obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
 			}
 		}
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Recovery, gameObject->mTransform->WorldPosition());
 		Hx::DestroyObject(gameObject);
+
 	}
 }
 
