@@ -4,6 +4,7 @@
 #include "../h_component.h"
 #include "PlayerController.h"
 #include "OutputGimic.h"
+# include "OutputAnimation.h"
 
 EnemyGate::EnemyGate()
 {
@@ -50,6 +51,7 @@ bool EnemyGate::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR ac
 		auto scr = OutputGimic::GetOutputGimic(gameObject->mTransform->GetParent());
 		if (!scr)return false;
 		scr->OnStart(gameObject);
+		mGate->GetScript<OutputAnimation>()->SetBreak(true);
 		Hx::DestroyObject(this->gameObject);
 	}
 	return false;

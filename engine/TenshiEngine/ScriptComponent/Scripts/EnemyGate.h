@@ -23,5 +23,6 @@ private:
 	void TrackingModeFinalize();
 
 	SERIALIZE float hp;
+	SERIALIZE GameObject mGate;
 public:
 };

@@ -10,6 +10,8 @@ public:
 
 	void SetUpOrcChild(GameObject gen,GameObject point);
 
+	void SetBreak(bool state) { mBreak = state; }
+
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE GameObject m_Target;
@@ -26,6 +28,8 @@ private:
 	bool mIsEnd;
 
 	SERIALIZE bool mIsReverseEnd;
+
+	bool mBreak;
 
 	SERIALIZE float m_WalkTime;
 

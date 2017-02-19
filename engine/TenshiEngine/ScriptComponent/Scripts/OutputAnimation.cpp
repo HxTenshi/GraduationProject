@@ -8,6 +8,7 @@
 
 void OutputAnimation::Update()
 {
+	if (mBreak)return;
 	if (mIsEnd)return;
 	if (!m_Target)return;
 	auto mPlayAnimation = m_Target->GetComponent<AnimationComponent>();
@@ -50,6 +51,7 @@ void OutputAnimation::Update()
 bool OutputAnimation::OnStart(GameObject Sender)
 {
 	if (!m_Target)return false;
+	if (mBreak)return false;
 	
 	//ミノタウロス用
 	if (mTargetBossGen) {
@@ -81,7 +83,7 @@ bool OutputAnimation::OnStart(GameObject Sender)
 
 void OutputAnimation::SetUpOrcChild(GameObject gen, GameObject point)
 {
-	if (!gen)return;
+	//if (!gen)return;
 	auto enemyObj = gen->GetScript<ObjectGenerator>()->GetGeneratorObject();
 	if (!enemyObj) {
 		return;
