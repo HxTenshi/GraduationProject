@@ -174,6 +174,8 @@ private:
 	SERIALIZE PrefabAsset m_Attack6Effect;//id 10
 	SERIALIZE PrefabAsset m_Attack7Effect;//id 14
 	SERIALIZE PrefabAsset m_DeadEffect;
+	SERIALIZE GameObject m_AngerEffect;//怒り状態に入った時に出現するエフェクト
+	SERIALIZE GameObject m_AngerMesh;//怒り状態に入ったときに肌に赤みを持たせる
 	//デバッグ用のフラグ
 	SERIALIZE bool m_Debug_flag;
 
@@ -223,5 +225,7 @@ private:
 	float m_crate_dead_effect_timer;
 	//死亡状態でアニメーションが終わったら
 	bool is_dead_anim_end;
+	//怒り状態に入るフラグ
+	bool is_anger;
 
 };

@@ -32,6 +32,7 @@ EnemyMinotaur::EnemyMinotaur()
 	m_BattleModeParam.id = BATTLEACTION::CONFRONTACTION;
 	anim_loop = true;
 	is_change_attack = false;
+	is_anger = false;
 }
 void EnemyMinotaur::ChildInitialize()
 {
@@ -77,7 +78,7 @@ void EnemyMinotaur::Attack(GameObject player, COL_TYPE colType)
 	if (!playerScript)return;
 
 		m_AttackHit = true;
-		playerScript->Damage(8.0f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+		playerScript->Damage(8.0f*1.5f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 
 }
 
@@ -85,8 +86,8 @@ bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTO
 {
 	if (is_dead)return false;
 	if (is_damage)return false;
-
-	m_Damage= damage_;
+	//怒り状態のダメージは半分に設定
+	m_Damage = (is_anger) ? damage_ *( 7.0f/10.0f) : damage_;
 	m_Accel = accelPower_;
 	is_damage = true;
 	//if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
@@ -164,7 +165,22 @@ void EnemyMinotaur::BattleModeUpdate()
 		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::DEADACTION);
 		battleActionInitilize[m_BattleModeParam.id]();
 	}
-
+	//怒り状態に遷移する処理
+	if (m_Hp <= m_MaxHp / 2 & !is_anger) {
+		is_anger = true;
+		AnimType t = ANIM_TAUNT;
+		m_attack_flag = true;
+		anim_loop = false;
+		RoutineSetUp(t);
+		if (auto mat = m_AngerMesh->GetComponent<MaterialComponent>()) {
+			auto albed = mat->mAlbedo;
+			albed.x += 1.0f;
+			m_AngerMesh->GetComponent<MaterialComponent>()->SetAlbedoColor(albed);
+			if (m_Debug_flag)Hx::Debug()->Log("AngerCoor");
+		}
+		if (m_Debug_flag)Hx::Debug()->Log("Anger");
+	}
+	//戦闘モードと追跡モードの変更
 	if (is_change_attack) {
 		BattleRoutine();
 	}
@@ -537,7 +553,7 @@ void EnemyMinotaur::InitThoughRoutineParam()
 		1.4f,1.4f,1.4f,1.4f,
 		1.4f,1.4f,1.4f,2.0f,
 		1.0f,1.0f,1.0f,2.0f,
-		2.0f,1.4f
+		1.0f,1.4f
 	};
 	for (int i = 0; i < 18; ++i) {
 		auto p = anim->GetAnimetionParam(i);
