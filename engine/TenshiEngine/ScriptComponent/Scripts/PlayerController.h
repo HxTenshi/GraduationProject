@@ -20,6 +20,7 @@ struct AttackState {
 	int NextHighID = -1;
 	int MoutionID = -1;
 	int EndID = -1;
+	int SEID = -1;
 	float AttackTime = 0.0f;
 	float DamageScale = 0.0f;
 	float AddSpecial = 0.0f;

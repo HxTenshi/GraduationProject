@@ -43,6 +43,10 @@ public:
 			Lion2,
 			VolumeDown,
 			VolumeUp,
+			Player_SW_L1,
+			Player_SW_L2,
+			Player_SW_L3,
+			Player_SW_H1,
 		};
 	};
 	struct SoundBGM_ID {

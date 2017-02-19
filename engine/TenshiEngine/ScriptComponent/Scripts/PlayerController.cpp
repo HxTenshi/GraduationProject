@@ -268,6 +268,9 @@ void PlayerController::AttackInitialize()
 		attack.AttackMove = 0.0f;
 		attack.AttackFunc = [&]() {};
 		attack.DamageType = DamageType::LowDamage;
+
+		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_L1;
+
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -283,6 +286,8 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageEnd = 14.0f / 30.0f;
 		attack.AttackMove = 0.0f;
 
+		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_L2;
+
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::Low3;
@@ -296,6 +301,9 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageStart = 5.0f / 30.0f;
 		attack.OnDamageEnd = 18.0f / 30.0f;
 		attack.AttackMove = 0.0f;
+
+		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_L3;
+
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::DogdeAttack;
@@ -309,6 +317,9 @@ void PlayerController::AttackInitialize()
 
 		attack.DamageScale = 1.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.SEID = -1;
+
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::High1;
@@ -326,6 +337,9 @@ void PlayerController::AttackInitialize()
 
 		attack.DamageScale = 2.0f;
 		attack.AttackMove = 0.0f;
+
+		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_H1;
+
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::High2;
@@ -343,6 +357,9 @@ void PlayerController::AttackInitialize()
 
 		attack.DamageScale = 1.0f;
 		attack.AttackMove = 0.0f;
+
+		attack.SEID = -1;
+
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatLow1;
@@ -1524,6 +1541,11 @@ void PlayerController::AttackEnter()
 	if (m_CurrentAttack.AttackTime <= -1.0f) {
 		m_CurrentAttack.AttackTime = getMoutionTime(m_CurrentAttack.MoutionID);
 	}
+
+	if (m_CurrentAttack.SEID >= 0) {
+		SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
+	}
+
 	m_CurrentAttack.AttackFunc();
 
 	changeAnime(m_CurrentAttack.MoutionID);
@@ -1638,6 +1660,9 @@ void PlayerController::AttackExcute()
 		if (m_CurrentAttack.AttackTime <= -1.0f) {
 			m_CurrentAttack.AttackTime = getMoutionTime(m_CurrentAttack.MoutionID);
 		}
+		if (m_CurrentAttack.SEID >= 0) {
+			SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
+		}
 		m_CurrentAttack.AttackFunc();
 
 		changeAnime(m_CurrentAttack.MoutionID);
@@ -1668,6 +1693,9 @@ void PlayerController::AttackExcute()
 		m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
 		if (m_CurrentAttack.AttackTime <= -1.0f) {
 			m_CurrentAttack.AttackTime = getMoutionTime(m_CurrentAttack.MoutionID);
+		}
+		if (m_CurrentAttack.SEID >= 0) {
+			SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
 		}
 		m_CurrentAttack.AttackFunc();
 
