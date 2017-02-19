@@ -103,6 +103,7 @@ public:
 
 	void AddMove(XMVECTOR v);
 private:
+	void AttackInitialize();
 
 	Weapon* GetWeapon();
 
