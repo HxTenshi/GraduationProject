@@ -68,10 +68,12 @@ void ConfigScene::CursourMove() {
 	if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && isStickInterval) {
 		num--;
 		m_stickInterval = 0.0f;
+		SE(SoundManager::SoundSE_ID::Enum::Weapon_Break);
 	}
 	if (Input::Trigger(KeyCode::Key_DOWN) || isDownLS && isStickInterval) {
 		num++;
 		m_stickInterval = 0.0f;
+		SE(SoundManager::SoundSE_ID::Enum::Weapon_Break);
 	}
 
 	//ƒNƒ‰ƒ“ƒvˆ—
