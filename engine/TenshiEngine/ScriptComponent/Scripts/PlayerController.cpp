@@ -91,6 +91,7 @@ struct AnimeID {
 		RIdle,
 		RMove,
 		RDodge,
+		DownUp,
 		Count,
 	};
 };
@@ -1953,6 +1954,7 @@ void PlayerController::KnockBackExit()
 void PlayerController::DownEnter()
 {
 	m_IsInvisible = true;
+	m_DownUp = false;
 	//mJump.y += mVelocity.y;
 	//m_MoveVelo.y = 0.0f;
 	//m_MoveVelo.x = mVelocity.x;
@@ -1961,9 +1963,11 @@ void PlayerController::DownEnter()
 	mVelocity.y = 0.0f;
 
 	m_InvisibleTime = 0.0f;
-	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
-	if (anime){
-		m_InvisibleTime = anime->GetTotalTime(AnimeID::Down)/60.0f + 5.0f;
+	if (m_AnimeModel) {
+		auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
+		if (anime) {
+			m_InvisibleTime = anime->GetTotalTime(AnimeID::Down) / 60.0f + 5.0f;
+		}
 	}
 
 	mJump = XMVectorZero();
@@ -1979,19 +1983,37 @@ void PlayerController::DownExcute()
 
 	float time = Hx::DeltaTime()->GetDeltaTime();
 	m_InvisibleTime -= time;
-	bool move = false;
-	if (BindInput(PlayerInput::Move_F) || BindInput(PlayerInput::Move_D) || BindInput(PlayerInput::Move_L) || BindInput(PlayerInput::Move_R)) {
-		move = true;
-	}
-	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
-	if (XMVector2Length(ls).x > 0.05f) {
-		move = true;
-	}
 
-	if (m_InvisibleTime <= 5.0f && m_IsGround && (move || m_InvisibleTime<=0.0f)) {
-		SetPlayerState(PlayerState::Free);
+
+	if (m_DownUp) {
+		changeAnime(AnimeID::DownUp);
+		if (m_InvisibleTime <= 0.0f) {
+			SetPlayerState(PlayerState::Free);
+		}
 	}
-	changeAnime(AnimeID::Down);
+	else {
+
+
+		bool move = false;
+		if (BindInput(PlayerInput::Move_F) || BindInput(PlayerInput::Move_D) || BindInput(PlayerInput::Move_L) || BindInput(PlayerInput::Move_R)) {
+			move = true;
+		}
+		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+		if (XMVector2Length(ls).x > 0.05f) {
+			move = true;
+		}
+
+		if (m_InvisibleTime <= 5.0f && m_IsGround && (move || m_InvisibleTime <= 0.0f)) {
+			m_DownUp = true;
+
+			if (m_AnimeModel) {
+				if (auto anime = m_AnimeModel->GetComponent<AnimationComponent>()) {
+					m_InvisibleTime = anime->GetTotalTime(AnimeID::DownUp) / 30.0f;
+				}
+			}
+		}
+		changeAnime(AnimeID::Down);
+	}
 }
 
 void PlayerController::DownExit()
