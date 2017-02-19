@@ -13,15 +13,18 @@ void OutputAnimation::Update()
 	auto mPlayAnimation = m_Target->GetComponent<AnimationComponent>();
 	if (!mPlayAnimation)return;
 	bool isEnd = mPlayAnimation->IsAnimationEnd(0);
+
 	if (isEnd)
 	{
 		mIsEnd = true;
 		if (m_UseEndAction) {
+			
 			auto scr = OutputGimic::GetOutputGimic(m_AnimationEndAction);
 			if (!scr)return;
 			scr->OnStart(gameObject);
 		}
 		if (!m_UseGenConb)return;
+		if (!m_EnemyGen)return;
 		auto enemyObj = m_EnemyGen->GetScript<ObjectGenerator>()->GetGeneratorObject();
 		if (!enemyObj) {
 			return;
@@ -47,6 +50,16 @@ void OutputAnimation::Update()
 bool OutputAnimation::OnStart(GameObject Sender)
 {
 	if (!m_Target)return false;
+	
+	//ミノタウロス用
+	if (mTargetBossGen) {
+		if (mTargetBossGen->mTransform->Children().front()->mTransform->Children().front()->GetScript<ObjectGenerator>()->GetGeneratorObject())
+		{
+			m_Target = mTargetBossGen->mTransform->Children().front()->mTransform->Children().front()->GetScript<ObjectGenerator>()->GetGeneratorObject();
+		}
+	}
+	
+	
 	mIsEnd = false;
 	Hx::Debug()->Log(m_Target->Name());
 	auto mPlayAnimation = m_Target->GetComponent<AnimationComponent>();
@@ -68,6 +81,7 @@ bool OutputAnimation::OnStart(GameObject Sender)
 
 void OutputAnimation::SetUpOrcChild(GameObject gen, GameObject point)
 {
+	if (!gen)return;
 	auto enemyObj = gen->GetScript<ObjectGenerator>()->GetGeneratorObject();
 	if (!enemyObj) {
 		return;

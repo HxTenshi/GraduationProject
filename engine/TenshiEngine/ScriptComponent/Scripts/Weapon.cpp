@@ -70,11 +70,13 @@ void Weapon::OnCollideBegin(GameObject target){
 		if (mWeaponControl) {
 			if (target->GetLayer() == 3) {
 				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
-					//Hx::Debug()->Log("“G‚É“Š‚°‚Ä“–‚½‚Á‚½");
-					//Hx::Debug()->Log(target->Name());
-					//Hx::Debug()->Log(gameObject->Name());
 					weapon->HitActor(target, gameObject);
 				}
+
+				if (target->Name() == "gateCollider") {
+					WeaponUsePhysX();
+				}
+
 				mIsEnemyThrow = false;
 			}
 

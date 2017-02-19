@@ -25,10 +25,14 @@ private:
 	SERIALIZE GameObject m_EnemyGen;
 	bool mIsEnd;
 
+	SERIALIZE bool mIsReverseEnd;
+
 	SERIALIZE float m_WalkTime;
 
 	SERIALIZE bool m_UseGenConb;
 	SERIALIZE bool m_UseEndAction;
+
+	SERIALIZE GameObject mTargetBossGen;
 
 	SERIALIZE GameObject m_OrcChildOne;
 	SERIALIZE GameObject m_OrcChildSecond;
