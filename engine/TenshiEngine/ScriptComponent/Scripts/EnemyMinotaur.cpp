@@ -77,8 +77,9 @@ void EnemyMinotaur::Attack(GameObject player, COL_TYPE colType)
 	auto playerScript = player->GetScript<PlayerController>();
 	if (!playerScript)return;
 
-		m_AttackHit = true;
-		playerScript->Damage(8.0f*1.5f, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+	m_AttackHit = true;
+	float mag = (is_anger) ? 1.5f : 1.0f;
+	playerScript->Damage(8.0f*mag, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
 
 }
 
@@ -178,6 +179,19 @@ void EnemyMinotaur::BattleModeUpdate()
 			m_AngerMesh->GetComponent<MaterialComponent>()->SetAlbedoColor(albed);
 			if (m_Debug_flag)Hx::Debug()->Log("AngerCoor");
 		}
+		auto g = Hx::Instance(m_DeadEffect);
+		if (!g)return;
+		auto pos = gameObject->mTransform->WorldPosition();
+		g->mTransform->WorldPosition(pos);
+		if (!m_Player)return;
+		auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
+		if (m_roucine_module.DistanceCheck(DSI_EM_ATTACK, distance, funifuni::ModuleDistanceType::In)) {
+			auto playerScript = m_Player->GetScript<PlayerController>();
+			if (!playerScript)return;
+			playerScript->Damage(0.0f, XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+
+		}
+
 		if (m_Debug_flag)Hx::Debug()->Log("Anger");
 	}
 	//戦闘モードと追跡モードの変更
@@ -458,13 +472,13 @@ void EnemyMinotaur::Move(float s)
 
 	if (!player)return;
 	if (!nav)return;
-
+	float mag = (is_anger) ? 1.5f : 1.0f;
 
 	auto dir = nav->GetRouteVector();
 	dir = XMVector3Normalize(dir);
 	nav->Move(7.0f* Hx::DeltaTime()->GetDeltaTime());
 	LookPosition(player->mTransform->WorldPosition(), 400.0f, false);
-	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Forward()*Hx::DeltaTime()->GetDeltaTime()*s);
+	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Forward()*Hx::DeltaTime()->GetDeltaTime()*s*mag);
 }
 void EnemyMinotaur::MoveAttackd(float s)
 {
@@ -478,9 +492,10 @@ void EnemyMinotaur::MoveSide(bool right)
 {
 	auto player = m_Player;
 	if (!player)return;
+	float mag = (is_anger) ? 1.5f : 1.0f;
 	LookPosition(player->mTransform->WorldPosition(), 400.0f, false);
 	auto vec = (right) ? -gameObject->mTransform->Left() : gameObject->mTransform->Left();
-	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Left()*Hx::DeltaTime()->GetDeltaTime()*side_speed);
+	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Left()*Hx::DeltaTime()->GetDeltaTime()*side_speed*mag);
 }
 
 void EnemyMinotaur::MoveBack()
@@ -488,7 +503,8 @@ void EnemyMinotaur::MoveBack()
 	auto player = m_Player;
 	if (!player)return;
 	LookPosition(player->mTransform->WorldPosition(), 400.0f, false);
-	gameObject->GetComponent<CharacterControllerComponent>()->Move(-gameObject->mTransform->Forward() *Hx::DeltaTime()->GetDeltaTime()*back_speed);
+	float mag = (is_anger) ? 1.5f : 1.0f;
+	gameObject->GetComponent<CharacterControllerComponent>()->Move(-gameObject->mTransform->Forward() *Hx::DeltaTime()->GetDeltaTime()*back_speed*mag);
 
 }
 
@@ -553,7 +569,7 @@ void EnemyMinotaur::InitThoughRoutineParam()
 		1.4f,1.4f,1.4f,1.4f,
 		1.4f,1.4f,1.4f,2.0f,
 		1.0f,1.0f,1.0f,2.0f,
-		1.0f,1.4f
+		1.5f,1.4f
 	};
 	for (int i = 0; i < 18; ++i) {
 		auto p = anim->GetAnimetionParam(i);
