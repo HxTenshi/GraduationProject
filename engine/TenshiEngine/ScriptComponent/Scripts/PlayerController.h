@@ -103,6 +103,7 @@ public:
 
 	void AddMove(XMVECTOR v);
 private:
+	void AttackInitialize();
 
 	Weapon* GetWeapon();
 
@@ -174,6 +175,8 @@ private:
 	void AddCombo();
 	void ClearCombo();
 
+	void BoneMoveUpdate();
+
 	PlayerState::Enum m_PlayerState_Stack;
 	PlayerState::Enum m_PlayerState;
 	struct StateFunc{
@@ -205,6 +208,9 @@ private:
 	SERIALIZE
 	float m_MoveSpeed;
 
+	//É{Å[Éìí«è]é¸ÇË
+	SERIALIZE GameObject m_BoneMirrorObject;
+	XMVECTOR m_BoneBackPos;
 
 	float m_MoveSpeed_ComboAdd;
 	float m_MoutionSpeed_ComboAdd;

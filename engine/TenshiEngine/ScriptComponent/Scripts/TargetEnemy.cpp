@@ -32,6 +32,10 @@ void TargetEnemy::Update(){
 	
 	if (target && Enemy::GetEnemy(target)) {
 		SetTargetEnemy(target);
+		if (Enemy::GetEnemy(target)->GetEnemyAllParameter(false).hp <= 0) {
+			camera->SetLookTarget(NULL);
+			SetTargetEnemy(NULL);
+		}
 	}
 	else {
 		SetTargetEnemy(NULL);
