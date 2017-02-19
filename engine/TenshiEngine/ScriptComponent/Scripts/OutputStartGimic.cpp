@@ -15,7 +15,7 @@ void OutputStartGimic::Start(){
 void OutputStartGimic::Update(){
 
 	if (Input::Trigger(KeyCode::Key_L)) {
-		OnStart(NULL);
+		//OnStart(NULL);
 	}
 }
 
