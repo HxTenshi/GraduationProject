@@ -25,7 +25,7 @@ void SoundManager::Finish(){
 
 void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos){
 	if (g_soundManager == NULL) {
-		Hx::Debug()->Log("Null");
+		Hx::Debug()->Log("SoundManager Null");
 		return;
 	}
 	if (!g_soundManager->soundBox.IsLoad()) {
@@ -50,6 +50,10 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos){
 }
 
 void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
+	if (g_soundManager == NULL) {
+		Hx::Debug()->Log("SoundManager Null");
+		return;
+	}
 	if (!g_soundManager->soundBox.IsLoad()) {
 		Hx::Debug()->Log("soundBox‚È‚¢‚æ");
 		return;
