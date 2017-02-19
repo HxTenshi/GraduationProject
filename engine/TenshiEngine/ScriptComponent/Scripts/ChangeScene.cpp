@@ -1,5 +1,5 @@
 #include "ChangeScene.h"
-
+#include "h_standard.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void ChangeScene::Initialize(){
@@ -38,5 +38,6 @@ void ChangeScene::OnCollideExit(GameObject target){
 
 void ChangeScene::Next()
 {
+	Hx::System()->LockCursorPositionToWindowCenter(false);
 	Hx::LoadScene(m_SceneName);
 }

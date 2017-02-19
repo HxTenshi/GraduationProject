@@ -691,6 +691,7 @@ void reis::OnDamage()
 				m_ReisMode = ReisMode::Wince;
 				m_AttackStage = AttackStage();
 				SetWeapon(false);
+				WeaponEffect(0, false);
 			}
 			else {
 				m_SuperArmorHit++;
@@ -699,6 +700,7 @@ void reis::OnDamage()
 				m_ReisMode = ReisMode::Dogde;
 				m_DogdeMode = DogdeMode::Rotate;
 				SetWeapon(false);
+				WeaponEffect(0, false);
 			}
 		}
 		if (enemy->GetEnemyAllParameter(false).battleModeParameter.id == BATTLEACTION::DEADACTION) {
