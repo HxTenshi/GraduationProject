@@ -55,6 +55,8 @@ void EnemyMinotaur::ChildInitialize()
 	is_dead = false;//死んだとき
 	is_damage = false;
 	m_crate_dead_effect_timer = 0.0f;
+	m_move_attackd_timer = 0.0f;
+	m_move_attackd_timemax = 0.0f;
 }
 void EnemyMinotaur::SoloAction()
 {
@@ -85,6 +87,7 @@ void EnemyMinotaur::Attack(GameObject player, COL_TYPE colType)
 
 bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
+
 	if (is_dead)return false;
 	if (is_damage)return false;
 	//怒り状態のダメージは半分に設定
@@ -130,6 +133,7 @@ void EnemyMinotaur::BattleModeInitilize()
 		m_Hp -= m_Damage;
 		m_Damage = 0.0f;
 		is_damage = false;
+		//[SOUND]
 	}
 	//攻撃
 	m_Hp -= m_Damage;
@@ -168,6 +172,7 @@ void EnemyMinotaur::BattleModeUpdate()
 	}
 	//怒り状態に遷移する処理
 	if (m_Hp <= m_MaxHp / 2 & !is_anger) {
+		//[SOUND]
 		is_anger = true;
 		AnimType t = ANIM_TAUNT;
 		m_attack_flag = true;
@@ -252,6 +257,7 @@ void EnemyMinotaur::DeadInitilize()
 	if (m_Debug_flag)Hx::Debug()->Log("Anim:ANIM_DYING");
 	AnimChange(ANIM_DYING, 10.0f, false, true);
 	is_dead_anim_end = false;
+	//[SOUND]
 }
 
 void EnemyMinotaur::DeadUpdate()
@@ -291,30 +297,6 @@ void EnemyMinotaur::DebugDead()
 
 }
 
-void EnemyMinotaur::PositionReplaceBorn()
-{
-	//float time = Hx::DeltaTime()->GetDeltaTime();
-	//float cut_anim_time = 40.0f / 60.0f;
-	//XMVECTOR move_velocity = XMVectorZero();
-	//auto anim = m_ModelObject->GetComponent<AnimationComponent>();
-
-	//auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-
-	//float y = gameObject->mTransform->WorldPosition().y;
-	//XMVECTOR pos = m_TargetBone->mTransform->WorldPosition();
-	//pos.y = y + 0.001f;
-
-	//if (anim->IsAnimationEnd(num)) {
-	//	AnimChange(17, 1.0f, false, true);
-	//	AnimChange(num, 1.0f, false, true);
-	//	cc->Teleport(pos);
-	//	AnimeParam ap = anim->GetAnimetionParam(num);
-	//	ap.mTime = 0.0f;
-	//	anim->SetAnimetionParam(num, ap);
-	//}
-
-}
-
 void EnemyMinotaur::HuntRoutine()
 {
 	if (!m_Player)return;
@@ -332,10 +314,12 @@ void EnemyMinotaur::HuntRoutine()
 			int r = std::rand() % 100;
 			AnimType t;
 			if (r > 50) {
+				//[SOUND]
 				m_action_func = [this]() { Attack2(); };
 				t = ANIM_ATTACK2;
 			}
 			else {
+				//[SOUND]
 				m_action_func = [this]() { Attack1(); };
 				t = ANIM_ATTACK1;
 			}
@@ -367,7 +351,8 @@ void EnemyMinotaur::HuntRoutine()
 
 		//横方向に移動したときにバトルモードに切り替えるためのタイマー
 		if (m_roucine_module.GetAnimState() == ANIM_R_WALK ||
-			m_roucine_module.GetAnimState() == ANIM_L_WALK) {
+			m_roucine_module.GetAnimState() == ANIM_L_WALK||
+			m_roucine_module.GetAnimState()==ANIM_B_WALK) {
 			change_battle_time += Hx::DeltaTime()->GetDeltaTime();
 		}
 
@@ -396,20 +381,24 @@ void EnemyMinotaur::BattleRoutine()
 			m_AttackHit = false;
 			int r = std::rand() % 100;
 			AnimType t;
-			if (r > 50) {
+			if (r > 70) {
+				//[SOUND]
 				m_action_func = [this]() {Attack4(); };
 				t = ANIM_ATTACK4;
 			}
 			else if (r > 30) {
+				//[SOUND]
 				m_AttackHit = true;
 				m_action_func = nullptr;
 				t = ANIM_CHEST_THUMP;
 			}
 			else if (r > 10) {
+				//[SOUND]
 				m_action_func = [this]() {Attack3(); };
 				t = ANIM_ATTACK3;
 			}
 			else {
+				//[SOUND]
 				m_action_func = [this]() {Attack5(); };
 				t = ANIM_ATTACK5;
 			}
@@ -471,7 +460,7 @@ void EnemyMinotaur::Move(float s)
 	auto nav = gameObject->GetComponent<NaviMeshComponent>();
 
 	if (!player)return;
-	if (!nav)return;
+	//if (!nav)return;
 	float mag = (is_anger) ? 1.5f : 1.0f;
 
 	auto dir = nav->GetRouteVector();
@@ -483,10 +472,16 @@ void EnemyMinotaur::Move(float s)
 void EnemyMinotaur::MoveAttackd(float s)
 {
 	auto player = m_Player;
-
-	if (!player)return;
-	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Forward()*Hx::DeltaTime()->GetDeltaTime()*s);
-
+	m_move_attackd_timer += Hx::DeltaTime()->GetDeltaTime();
+	auto nav = gameObject->GetComponent<NaviMeshComponent>();
+	if (m_move_attackd_timemax >=m_move_attackd_timer) {
+		if (!player)return;
+		//if (!nav)return;
+		auto dir = nav->GetRouteVector();
+		dir = XMVector3Normalize(dir);
+		nav->Move(7.0f* Hx::DeltaTime()->GetDeltaTime());
+		gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Forward()*Hx::DeltaTime()->GetDeltaTime()*s);
+	}
 }
 void EnemyMinotaur::MoveSide(bool right)
 {
@@ -511,36 +506,6 @@ void EnemyMinotaur::MoveBack()
 bool EnemyMinotaur::RecastCheck()
 {
 	return (max_recast<=recast);
-}
-
-void EnemyMinotaur::ThoughtRoutine()
-{
-	if (auto p = m_Player) {
-		auto player_pos = p->mTransform->WorldPosition();
-		auto now_pos = gameObject->mTransform->WorldPosition();
-		auto distance = std::abs(XMVector3Length(player_pos - now_pos).x);
-
-		int state = m_roucine_module.GetStateParam();
-		std::function<void()> change_func;
-		//バトルモードに変更
-		if (m_roucine_module.DistanceCheck(DistanceType::DSI_ATTACK, distance, funifuni::ModuleDistanceType::In)) {
-			m_roucine_module.SetStateParam(StateType::STATE_BATTLE);
-			change_func = [this]() {ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION); };
-		}//アイドル状態のモーション
-		else if (m_roucine_module.DistanceCheck(DistanceType::DSI_MOVE, distance, funifuni::ModuleDistanceType::In)) {
-			m_roucine_module.SetStateParam(StateType::STATE_BATTLE_MOVE);
-			change_func = [this]() {ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION); };
-		}//移動状態のモーション
-		else if (m_roucine_module.DistanceCheck(DistanceType::DSI_MOVE, distance, funifuni::ModuleDistanceType::In)) {
-			m_roucine_module.SetStateParam(StateType::STATE_BATTLE_MOVE);
-			//プレイヤー追跡モードに変更
-			change_func = [this]() {ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION); };
-
-		}
-		if (m_roucine_module.GetStateParam() != state)change_func();
-
-	}
-
 }
 
 void EnemyMinotaur::InitThoughRoutineParam()
@@ -624,6 +589,8 @@ void EnemyMinotaur::Attack4()
 	auto rot = gameObject->mTransform->Rotate();
 	obj->mTransform->Rotate(rot);
 	m_action_func = nullptr;
+	m_move_attackd_timer = 0.0f;
+	m_move_attackd_timemax = 2.5f;
 	m_attackd_func = [this]() {MoveAttackd(1.0f); };
 }
 
@@ -668,9 +635,13 @@ void EnemyMinotaur::Attack7()
 	auto obj = Hx::Instance(m_Attack7Effect);
 	auto pos = gameObject->mTransform->WorldPosition();
 	pos.y -= 0.3f;
-	obj->mTransform->WorldPosition(pos);
+	auto f = gameObject->mTransform->Forward();
+	f = f*12.0f;
+	obj->mTransform->WorldPosition(pos+f);
 	m_action_func = nullptr;
-	m_attackd_func = [this]() {Move(7.0f); };
+	m_move_attackd_timer = 0.0f;
+	m_move_attackd_timemax = 1.5f;
+	m_attackd_func = [this]() {MoveAttackd(7.0f); };
 }
 
 void EnemyMinotaur::ChestThump()
@@ -683,14 +654,6 @@ void EnemyMinotaur::Stan()
 {
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	//(14, 1.0f, false, true);
-}
-
-void EnemyMinotaur::NoAnimtionMove()
-{
-}
-
-void EnemyMinotaur::None()
-{
 }
 
 void EnemyMinotaur::PlayerSearch()

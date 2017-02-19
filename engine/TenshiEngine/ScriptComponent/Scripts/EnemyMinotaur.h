@@ -124,7 +124,6 @@ private:
 	void DebugDead();
 
 
-	void PositionReplaceBorn();
 	//プレイヤー追跡中のルーチン
 	void HuntRoutine();
 	//プレイヤーとのバトル用ルーチン
@@ -138,8 +137,7 @@ private:
 	void MoveBack();
 	//連続攻撃禁止のための関数
 	bool RecastCheck();
-	//思考関数
-	void ThoughtRoutine();
+	//測る距離を初期化
 	void InitThoughRoutineParam();
 
 	
@@ -153,8 +151,6 @@ private:
 	void Attack7();
 	void ChestThump();
 	void Stan();
-	void NoAnimtionMove();
-	void None();
 	void PlayerSearch();
 
 	void SetAttackAction();
@@ -227,5 +223,9 @@ private:
 	bool is_dead_anim_end;
 	//怒り状態に入るフラグ
 	bool is_anger;
+	//攻撃移動中のタイマー
+	float m_move_attackd_timer;
+	//攻撃移動中のタイマー上限
+	float m_move_attackd_timemax;
 
 };
