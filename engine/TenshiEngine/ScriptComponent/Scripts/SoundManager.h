@@ -36,6 +36,13 @@ public:
 			Fire,
 			Fire_Loop,
 			WoodBreak,
+			Boar_child_cry1,
+			Boar_cry1,
+			Cursour,
+			Decision,
+			Lion2,
+			VolumeDown,
+			VolumeUp,
 		};
 	};
 	struct SoundBGM_ID {
