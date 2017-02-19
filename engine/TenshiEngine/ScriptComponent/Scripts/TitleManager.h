@@ -75,6 +75,8 @@ private:
 
 	bool iup_flag;
 
+	bool is_bgm;
+
 	SERIALIZE
 		GameObject m_Canvas;
 	SERIALIZE

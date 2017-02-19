@@ -15,14 +15,19 @@ void SoundManager::Initialize(){
 	std::vector<std::vector<std::string>> arrays = CSVScript::readCSV("Assets/data/Volume.csv");
 	bgm_master_volume = std::stof(arrays[0][0]) / VOLUME_RATE;
 	se_master_volume = std::stof(arrays[0][1]) / VOLUME_RATE;
+	Hx::Debug()->Log("soundmanager Initialize");
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void SoundManager::Finish(){
-	g_soundManager = NULL;
+	//g_soundManager = NULL;
 }
 
 void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos){
+	if (g_soundManager == NULL) {
+		Hx::Debug()->Log("Null");
+		return;
+	}
 	if (!g_soundManager->soundBox.IsLoad()) {
 		Hx::Debug()->Log("soundBoxないよ");
 		return;
