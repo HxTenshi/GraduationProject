@@ -759,7 +759,7 @@ void EnemyRezardMan::DeadModeInitilize()
 		Hx::Debug()->Log("Ž€‚ñ‚¾");
 	}
 
-	AnimChange(ANIM_ID::ANIM_PROVOCATION, 5.0f, false, true);
+	AnimChange(ANIM_ID::ANIM_DEAD, 5.0f, false, true);
 }
 
 void EnemyRezardMan::DeadModeUpdate()
