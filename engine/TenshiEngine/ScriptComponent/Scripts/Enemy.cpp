@@ -118,9 +118,9 @@ void Enemy::OnCollideExit(GameObject target) {
 }
 
 /**************************************************アニメーションの処理****************************************************/
-void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
+void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange,bool sameChange)
 {
-	if (id != m_Animparam.afterAnimId || m_Animparam.afterAnimLoop != roop) {
+	if (id != m_Animparam.afterAnimId || m_Animparam.afterAnimLoop != roop || sameChange) {
 		if (!ModelObject)return;
 		auto anim = ModelObject->GetComponent<AnimationComponent>();
 		if (!anim)return;
@@ -143,6 +143,8 @@ void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange)
 		m_Animparam.afterAnimLoop = roop;
 
 		m_Animparam.lerpSpeed = speed;
+
+		if (sameChange)m_Animparam.nowLerpTime = 1.1f;
 
 		ap = anim->GetAnimetionParam(m_Animparam.afterAnimId);
 		ap.mTime = 0.0f;
