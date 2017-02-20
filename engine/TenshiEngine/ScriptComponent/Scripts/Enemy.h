@@ -172,7 +172,7 @@ public:
 		return eap;
 	}
 	void SetBattlePosition(XMVECTOR battlePosition_) { m_BattleModeParam.battlePosition = battlePosition_; }
-	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false);
+	void AnimChange(int id, float lerpSpeed, bool roop = true, bool forcingChange = false,bool sameChange = false);
 	float GetNowAnimTime();
 
 private:

@@ -573,7 +573,7 @@ void EnemyRezardMan::WinceModeInitilize() {
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
-	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true,true);
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;
@@ -818,7 +818,7 @@ bool EnemyRezardMan::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECT
 	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION) {
 		if (m_ActionModeID == ACTIONMODE::BATTLEMODE) {
 			
-			if ((m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) && GetAngle(m_Player) < 30) {
+			if ((m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) && GetAngle(m_Player) < 75) {
 				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
 				return false;
 			}
