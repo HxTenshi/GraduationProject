@@ -349,7 +349,7 @@ void PlayerController::AttackInitialize()
 		attack.EndID = AttackID::High2End;
 		attack.AttackTime = 23.0f / 30.0f;
 
-		attack.KnockbackEffect = BATTLEACTION::UPPERDOWNACTION;
+		//attack.KnockbackEffect = BATTLEACTION::UPPERDOWNACTION;
 		attack.KnockbackEffectPower = 10.0f;
 
 		attack.OnDamageStart = 8.0f / 30.0f;
@@ -403,7 +403,7 @@ void PlayerController::AttackInitialize()
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 
 
-		attack.KnockbackEffect = BATTLEACTION::BEATDOWNACTION;
+		//attack.KnockbackEffect = BATTLEACTION::BEATDOWNACTION;
 		attack.KnockbackEffectPower = 1.0f;
 		attack.Rotate = false;
 
