@@ -111,7 +111,7 @@ void EnemyArcher::ChildTrackingModeFinalize()
 
 void EnemyArcher::ConfrontModeInitilize()
 {
-	AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
+	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
 	m_BattleModeParam.count = 0.0f;
 	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)((APROACHMAXTIME - APROACHMINTIME) * 100)) / 100.0f) + APROACHMINTIME;
 }
@@ -119,7 +119,7 @@ void EnemyArcher::ConfrontModeInitilize()
 void EnemyArcher::ConfrontModeUpdate()
 {
 	m_BattleModeParam.canChangeAttackAction = true;
-
+	LookPosition(m_Player->mTransform->WorldPosition(), 400);
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
 		ChangeBattleAction(BATTLEACTION::SHOTACTION);
@@ -136,7 +136,7 @@ void EnemyArcher::ShotModeInitilize()
 	AnimChange(ANIM_ID::ANIM_JUMPATTACK, 5.0f, false, true);
 	auto arrow = Hx::Instance(ArrowPrefab);
 	if (!arrow)return;
-	arrow->mTransform->WorldPosition(this->gameObject->mTransform->WorldPosition() + XMVectorSet(0,2,0,0));
+	arrow->mTransform->WorldPosition(this->gameObject->mTransform->WorldPosition() + XMVectorSet(0,0.5f,0,0));
 	auto arrowScript = arrow->GetScript<EnemyArrow>();
 	if (!arrowScript)return;
 	arrowScript->SetEnemy(this->gameObject);

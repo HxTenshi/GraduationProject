@@ -8,6 +8,7 @@
 //生成時に呼ばれます（エディター中も呼ばれます）
 void EnemyArrow::Initialize(){
 	count = 0;
+	m_Stop = false;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -30,7 +31,7 @@ void EnemyArrow::Update() {
 	}
 	gameObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition() + m_Vec * speed * Hx::DeltaTime()->GetDeltaTime());
 	count += Hx::DeltaTime()->GetDeltaTime();
-	if (count > 10.0f) {
+	if (count > 30.0f) {
 		Hx::DestroyObject(gameObject);
 	}
 }
@@ -45,7 +46,13 @@ void EnemyArrow::OnCollideBegin(GameObject target){
 	if (!m_Enemy)return;
 	auto enemyScript = Enemy::GetEnemy(m_Enemy);
 	if (!enemyScript)return;
-	enemyScript->Attack(target,COL_TYPE::NORMAL);
+	if (UniqueObject::IsPlayer(target) && !m_Stop) {
+		enemyScript->Attack(target, COL_TYPE::NORMAL);
+	}
+	else if(count >= 0.1f && target->GetLayer() == 4){
+		m_Vec = XMVectorSet(0, 0, 0, 0);
+		m_Stop = true;
+	}
 }
 
 //コライダーとのヒット中に呼ばれます

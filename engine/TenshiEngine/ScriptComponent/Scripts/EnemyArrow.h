@@ -19,6 +19,6 @@ private:
 	GameObject m_Enemy;
 	XMVECTOR m_Vec;
 	float count;
-
+	bool m_Stop;
 	SERIALIZE float speed;
 };
