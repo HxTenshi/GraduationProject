@@ -209,6 +209,22 @@ void Enemy::LookPosition(XMVECTOR position_, float rotateSpeed, bool zReset)
 	}
 }
 
+float Enemy::GetAngle(GameObject div)
+{
+	auto myPos = gameObject->mTransform->WorldPosition();
+	auto moveVec = div->mTransform->WorldPosition();
+	auto naviVec = moveVec - myPos;
+	naviVec.y = 0;
+	m_Forward = gameObject->mTransform->Forward();
+	auto fo = m_Forward;
+	fo.y = 0;
+
+	naviVec = XMVector3Normalize(naviVec);
+	fo = XMVector3Normalize(fo);
+
+	return acos(clamp(XMVector3Dot(fo, naviVec).x, -1.0f, 1.0f)) * 180.0f / 3.14f;
+}
+
 float Enemy::GetNowAnimTime() {
 	if (!ModelObject)return 0;
 	auto anim = ModelObject->GetComponent<AnimationComponent>();

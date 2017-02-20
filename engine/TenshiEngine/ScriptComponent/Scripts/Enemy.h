@@ -190,6 +190,7 @@ protected:
 	XMVECTOR NaviMeshBattle(GameObject destination, float speed);
 	bool Layer12RayHit(GameObject destination);
 	void LookPosition(XMVECTOR position_, float rotateSpeed, bool zReset = false);
+	float GetAngle(GameObject div);
 
 	std::map<ACTIONMODE,std::function<void()>> actionModeInitilize;
 	std::map<ACTIONMODE,std::function<void()>> actionModeUpdate;

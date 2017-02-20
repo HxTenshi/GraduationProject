@@ -817,11 +817,12 @@ bool EnemyRezardMan::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECT
 	m_Accel = accelPower_;
 	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION) {
 		if (m_ActionModeID == ACTIONMODE::BATTLEMODE) {
-			if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
+			
+			if ((m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) && GetAngle(m_Player) < 30) {
 				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);
 				return false;
 			}
-			else {
+			else if(m_BattleModeParam.id != BATTLEACTION::ATTACK3ACTION){
 				ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE,winceType_);
 				return true;
 			}
