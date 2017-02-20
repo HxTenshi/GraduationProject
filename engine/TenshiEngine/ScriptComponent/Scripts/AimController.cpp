@@ -66,7 +66,7 @@ void AimController::ChangeAimMode(TPSCamera* camera,GameObject player, bool isFr
 
 void AimController::PlayerRotate(TPSCamera * camera, GameObject player)
 {
-	XMVECTOR angle = XMVectorSet(0,0,0,0);
-	angle = camera->gameObject->mTransform->DegreeRotate();
-	player->mTransform->DegreeRotate(angle);
+	//XMVECTOR angle = XMVectorSet(0,0,0,0);
+	//angle = camera->gameObject->mTransform->DegreeRotate();
+	//player->mTransform->DegreeRotate(angle);
 }

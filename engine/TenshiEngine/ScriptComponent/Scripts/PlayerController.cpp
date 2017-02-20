@@ -2315,7 +2315,9 @@ void PlayerController::dontmove()
 			v = XMVector3Normalize(v);
 	}
 
-	mVelocity = v;
+	if (XMVector3Length(v).x != 0) {
+		mVelocity = v;
+	}
 
 }
 void PlayerController::moveUpdate()
@@ -2413,12 +2415,17 @@ void PlayerController::moveUpdate()
 
 void PlayerController::rotate()
 {
-	if (XMVector3Length(mVelocity).x == 0)return;
-	auto rotate = XMMatrixTranspose(XMMatrixLookAtLH(XMVectorSet(0,0,0,1), mVelocity, XMVectorSet(0, 1, 0, 1)));
+	auto vect = mVelocity;
+	vect.y = 0.0f;
+	if (XMVector3Length(vect).x == 0)return;
+	vect = XMVector3Normalize(vect);
+	auto rotate = XMMatrixTranspose(XMMatrixLookAtLH(XMVectorSet(0, 0,0,1), vect, XMVectorSet(0, 1, 0, 1)));
 	auto q = XMQuaternionRotationMatrix(rotate);
 
 	auto f = gameObject->mTransform->Forward();
-	float angle =  acos(min(max(XMVector3Dot(f, mVelocity).x,-1.0f),1.0f));
+	f.y = 0.0f;
+	f = XMVector3Normalize(f);
+	float angle =  acos(min(max(XMVector3Dot(f, vect).x,-1.0f),1.0f));
 	float limit = m_RotateLimit / 180.0f * XM_PI * Hx::DeltaTime()->GetDeltaTime();
 	float t = 1.0f;
 	if (limit < angle) {
