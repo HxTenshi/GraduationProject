@@ -50,16 +50,19 @@ void OutputAnimation::Update()
 
 bool OutputAnimation::OnStart(GameObject Sender)
 {
-	if (!m_Target)return false;
-	if (mBreak)return false;
-	
 	//ミノタウロス用
 	if (mTargetBossGen) {
-		if (mTargetBossGen->mTransform->Children().front()->mTransform->Children().front()->GetScript<ObjectGenerator>()->GetGeneratorObject())
+		Hx::Debug()->Log("1");
+		if (mTargetBossGen->GetScript<ObjectGenerator>()->GetGeneratorObject())
 		{
-			m_Target = mTargetBossGen->mTransform->Children().front()->mTransform->Children().front()->GetScript<ObjectGenerator>()->GetGeneratorObject();
+			m_Target = mTargetBossGen->GetScript<ObjectGenerator>()->GetGeneratorObject();
+			m_Target = m_Target->mTransform->Children().front()->mTransform->Children().front();
+			Hx::Debug()->Log("Call Mino");
 		}
 	}
+
+	if (!m_Target)return false;
+	if (mBreak)return false;
 	
 	
 	mIsEnd = false;
@@ -67,12 +70,16 @@ bool OutputAnimation::OnStart(GameObject Sender)
 	auto mPlayAnimation = m_Target->GetComponent<AnimationComponent>();
 	if (!mPlayAnimation)return false;
 
+	Hx::Debug()->Log("2");
+
 	auto p = mPlayAnimation->GetAnimetionParam(mPlayAnimationID);
 	p.mTime = mTime;
 	p.mWeight = mWeight;
 	p.mTimeScale = mTimeScale;
 	p.mLoop = false;
 	mPlayAnimation->SetAnimetionParam(mPlayAnimationID, p);
+
+	Hx::Debug()->Log("Play ID : "+std::to_string(mPlayAnimation));
 
 	auto scr = OutputGimic::GetOutputGimic(m_Output);
 	if (!scr)return false;
