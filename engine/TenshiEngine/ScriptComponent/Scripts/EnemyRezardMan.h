@@ -71,6 +71,9 @@ private:
 	SERIALIZE float APROACHMAXTIME;
 	SERIALIZE bool m_NaviMeshUse;
 
+	SERIALIZE PrefabAsset m_GuardParticle;
+	SERIALIZE GameObject m_GuardPos;
+
 	bool m_SetPoint;
 
 	int m_ManyHit = 0;

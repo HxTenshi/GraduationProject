@@ -3,6 +3,7 @@
 #include "../h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
 #include "PlayerController.h"
+#include "SoundManager.h"
 
 EnemyRezardMan::EnemyRezardMan()
 {
@@ -701,6 +702,9 @@ void EnemyRezardMan::HitInGuardModeInitilize() {
 		if (m_DrawLog)
 			Hx::Debug()->Log(std::to_string(PatienceInThisTime + 1) + "回防いだらモンキーアタックします");
 	}
+
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Gurad, m_GuardPos->mTransform->WorldPosition());
+	Hx::Instance(m_GuardParticle)->mTransform->WorldPosition(m_GuardPos->mTransform->WorldPosition());
 }
 
 void EnemyRezardMan::HitInGuardModeUpdate() {
