@@ -57,8 +57,8 @@ void ObjectGenerator::Update(){
 
 	GameObject obj = Hx::Instance(m_Object);
 	if (!obj)return;
-
-	obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
+	if(!m_PositionCopyNot)
+		obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
 	if(m_RotateCopy)
 		obj->mTransform->WorldQuaternion(gameObject->mTransform->WorldQuaternion());
 
