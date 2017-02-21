@@ -43,6 +43,12 @@ void Enemy::Update() {
 	AnimLerp();
 	if (m_MovieActionFlag) {
 		m_MovieAction();
+	}
+
+	if (!m_Player)return;
+	auto ps = m_Player->GetScript<PlayerController>();
+	if (!ps)return;
+	if (ps->GetPlayerState() == PlayerController::PlayerState::Movie) {
 		auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 		if (!cc)return;
 
@@ -54,17 +60,12 @@ void Enemy::Update() {
 			if (m_AccelVec.y <= 0)
 				m_AccelVec = m_Gravity;
 		}
-		m_Vec += m_AccelVec;
-
-		cc->Move(m_Vec  * Hx::DeltaTime()->GetDeltaTime());
+		if (!m_EbilEye) {
+			m_Vec += m_AccelVec;
+			cc->Move(m_Vec  * Hx::DeltaTime()->GetDeltaTime());
+		}
 		return;
 	}
-
-	if (!m_Player)return;
-	auto ps = m_Player->GetScript<PlayerController>();
-	if (!ps)return;
-	if (ps->GetPlayerState() == PlayerController::PlayerState::Movie)return;
-
 	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
 
 	if (gameObject->mTransform->WorldPosition().y < -100) {

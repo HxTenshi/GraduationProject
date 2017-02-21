@@ -15,7 +15,7 @@ void Weapon::Initialize(){
 	mIsEnemyThrow = false;
 	m_Vector = XMVectorZero();
 		m_param.SetAttack(5);
-		m_param.SetDurableDamage(1, 10);
+		m_param.SetDurableDamage(2.0f,3.0f);
 		m_param.SetDurable(400);
 		m_param.SetName("DebugWeapon");
 		m_param.SetWeaponType(WeaponType::Sword);
@@ -169,6 +169,7 @@ void Weapon::ThrowAway()
 	m_weapon_rot = 0.0f;
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(true);
 	XMVECTOR wpos = gameObject->mTransform->WorldPosition();
+	wpos.y -= 0.6f;
 	gameObject->mTransform->SetParent(Hx::GetRootActor());
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
@@ -195,9 +196,10 @@ void Weapon::ThrowAway()
 }
 void Weapon::ThrowAttack()
 {
-	ThrowAway();
 	is_hand = false;
 	is_ground_hit = true;
+	ThrowAway();
+	
 }
 /// <summary>
 ///•Ší‚ğÌ‚Ä‚éˆ—

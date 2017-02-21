@@ -73,7 +73,6 @@ void EnemyArcher::SoloAction()
 
 void EnemyArcher::ChildFinalize()
 {
-	gameObject->RemoveComponent<CharacterControllerComponent>();
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
@@ -370,6 +369,7 @@ void EnemyArcher::DeadModeInitilize()
 	}
 
 	AnimChange(ANIM_ID::ANIM_DEAD, 5.0f, false, true);
+	gameObject->RemoveComponent<CharacterControllerComponent>();
 }
 
 void EnemyArcher::DeadModeUpdate()
