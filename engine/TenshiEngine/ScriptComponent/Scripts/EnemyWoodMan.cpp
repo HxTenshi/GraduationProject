@@ -63,8 +63,8 @@ void EnemyWoodMan::ChildInitialize()
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
 	m_StartForward = gameObject->mTransform->Forward();
-	m_StartPos = gameObject->mTransform->WorldPosition();
 	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+	m_StartPos = gameObject->mTransform->WorldPosition();
 }
 
 void EnemyWoodMan::SoloAction()
@@ -209,18 +209,29 @@ void EnemyWoodMan::RunAttackModeInitilize()
 {
 	m_Attacked = false;
 	m_AttackHit = false;
+	AnimChange(ANIM_ID::ANIM_RUNATTACK, 10.0f);
+	m_BeforeDelta = 0.0f;
+	m_BeforePos = XMVectorSet(0, 0, 0, 0);
 }
 
 void EnemyWoodMan::RunAttackModeUpdate()
 {
-	AnimChange(ANIM_ID::ANIM_RUNATTACK, 10.0f);
-	auto pPos = m_Player->mTransform->WorldPosition();
-	LookPosition(pPos, m_RotateSpeed);
-	m_Vec += XMVector3Normalize(gameObject->mTransform->Forward()) * m_TackleSpeed;
+	if (m_Animparam.afterAnimId == ANIM_ID::ANIM_RUNATTACK) {
+		auto pPos = m_Player->mTransform->WorldPosition();
+		LookPosition(pPos, m_RotateSpeed);
+		m_Vec += XMVector3Normalize(gameObject->mTransform->Forward()) * m_TackleSpeed;
+	}
+	else{
+		auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+		if (!anim)return;
+		if (anim->IsAnimationEnd(ANIM_ID::ANIM_TIRED)) {
+			ChangeBattleAction(BATTLEACTION::APPROACHACTION);
+			m_AttackHit = false;
+		}
+	}
 
 	if (XMVector3Length(gameObject->mTransform->WorldPosition() - m_StartPos).x > m_LostRange || m_Attacked) {
-		ChangeBattleAction(BATTLEACTION::APPROACHACTION);
-		m_AttackHit = false;
+		AnimChange(ANIM_ID::ANIM_TIRED, 5.0f, false);
 	}
 }
 
@@ -230,20 +241,26 @@ void EnemyWoodMan::RunAttackModeFinalize()
 
 void EnemyWoodMan::ComeBackModeInitilize()
 {
+	m_BeforeDelta = 0.0f;
+	m_BeforePos = XMVectorSet(0, 0, 0, 0);
 }
 
 void EnemyWoodMan::ComeBackModeUpdate()
 {
 	AnimChange(ANIM_ID::ANIM_MOVE, 10.0f);
 	LookPosition(m_StartPos, m_RotateSpeed);
-	m_Vec += XMVector3Normalize(m_StartPos - gameObject->mTransform->WorldPosition()) * m_TackleSpeed;
+	m_Vec += XMVector3Normalize(gameObject->mTransform->Forward()) * m_TackleSpeed;
 	auto groundPos = gameObject->mTransform->WorldPosition();
 	auto groundStartPos = m_StartPos;
 	groundPos.y = 0;
 	groundStartPos.y = 0;
-	if (XMVector3Length(groundPos-groundStartPos).x < 1.0f) {
+	if (XMVector3Length(groundPos - groundStartPos).x < 1.0f || XMVector3Length(m_BeforePos - gameObject->mTransform->WorldPosition()).x < 
+						(m_TackleSpeed * m_BeforeDelta) / 2.0f ) {
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+		m_StartPos = gameObject->mTransform->WorldPosition();
 	}
+	m_BeforeDelta = Hx::DeltaTime()->GetDeltaTime();
+	m_BeforePos = gameObject->mTransform->WorldPosition();
 }
 
 void EnemyWoodMan::ComeBackModeFinalize()
@@ -273,7 +290,7 @@ void EnemyWoodMan::WinceModeUpdate() {
 	if (!anim)return;
 	if (anim->IsAnimationEnd(m_Animparam.afterAnimId) && m_WinceCount < 0) {
 		if (!m_UpperdownNow)
-			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, m_WinceBeforeId);
+			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::APPROACHACTION);
 		else {
 			ChangeBattleAction(BATTLEACTION::UPPERDOWNACTION);
 			m_Damage = 0;
@@ -363,7 +380,7 @@ void EnemyWoodMan::DownUpdate()
 	if (!anim)return;
 
 	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
-		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+		ChangeBattleAction(BATTLEACTION::APPROACHACTION);
 	};
 }
 

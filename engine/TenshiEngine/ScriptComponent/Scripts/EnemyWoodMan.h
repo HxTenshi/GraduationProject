@@ -98,6 +98,9 @@ private:
 	XMVECTOR m_StartForward;
 	XMVECTOR m_StartPos;
 
+	float m_BeforeDelta = 0.0f;
+	XMVECTOR m_BeforePos = XMVectorSet(0,0,0,0);
+
 	BATTLEACTION::Enum m_WinceBeforeId;
 	bool m_Attacked;
 public:
