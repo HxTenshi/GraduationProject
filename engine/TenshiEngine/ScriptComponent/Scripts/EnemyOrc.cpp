@@ -194,7 +194,6 @@ bool EnemyOrc::LostPlayer()
 
 void EnemyOrc::ChildFinalize()
 {
-	gameObject->RemoveComponent<CharacterControllerComponent>();
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
@@ -509,29 +508,15 @@ void EnemyOrc::DeadInitilize()
 	m_AccelVec += XMVectorSet(0, -10, 0, 0);
 	AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true);
 	m_DeadIsGround = false;
+	gameObject->RemoveComponent<CharacterControllerComponent>();
 }
 
 void EnemyOrc::DeadUpdate()
 {
-	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
-	if (!cc)return;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (m_DeadIsGround) {
-		LookPosition(m_TackleStartPos, m_RotateSpeed);
-
-		if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
-			m_Isend = true;
-		}
-	}
-	else {
-		if (cc->IsGround()) {
-			AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true);
-			m_TackleStartPos = gameObject->mTransform->Forward();//
-			m_TackleStartPos.y = 0;
-			m_TackleStartPos += gameObject->mTransform->WorldPosition();
-			m_DeadIsGround = true;
-		}
+	if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
+		m_Isend = true;
 	}
 }
 
