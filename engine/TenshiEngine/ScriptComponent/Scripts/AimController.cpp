@@ -1,19 +1,20 @@
 #include "AimController.h"
 #include "h_component.h"
 #include "h_standard.h"
-
+# include "SoundManager.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void AimController::Initialize(){
-	if (mUIParent) {
-		for (auto i : mUIParent->mTransform->Children()){
-			if (i->Name() == "TargetUI")mTargetUI = i;
-		}
-	}
+
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void AimController::Start(){
-
+	if (mUIParent) {
+		for (auto i : mUIParent->mTransform->Children()) {
+			if (i->Name() == "TargetUI")mTargetUI = i;
+		}
+	}
+	SoundManager::PlayBGM(SoundManager::SoundBGM_ID::GamePlay);
 }
 
 //毎フレーム呼ばれます
