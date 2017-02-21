@@ -15,5 +15,5 @@ public:
 
 private:
 	//ƒƒ“ƒo•Ï”
-	
+	bool m_firstTime;
 };

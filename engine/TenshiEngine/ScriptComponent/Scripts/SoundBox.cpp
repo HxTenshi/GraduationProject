@@ -4,7 +4,7 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void SoundBox::Initialize(){
-
+	m_firstTime = true;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -20,9 +20,10 @@ void SoundBox::Update(){
 		return;
 	}
 	//再生が終わったなら
-	if (!sound->IsPlay()) {
+	if (!sound->IsPlay() && !m_firstTime) {
 		Hx::DestroyObject(gameObject);
 	}
+	m_firstTime = false;
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）

@@ -46,7 +46,7 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos){
 	s->SetVolume(volume);
 	s->Set3DSound(true);
 	s->SetLoop(false);
-	s->Play();
+	//s->Play();
 }
 
 void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
@@ -72,5 +72,5 @@ void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
 	s->SetVolume(volume);
 	s->Set3DSound(false);
 	s->SetLoop(true);
-	s->Play();
+	//s->Play();
 }
