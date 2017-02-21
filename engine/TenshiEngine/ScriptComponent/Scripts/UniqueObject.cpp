@@ -32,6 +32,8 @@ GameObject UniqueObject::GetCamera()
 
 GameObject UniqueObject::GetNaviMesh(int segmentNum)
 {
+	if (!g_UniqueObject)return NULL;
+	if (!g_UniqueObject->m_NaviMesh)return NULL;
 	GameObject mesh = NULL;
 	for (auto i : g_UniqueObject->m_NaviMesh->mTransform->Children()) {
 		if (i->Name() == std::to_string(segmentNum)) {

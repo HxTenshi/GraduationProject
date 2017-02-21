@@ -18,6 +18,7 @@
 struct ReisMode {
 	enum Enum {
 		Standby,
+		Pop,
 		Idle,
 		Move,
 		Wince,
@@ -82,12 +83,14 @@ struct AnimeID {
 		Dogde,
 		WarpOut,
 		WarpIn,
+		Pop,
 	};
 };
 
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void reis::Initialize(){
+	m_CurrentAnimeID = -1;
 	m_Player = NULL;
 	m_ReisMode = ReisMode::Idle;
 	m_CitrusBulletObject = NULL;
@@ -120,6 +123,12 @@ void reis::Start(){
 	m_MoveFunc[ReisMode::Standby] = [&]() {
 		ChangeAnime(AnimeID::Idle);
 	};
+	m_MoveFunc[ReisMode::Pop] = [&]() {
+		ChangeAnime(AnimeID::Pop);
+		if (IsCurrentAnimeEnd()) {
+			m_ReisMode = ReisMode::Idle;
+		}
+	};
 	m_MoveFunc[ReisMode::Idle] = [&](){
 		ChangeAnime(AnimeID::Idle);
 		m_ReisMode = ReisMode::Move;
@@ -128,7 +137,10 @@ void reis::Start(){
 		auto v = XMVectorZero();
 
 		if (MoveMode::Idle == m_MoveMode) {
-			ChangeAnime(AnimeID::Move);
+			ChangeAnime(AnimeID::Idle);
+			if (m_MoveCooldown <= 0.0f) {
+				m_MoveMode = MoveMode::In;
+			}
 		}else if (MoveMode::In == m_MoveMode) {
 			ChangeAnime(AnimeID::Move);
 			v = GetPlayerVect() * m_MoveSpeed * Hx::DeltaTime()->GetDeltaTime();
@@ -397,19 +409,31 @@ void reis::Start(){
 		SetSuperArmor(true);
 		Rotate(GetPlayerVectH());
 
+
 		int step = 4;
 		if (m_AttackStage.stage %step == 0) {
-			if (m_CitrusBulletObject = Hx::Instance(m_CitrusBullet)) {
-				auto pos = gameObject->mTransform->WorldPosition();
-				pos.y += 1.0f;
-				m_CitrusBulletObject->mTransform->WorldPosition(pos);
-				if (auto scr = m_CitrusBulletObject->GetScript<ReisCitrusBullet>()) {
-					scr->SetVector(GetPlayerVectH());
+			ChangeAnime(AnimeID::Attack_Bullet);
+
+			m_AttackStage.time += Hx::DeltaTime()->GetDeltaTime();
+			if (m_AttackStage.time >= 0.5f) {
+				if (m_CitrusBulletObject = Hx::Instance(m_CitrusBullet)) {
+					auto pos = gameObject->mTransform->WorldPosition();
+					pos.y += 1.0f;
+					m_CitrusBulletObject->mTransform->WorldPosition(pos);
+					if (auto scr = m_CitrusBulletObject->GetScript<ReisCitrusBullet>()) {
+						scr->SetVector(GetPlayerVectH());
+					}
+
+					if (m_Weapon) {
+						m_Weapon->Disable();
+					}
 				}
+				m_AttackStage.stage++;
+				m_AttackStage.time = 0.0f;
 			}
-			m_AttackStage.stage++;
+
 		}
-		if (m_AttackStage.stage%step == 1) {
+		else if (m_AttackStage.stage%step == 1) {
 			ChangeAnime(AnimeID::Attack_Bullet);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
@@ -428,6 +452,10 @@ void reis::Start(){
 
 					Hx::DestroyObject(m_CitrusBulletObject);
 					m_CitrusBulletObject = NULL;
+
+					if (m_Weapon) {
+						m_Weapon->Enable();
+					}
 				}
 				if (auto obj = Hx::Instance(m_WarpParticle)) {
 					obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
@@ -579,7 +607,7 @@ void reis::WeaponCallHit()
 void reis::BattleStart()
 {
 	if (m_ReisMode == ReisMode::Standby) {
-		m_ReisMode = ReisMode::Idle;
+		m_ReisMode = ReisMode::Pop;
 	}
 }
 

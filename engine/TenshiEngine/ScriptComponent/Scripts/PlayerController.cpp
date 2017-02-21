@@ -2842,15 +2842,16 @@ void PlayerController::setWeapon(GameObject weapon)
 		if (Enemy* scr = Enemy::GetEnemy(o)) {
 			if (w->isAttack()) {
 
-				scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(), m_CurrentAttack.KnockbackEffect, XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower, 0, 1));
-				if (t == Weapon::HitState::Damage) {
-					AddSpecial(m_CurrentAttack.AddSpecial);
-					AddCombo();
+				if (scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(), m_CurrentAttack.KnockbackEffect, XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower, 0, 1))) {
+					if (t == Weapon::HitState::Damage) {
+						AddSpecial(m_CurrentAttack.AddSpecial);
+						AddCombo();
+					}
+					if (m_CurrentAttack.DamageType != DamageType::DethBrowDamage) {
+						w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
+					}
 				}
-				if (m_CurrentAttack.DamageType != DamageType::DethBrowDamage) {
-					w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
-				}
-				WeaponType t = w->GetWeaponType();
+				//WeaponType t = w->GetWeaponType();
 
 			}
 		}

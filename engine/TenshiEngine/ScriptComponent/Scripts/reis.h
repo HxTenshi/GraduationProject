@@ -68,6 +68,7 @@ private:
 	SERIALIZE PrefabAsset m_SonicWaveV;
 
 	SERIALIZE GameObject m_WeaponEffect;
+	SERIALIZE GameObject m_Weapon;
 	
 	//–{‘Ì
 	SERIALIZE GameObject m_EnemyBase;

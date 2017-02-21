@@ -18,4 +18,7 @@ private:
 
 	SERIALIZE float m_Speed;
 	SERIALIZE GameObject m_BoundEffect;
+	SERIALIZE float m_DeadTime;
+	float m_Timer;
+	float m_ScaleTimer;
 };
