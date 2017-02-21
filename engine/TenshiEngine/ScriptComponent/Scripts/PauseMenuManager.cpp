@@ -7,6 +7,7 @@ void PauseMenuManager::Initialize(){
 	m_state = State::Close;
 	m_isItimie = false;
 	m_num = 0;
+	m_stickInterval = 0.0f;
 	m_lerpTimers[0] = 0.0f;
 	m_lerpTimers[1] = 0.0f;
 	m_lerpTimers[2] = 0.0f;
@@ -28,7 +29,8 @@ void PauseMenuManager::Start(){
 void PauseMenuManager::Update() {
 	bool isStartKey = Input::Trigger(PAD_X_KeyCode::Button_START);
 	if (Input::Trigger(KeyCode::Key_M) || isStartKey) {
-		OpenPauseMenu();
+		if(m_state == State::Close) OpenPauseMenu();
+		else if (m_state == State::Open) ClosePauseMenu();
 	}
 	if (m_state == State::Open) { 
 		Hx::DeltaTime()->SetTimeScale(0.0f);
@@ -81,13 +83,29 @@ void PauseMenuManager::UpdateOpne() {
 		m_lerpTimers[2] -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 		m_lerpTimers[1] = min(max(0.0f, m_lerpTimers[1]), 1.0f);
 		m_lerpTimers[2] = min(max(0.0f, m_lerpTimers[2]), 1.0f);
+
+		
+		m_stickInterval += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+		m_stickInterval = min(m_stickInterval, 1.0f);
+		const float STICK_INTERVAL = 0.5f;
+		bool isStickInterval = m_stickInterval > STICK_INTERVAL;
+		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
+		bool isUpLS = ls.y > 0.5f;
+		bool isDownLS = ls.y < -0.5f;
+		if (Input::Trigger(KeyCode::Key_UP)&& STICK_INTERVAL) { 
+			m_num--;
+			m_stickInterval = 0.0f;
+		}
+		if (Input::Trigger(KeyCode::Key_DOWN) && STICK_INTERVAL) { 
+			m_num++; 
+			m_stickInterval = 0.0f;
+		}
 		//0～3の間にクランプ
-		if (Input::Trigger(KeyCode::Key_UP)) m_num--;
-		if (Input::Trigger(KeyCode::Key_DOWN)) m_num++;
 		m_num = min(max(0, m_num), 3);
 
+		bool isSpace = Input::Trigger(PAD_X_KeyCode::Button_B);
 		//それぞれの反応を起こす
-		if (Input::Trigger(KeyCode::Key_SPACE)) MenuReAction(m_num);
+		if (Input::Trigger(KeyCode::Key_SPACE) || isSpace) MenuReAction(m_num);
 
 		//囲い有効,座標移動
 		m_kakoi->Enable();
@@ -241,7 +259,7 @@ void PauseMenuManager::BackMenu(){
 
 //タイトルに飛ぶ
 void PauseMenuManager::BackToTitle(){
-	Hx::LoadScene("Assets/Title.scene");
+	Hx::LoadScene("Assets/title.scene");
 }
 
 //Lerpを用いた処理
