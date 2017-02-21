@@ -28,7 +28,7 @@ WeaponTable::WeaponTable()
 		p.SetName(name.data()[count]);
 		p.SetDurable(durable.data()[count]);
 		p.SetAttack(atk.data()[count]);
-		p.SetDurableDamage(1, 10);
+		p.SetDurableDamage(2.0f, 3.0f);
 		p.SetWeaponType(i);
 		m_id.insert(std::pair<int, std::string>(count, i));
 		m_Param.insert(std::pair < std::string, funifuni::WeaponParametor>(i, p));

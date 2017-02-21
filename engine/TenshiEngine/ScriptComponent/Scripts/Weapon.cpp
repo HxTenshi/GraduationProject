@@ -15,7 +15,7 @@ void Weapon::Initialize(){
 	mIsEnemyThrow = false;
 	m_Vector = XMVectorZero();
 		m_param.SetAttack(5);
-		m_param.SetDurableDamage(1, 10);
+		m_param.SetDurableDamage(2.0f,3.0f);
 		m_param.SetDurable(400);
 		m_param.SetName("DebugWeapon");
 		m_param.SetWeaponType(WeaponType::Sword);
@@ -169,6 +169,7 @@ void Weapon::ThrowAway()
 	m_weapon_rot = 0.0f;
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(true);
 	XMVECTOR wpos = gameObject->mTransform->WorldPosition();
+	wpos.y -= 0.6f;
 	gameObject->mTransform->SetParent(Hx::GetRootActor());
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
@@ -192,12 +193,42 @@ void Weapon::ThrowAway()
 		gameObject->mTransform->WorldMatrix(m);
 		gameObject->mTransform->Scale(s);
 	}
+	WeaponUsePhysX();
 }
 void Weapon::ThrowAttack()
 {
-	ThrowAway();
+	break_time = 0.0f;
+	SetHitCollback([](auto o, auto w, auto t) {});
+	is_fly = true;
 	is_hand = false;
 	is_ground_hit = true;
+	m_weapon_rot = 0.0f;
+	gameObject->GetComponent<PhysXComponent>()->SetGravity(true);
+	XMVECTOR wpos = gameObject->mTransform->WorldPosition();
+	gameObject->mTransform->SetParent(Hx::GetRootActor());
+	gameObject->mTransform->WorldPosition(wpos);
+	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
+	//gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
+
+	m_Vector = XMVectorSet(0, -1, 0, 1);
+
+	if (XMVector3Length(m_Vector).x != 0.0f) {
+		auto m = gameObject->mTransform->GetMatrix();
+		auto s = gameObject->mTransform->Scale();
+		//auto fl = XMVector3Length(m.r[0]).x;
+		//auto ul = XMVector3Length(m.r[1]).x;
+		//auto ll = XMVector3Length(m.r[2]).x;
+		auto f = XMVector3Normalize(m.r[0]);
+		auto u = XMVector3Normalize(m_Vector);
+		auto l = XMVector3Cross(f, u);
+		f = XMVector3Cross(u, l);
+		m.r[0] = XMVector3Normalize(f);// * fl;
+		m.r[1] = XMVector3Normalize(u);// * ul;
+		m.r[2] = XMVector3Normalize(l);// * ll;
+		gameObject->mTransform->WorldMatrix(m);
+		gameObject->mTransform->Scale(s);
+	}
+	
 }
 /// <summary>
 ///•Ší‚ğÌ‚Ä‚éˆ—
