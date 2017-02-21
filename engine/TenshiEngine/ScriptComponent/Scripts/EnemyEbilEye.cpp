@@ -63,6 +63,7 @@ void EnemyEbilEye::ChildInitialize()
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
 	m_MovePositionCenter = gameObject->mTransform->WorldPosition();
+	m_EbilEye = true;
 }
 
 void EnemyEbilEye::SoloAction()

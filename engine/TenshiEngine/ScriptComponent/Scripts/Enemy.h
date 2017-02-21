@@ -202,6 +202,7 @@ protected:
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionUpdate;
 	std::map<BATTLEACTION::Enum, std::function<void()>> battleActionFinalize;
 
+	bool m_EbilEye = false;
 	bool m_MovieActionFlag;
 	std::function<void()> m_MovieAction;
 

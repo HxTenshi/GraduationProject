@@ -60,9 +60,10 @@ void Enemy::Update() {
 			if (m_AccelVec.y <= 0)
 				m_AccelVec = m_Gravity;
 		}
-		m_Vec += m_AccelVec;
-
-		cc->Move(m_Vec  * Hx::DeltaTime()->GetDeltaTime());
+		if (!m_EbilEye) {
+			m_Vec += m_AccelVec;
+			cc->Move(m_Vec  * Hx::DeltaTime()->GetDeltaTime());
+		}
 		return;
 	}
 	m_PlayerVec = m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition();
