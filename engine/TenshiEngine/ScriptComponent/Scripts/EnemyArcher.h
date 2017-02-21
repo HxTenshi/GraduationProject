@@ -7,6 +7,7 @@ public:
 	EnemyArcher();
 	void ChildInitialize() override;
 	void SoloAction() override;
+	void ChildFinalize() override;
 	ENEMY_TYPE GetEnemyType() override;
 	float GetOnBattleRange() override;
 	void Attack(GameObject player, COL_TYPE colType) override;

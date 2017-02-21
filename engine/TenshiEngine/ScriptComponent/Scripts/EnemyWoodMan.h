@@ -22,7 +22,8 @@ private:
 		ANIM_TIRED,
 		ANIM_DOWN,
 		ANIM_NOMALATTACK,
-		ANIM_IDLE
+		ANIM_IDLE,
+		ANIM_WINCE
 	};
 	//ƒƒ“ƒo•Ï”
 	void TrackingModeInitilize();

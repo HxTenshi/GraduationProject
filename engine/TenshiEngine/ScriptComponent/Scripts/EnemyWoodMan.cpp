@@ -273,7 +273,7 @@ void EnemyWoodMan::WinceModeInitilize() {
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
-	AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true,true);
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true,true);
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
 	if (!cc)return;
