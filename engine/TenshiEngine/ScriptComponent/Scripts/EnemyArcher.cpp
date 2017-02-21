@@ -23,6 +23,10 @@ EnemyArcher::EnemyArcher()
 	battleActionUpdate[BATTLEACTION::CONFRONTACTION] = std::bind(&EnemyArcher::ConfrontModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::CONFRONTACTION] = std::bind(&EnemyArcher::ConfrontModeFinalize, this);
 
+	battleActionInitilize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyArcher::ChargeModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyArcher::ChargeModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::ATTACK1ACTION] = std::bind(&EnemyArcher::ChargeModeFinalize, this);
+
 	battleActionInitilize[BATTLEACTION::SHOTACTION] = std::bind(&EnemyArcher::ShotModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::SHOTACTION] = std::bind(&EnemyArcher::ShotModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::SHOTACTION] = std::bind(&EnemyArcher::ShotModeFinalize, this);
@@ -111,7 +115,7 @@ void EnemyArcher::ChildTrackingModeFinalize()
 
 void EnemyArcher::ConfrontModeInitilize()
 {
-	AnimChange(ANIM_ID::ANIM_WALK_FORWARD, 5.0f);
+	AnimChange(ANIM_ID::ANIM_IDLE, 5.0f);
 	m_BattleModeParam.count = 0.0f;
 	m_BattleModeParam.decideAprochTime = ((float)(rand() % (int)((APROACHMAXTIME - APROACHMINTIME) * 100)) / 100.0f) + APROACHMINTIME;
 }
@@ -122,7 +126,7 @@ void EnemyArcher::ConfrontModeUpdate()
 	LookPosition(m_Player->mTransform->WorldPosition(), 400);
 	m_BattleModeParam.count += Hx::DeltaTime()->GetDeltaTime();
 	if (m_BattleModeParam.count > m_BattleModeParam.decideAprochTime) {
-		ChangeBattleAction(BATTLEACTION::SHOTACTION);
+		ChangeBattleAction(BATTLEACTION::ATTACK1ACTION);
 		m_BattleModeParam.count = 0.0f;
 	}
 }
@@ -131,9 +135,28 @@ void EnemyArcher::ConfrontModeFinalize()
 {
 }
 
+void EnemyArcher::ChargeModeInitilize()
+{
+	AnimChange(ANIM_ID::ANIM_CHARGE, 5.0f, false, true);
+}
+
+void EnemyArcher::ChargeModeUpdate()
+{
+	LookPosition(m_Player->mTransform->WorldPosition(), 400);
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+	if (anim->IsAnimationEnd(ANIM_ID::ANIM_CHARGE)) {
+		ChangeBattleAction(BATTLEACTION::SHOTACTION);
+	}
+}
+
+void EnemyArcher::ChargeModeFinalize()
+{
+}
+
 void EnemyArcher::ShotModeInitilize()
 {
-	AnimChange(ANIM_ID::ANIM_JUMPATTACK, 5.0f, false, true);
+	AnimChange(ANIM_ID::ANIM_SHOT, 5.0f, false, true);
 	auto arrow = Hx::Instance(ArrowPrefab);
 	if (!arrow)return;
 	arrow->mTransform->WorldPosition(this->gameObject->mTransform->WorldPosition() + XMVectorSet(0,0.5f,0,0));
@@ -148,7 +171,7 @@ void EnemyArcher::ShotModeUpdate()
 	m_BattleModeParam.canChangeAttackAction = false;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (anim->IsAnimationEnd(ANIM_ID::ANIM_JUMPATTACK)) {
+	if (anim->IsAnimationEnd(ANIM_ID::ANIM_SHOT)) {
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 	};
 }
@@ -215,7 +238,7 @@ void EnemyArcher::UpperDownInitilize()
 		return;
 	}
 	m_BattleModeParam.count = 0.0f;
-	AnimChange(ANIM_ID::ANIM_UPPERDOWN, 5.0f, false, true);
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 	m_AccelVec = m_Accel;
 }
 
@@ -247,7 +270,7 @@ void EnemyArcher::BeatDownInitilize()
 	}
 	m_BattleModeParam.count = 0.0f;
 	m_AccelVec += m_Accel;
-	AnimChange(ANIM_ID::ANIM_BEATDOWN, 5.0f, false, true);
+	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 }
 
 void EnemyArcher::BeatDownUpdate()
@@ -270,10 +293,10 @@ void EnemyArcher::BeatDownFinalize()
 void EnemyArcher::DownInitilize()
 {
 	if (m_BattleModeParam.beforeId == BATTLEACTION::UPPERDOWNACTION) {
-		AnimChange(ANIM_ID::ANIM_UPPERDOWNAFTER, 5.0f, false, true);
+		AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 	}
 	else {
-		AnimChange(ANIM_ID::ANIM_BEATDOWNAFTER, 5.0f, false, true);
+		AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 	}
 }
 
@@ -298,7 +321,7 @@ void EnemyArcher::DeadModeInitilize()
 		Hx::Debug()->Log("Ž€‚ñ‚¾");
 	}
 
-	AnimChange(ANIM_ID::ANIM_PROVOCATION, 5.0f, false, true);
+	AnimChange(ANIM_ID::ANIM_DEAD, 5.0f, false, true);
 }
 
 void EnemyArcher::DeadModeUpdate()

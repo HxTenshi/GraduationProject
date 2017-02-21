@@ -17,25 +17,10 @@ public:
 private:
 	enum ANIM_ID {
 		ANIM_IDLE,
-		ANIM_WALK_FORWARD,
-		ANIM_BACKSTEP,
-		ANIM_ATTACK_DOWN,
-		ANIM_GUARD,
-		ANIM_JUMPATTACK,
 		ANIM_WINCE,
-		ANIM_HITINGUARD,
-		ANIM_ATTACK_MONCKEY,
-		ANIM_PROVOCATION,
-		ANIM_UPPERDOWN,
-		ANIM_BEATDOWN,
-		ANIM_UPPERDOWNAFTER,
-		ANIM_BEATDOWNAFTER,
-		ANIM_ATTACK_SIDE,
-		ANIM_RUSH,
-		ANIM_SIDESTEPLEFT,
-		ANIM_SIDESTEPRIGHT,
-		ANIM_THRUST,
-		ANIM_THRUSTRUN,
+		ANIM_CHARGE,
+		ANIM_SHOT,
+		ANIM_DEAD,
 	};
 
 	//ÉÅÉìÉoïœêî
@@ -78,6 +63,10 @@ private:
 	void ConfrontModeInitilize();
 	void ConfrontModeUpdate();
 	void ConfrontModeFinalize();
+
+	void ChargeModeInitilize();
+	void ChargeModeUpdate();
+	void ChargeModeFinalize();
 
 	void ShotModeInitilize();
 	void ShotModeUpdate();
