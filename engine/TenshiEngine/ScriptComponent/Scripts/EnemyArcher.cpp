@@ -67,6 +67,14 @@ void EnemyArcher::SoloAction()
 {
 }
 
+void EnemyArcher::ChildFinalize()
+{
+	gameObject->RemoveComponent<CharacterControllerComponent>();
+	////gameObject->Disable();
+	Hx::Debug()->Log(gameObject->Name());
+	Hx::DestroyObject(this->gameObject);
+}
+
 ENEMY_TYPE EnemyArcher::GetEnemyType()
 {
 	ENEMY_TYPE enemy_type = ENEMY_TYPE::PARENT_ARCHER;
@@ -330,13 +338,8 @@ void EnemyArcher::DeadModeUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 
-	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
-		if (!m_MyWeapon)return;
-		//gameObject->Enable();
-		gameObject->RemoveComponent<CharacterControllerComponent>();
+	if (anim->IsAnimationEnd(ANIM_ID::ANIM_DEAD)) {
 		m_Isend = true;
-		Hx::DestroyObject(m_MyWeapon);
-		Hx::DestroyObject(gameObject);
 	};
 }
 
