@@ -54,6 +54,8 @@ private:
 	SERIALIZE float m_TrackingRotateSpeed;
 	SERIALIZE float hp;
 	SERIALIZE int m_AttackDamage;
+	SERIALIZE int m_CounterAttackDamage;
+	SERIALIZE int m_JumpAttackDamage;
 	SERIALIZE GameObject m_MyWeapon;
 	SERIALIZE GameObject m_ModelObject;
 	SERIALIZE GameObject m_MovePoints;

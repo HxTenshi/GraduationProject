@@ -376,7 +376,7 @@ void EnemyOrc::WinceModeUpdate() {
 	if (anim->IsAnimationEnd(m_Animparam.afterAnimId) && m_WinceCount < 0) {
 		m_ManyHit = 0;
 		if (!m_UpperdownNow)
-			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, m_WinceBeforeId);
+			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 		else {
 			ChangeBattleAction(BATTLEACTION::UPPERDOWNACTION);
 			m_Damage = 0;

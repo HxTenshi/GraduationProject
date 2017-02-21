@@ -312,7 +312,7 @@ void EnemyEbilEye::RotateTackleModeUpdate()
 		}
 	}
 	else {
-		if (m_Count > m_TackleTime || XMVector3Length(m_TackleVec).x * 1.5f < XMVector3Length(gameObject->mTransform->WorldPosition() - m_TackleStartPos).x) {
+		if (m_Count > m_TackleTime || XMVector3Length(m_TackleVec).x * 1.1f < XMVector3Length(gameObject->mTransform->WorldPosition() - m_TackleStartPos).x) {
 			auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 			if (!anim)return;
 			auto animParam = anim->GetAnimetionParam(ANIM_ID::ANIM_ROTATEATTACK);
