@@ -89,6 +89,7 @@ private:
 	SERIALIZE float hp;
 	SERIALIZE GameObject m_MovePoints;
 	SERIALIZE float m_BattleRange;
+	SERIALIZE bool m_Child;
 
 	float m_RotateAngle;
 	float m_Count;
