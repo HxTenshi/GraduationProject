@@ -22,6 +22,7 @@ private:
 		ANIM_CHARGE,
 		ANIM_SHOT,
 		ANIM_DEAD,
+		ANIM_BACKSTEP,
 	};
 
 	//ÉÅÉìÉoïœêî
@@ -49,6 +50,8 @@ private:
 	SERIALIZE float APROACHMAXTIME;
 	SERIALIZE PrefabAsset ArrowPrefab;
 
+	int m_ManyHit = 0;
+
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();
 	void TrackingModeFinalize();
@@ -72,6 +75,10 @@ private:
 	void ShotModeInitilize();
 	void ShotModeUpdate();
 	void ShotModeFinalize();
+
+	void BackStepModeInitilize();
+	void BackStepModeUpdate();
+	void BackStepModeFinalize();
 
 	void WinceModeInitilize();
 	void WinceModeUpdate();

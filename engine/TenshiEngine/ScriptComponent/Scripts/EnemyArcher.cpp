@@ -35,6 +35,10 @@ EnemyArcher::EnemyArcher()
 	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&EnemyArcher::WinceModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&EnemyArcher::WinceModeFinalize, this);
 
+	battleActionInitilize[BATTLEACTION::BACKSTEPACTION] = std::bind(&EnemyArcher::BackStepModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::BACKSTEPACTION] = std::bind(&EnemyArcher::BackStepModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::BACKSTEPACTION] = std::bind(&EnemyArcher::BackStepModeFinalize, this);
+
 	battleActionInitilize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyArcher::UpperDownInitilize, this);
 	battleActionUpdate[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyArcher::UpperDownUpdate, this);
 	battleActionFinalize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyArcher::UpperDownFinalize, this);
@@ -167,11 +171,13 @@ void EnemyArcher::ShotModeInitilize()
 	AnimChange(ANIM_ID::ANIM_SHOT, 5.0f, false, true);
 	auto arrow = Hx::Instance(ArrowPrefab);
 	if (!arrow)return;
-	arrow->mTransform->WorldPosition(this->gameObject->mTransform->WorldPosition() + XMVectorSet(0,0.5f,0,0));
+	auto aa = this->gameObject->mTransform->WorldPosition() + XMVectorSet(0, 1.5f, 0, 0) +
+		XMVector3Normalize(gameObject->mTransform->Left()) * 0.5f;
+	arrow->mTransform->WorldPosition(aa);
 	auto arrowScript = arrow->GetScript<EnemyArrow>();
 	if (!arrowScript)return;
 	arrowScript->SetEnemy(this->gameObject);
-	arrowScript->SetVec(XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()));
+	arrowScript->SetVec(XMVector3Normalize(m_Player->mTransform->WorldPosition() + XMVectorSet(0, 0.5f, 0, 0) - aa));
 }
 
 void EnemyArcher::ShotModeUpdate()
@@ -185,6 +191,32 @@ void EnemyArcher::ShotModeUpdate()
 }
 
 void EnemyArcher::ShotModeFinalize()
+{
+}
+
+void EnemyArcher::BackStepModeInitilize()
+{
+	AnimChange(ANIM_ID::ANIM_BACKSTEP, 5.0f, false, true);
+}
+
+void EnemyArcher::BackStepModeUpdate()
+{
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+
+	if (GetNowAnimTime() < 1.0f) {
+		LookPosition(m_PlayerVec, m_CorrectionRotateSpeed);
+	}
+
+	if (GetNowAnimTime() < 12.5f) {
+		m_Vec -= m_Forward * 20.0f;
+	}
+	else {
+		ChangeBattleAction(BATTLEACTION::ATTACK1ACTION);
+	}
+}
+
+void EnemyArcher::BackStepModeFinalize()
 {
 }
 
@@ -213,6 +245,13 @@ void EnemyArcher::WinceModeInitilize() {
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
+
+	m_ManyHit++;
+	if (m_ManyHit >= 8) {
+		m_ManyHit = 0;
+		ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
+		return;
+	}
 	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true,true);
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
@@ -227,6 +266,7 @@ void EnemyArcher::WinceModeUpdate() {
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(m_Animparam.afterAnimId)) {
+		m_ManyHit = 0;
 		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
 	};
 }
@@ -366,7 +406,7 @@ bool EnemyArcher::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR 
 {
 	m_Damage = damage_;
 	m_Accel = accelPower_;
-	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION) {
+	if (m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::BACKSTEPACTION) {
 		if (m_ActionModeID == ACTIONMODE::BATTLEMODE) {
 			if (m_BattleModeParam.id == BATTLEACTION::GUARDACTION || m_BattleModeParam.id == BATTLEACTION::HITINGUARDACTION) {
 				ChangeBattleAction(BATTLEACTION::HITINGUARDACTION);

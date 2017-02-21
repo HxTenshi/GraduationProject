@@ -28,7 +28,8 @@ private:
 		ANIM_WINCE,
 		ANIM_NOMALATTACK,
 		ANIM_IDLE,
-		ANIM_DOWN
+		ANIM_DOWN,
+		ANIM_BACKSTEP,
 	};
 	//ÉÅÉìÉoïœêî
 	void TrackingModeInitilize();
@@ -54,6 +55,10 @@ private:
 	void WinceModeInitilize();
 	void WinceModeUpdate();
 	void WinceModeFinalize();
+
+	void BackStepModeInitilize();
+	void BackStepModeUpdate();
+	void BackStepModeFinalize();
 
 	void UpperDownInitilize();
 	void UpperDownUpdate();
@@ -102,6 +107,8 @@ private:
 	bool m_DeadIsGround;
 
 	bool m_SetPoint;
+
+	int m_ManyHit = 0;
 
 	XMVECTOR m_StartForward;
 	XMVECTOR m_StartPos;

@@ -14,7 +14,6 @@ public:
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
 	void ChildFinalize() override;
-
 	void SetMovePoint(GameObject movePoint_);
 	void MoveFrontStart(float time);
 
@@ -71,6 +70,8 @@ private:
 	SERIALIZE bool m_NaviMeshUse;
 
 	bool m_SetPoint;
+
+	int m_ManyHit = 0;
 	
 	void TrackingModeInitilize();
 	void TrackingModeUpdate();

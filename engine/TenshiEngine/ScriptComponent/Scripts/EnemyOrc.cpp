@@ -5,7 +5,7 @@
 #include "PlayerController.h"
 #include "Game/Component/NaviMeshComponent.h"
 #include "UniqueObject.h"
-
+#include "SoundManager.h"
 EnemyOrc::EnemyOrc()
 {
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemyOrc::TrackingModeInitilize, this/*,std::placeholders::_1*/);
@@ -31,6 +31,10 @@ EnemyOrc::EnemyOrc()
 	battleActionInitilize[BATTLEACTION::WINCEACTION] = std::bind(&EnemyOrc::WinceModeInitilize, this);
 	battleActionUpdate[BATTLEACTION::WINCEACTION] = std::bind(&EnemyOrc::WinceModeUpdate, this);
 	battleActionFinalize[BATTLEACTION::WINCEACTION] = std::bind(&EnemyOrc::WinceModeFinalize, this);
+
+	battleActionInitilize[BATTLEACTION::BACKSTEPACTION] = std::bind(&EnemyOrc::BackStepModeInitilize, this);
+	battleActionUpdate[BATTLEACTION::BACKSTEPACTION] = std::bind(&EnemyOrc::BackStepModeUpdate, this);
+	battleActionFinalize[BATTLEACTION::BACKSTEPACTION] = std::bind(&EnemyOrc::BackStepModeFinalize, this);
 
 	battleActionInitilize[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyOrc::UpperDownInitilize, this);
 	battleActionUpdate[BATTLEACTION::UPPERDOWNACTION] = std::bind(&EnemyOrc::UpperDownUpdate, this);
@@ -123,7 +127,7 @@ bool EnemyOrc::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR acc
 		m_BattleModeParam.id != BATTLEACTION::BEATDOWNACTION && m_BattleModeParam.id != BATTLEACTION::DOWNACTION) {
 		m_WinceBeforeId = m_BattleModeParam.id;
 	}
-	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
+	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION && m_BattleModeParam.id != BATTLEACTION::BACKSTEPACTION) {
 		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
 		return true;
 	}
@@ -319,6 +323,10 @@ void EnemyOrc::ConfrontModeFinalize()
 void EnemyOrc::WeakAttackModeInitilize()
 {
 	AnimChange(ANIM_ID::ANIM_NOMALATTACK, 10.0f,false);
+	if(!m_Child)
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Boar_cry1, gameObject->mTransform->WorldPosition());
+	else
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Boar_child_cry1, gameObject->mTransform->WorldPosition());
 	m_AttackHit = false;
 }
 
@@ -343,6 +351,14 @@ void EnemyOrc::WinceModeInitilize() {
 		ChangeBattleAction(BATTLEACTION::DEADACTION);
 		return;
 	}
+
+	m_ManyHit++;
+	if (m_ManyHit >= 8) {
+		ChangeBattleAction(BATTLEACTION::BACKSTEPACTION);
+		m_ManyHit = 0;
+		return;
+	}
+
 	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true,true);
 
 	auto cc = gameObject->GetComponent<CharacterControllerComponent>();
@@ -359,6 +375,7 @@ void EnemyOrc::WinceModeUpdate() {
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(m_Animparam.afterAnimId) && m_WinceCount < 0) {
+		m_ManyHit = 0;
 		if (!m_UpperdownNow)
 			ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, m_WinceBeforeId);
 		else {
@@ -372,6 +389,34 @@ void EnemyOrc::WinceModeUpdate() {
 void EnemyOrc::WinceModeFinalize() {
 	m_BattleModeParam.actionFinish = true;
 	//ChangeBattleAction(40, 0, 40, 20, 0);
+}
+
+void EnemyOrc::BackStepModeInitilize()
+{
+	AnimChange(ANIM_ID::ANIM_BACKSTEP, 5.0f, false, true);
+}
+
+void EnemyOrc::BackStepModeUpdate()
+{
+	m_BattleModeParam.canChangeAttackAction = false;
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (!anim)return;
+
+	if (GetNowAnimTime() < 1.0f) {
+		LookPosition(m_PlayerVec, 400);
+	}
+
+	if (GetNowAnimTime() < 20.0f) {
+		m_Vec -= m_Forward * 3.5f;
+	}
+	else {
+		ChangeBattleAction(BATTLEACTION::CONFRONTACTION);
+	}
+}
+
+void EnemyOrc::BackStepModeFinalize()
+{
+	//ChangeBattleAction(30, 0, 0, 0, 70);
 }
 
 void EnemyOrc::UpperDownInitilize()
