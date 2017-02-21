@@ -8,6 +8,7 @@
 #include <sstream>
 #include "MossanBall.h"
 #include <random>
+#include "SoundManager.h"
 //重力が遅い
 EnemyMinotaur::EnemyMinotaur()
 {
@@ -134,6 +135,7 @@ void EnemyMinotaur::BattleModeInitilize()
 		m_Damage = 0.0f;
 		is_damage = false;
 		//[SOUND]
+		//SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
 	}
 	//攻撃
 	m_Hp -= m_Damage;
@@ -158,7 +160,6 @@ void EnemyMinotaur::BattleModeInitilize()
 }
 void EnemyMinotaur::BattleModeUpdate()
 {
-
 	battleActionUpdate[m_BattleModeParam.id]();
 	if (is_dead)return;
 	//デバッグデッドコード
@@ -173,6 +174,7 @@ void EnemyMinotaur::BattleModeUpdate()
 	//怒り状態に遷移する処理
 	if (m_Hp <= m_MaxHp / 2 & !is_anger) {
 		//[SOUND]
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
 		is_anger = true;
 		AnimType t = ANIM_TAUNT;
 		m_attack_flag = true;
@@ -315,11 +317,15 @@ void EnemyMinotaur::HuntRoutine()
 			AnimType t;
 			if (r > 50) {
 				//[SOUND]
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
+
 				m_action_func = [this]() { Attack2(); };
 				t = ANIM_ATTACK2;
 			}
 			else {
 				//[SOUND]
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
+
 				m_action_func = [this]() { Attack1(); };
 				t = ANIM_ATTACK1;
 			}
@@ -381,24 +387,32 @@ void EnemyMinotaur::BattleRoutine()
 			m_AttackHit = false;
 			int r = std::rand() % 100;
 			AnimType t;
-			if (r > 70) {
+			if (r > 50) {
 				//[SOUND]
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
+
 				m_action_func = [this]() {Attack4(); };
 				t = ANIM_ATTACK4;
 			}
 			else if (r > 30) {
 				//[SOUND]
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
+
 				m_AttackHit = true;
 				m_action_func = nullptr;
 				t = ANIM_CHEST_THUMP;
 			}
 			else if (r > 10) {
 				//[SOUND]
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
+
 				m_action_func = [this]() {Attack3(); };
 				t = ANIM_ATTACK3;
 			}
 			else {
 				//[SOUND]
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
+
 				m_action_func = [this]() {Attack5(); };
 				t = ANIM_ATTACK5;
 			}
@@ -456,18 +470,15 @@ void EnemyMinotaur::RoutineSetUp(AnimType type)
 void EnemyMinotaur::Move(float s)
 {
 
-	auto player = m_Player;
-	auto nav = gameObject->GetComponent<NaviMeshComponent>();
-
-	if (!player)return;
-	//if (!nav)return;
+	
+	if (!m_Player)return;
 	float mag = (is_anger) ? 1.5f : 1.0f;
 
-	auto dir = nav->GetRouteVector();
+	auto dir = NaviMeshBattle(m_Player,Hx::DeltaTime()->GetDeltaTime()*s*mag);
+	dir = dir - gameObject->mTransform->WorldPosition();
 	dir = XMVector3Normalize(dir);
-	nav->Move(7.0f* Hx::DeltaTime()->GetDeltaTime());
-	LookPosition(player->mTransform->WorldPosition(), 400.0f, false);
-	gameObject->GetComponent<CharacterControllerComponent>()->Move(gameObject->mTransform->Forward()*Hx::DeltaTime()->GetDeltaTime()*s*mag);
+	LookPosition(m_Player->mTransform->WorldPosition(), 400.0f, false);
+	gameObject->GetComponent<CharacterControllerComponent>()->Move(dir*Hx::DeltaTime()->GetDeltaTime()*s*mag);
 }
 void EnemyMinotaur::MoveAttackd(float s)
 {
