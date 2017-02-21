@@ -256,7 +256,7 @@ void PlayerController::AttackInitialize()
 		attack.NextHighID = AttackID::High1;
 		attack.MoutionID = AnimeID::AttackLow1;
 		attack.EndID = AttackID::Low1End;
-		attack.AddSpecial = 10.0f;
+		attack.AddSpecial = 2.0f;
 
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 1.0f;
@@ -532,7 +532,7 @@ void PlayerController::AttackInitialize()
 		attack.NextLowID = AttackID::Low2;
 		attack.NextHighID = AttackID::High1;
 		attack.MoutionID = AnimeID::AttackRLow;
-		attack.AddSpecial = 10.0f;
+		attack.AddSpecial = 2.0f;
 
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 5.0f;
@@ -678,7 +678,7 @@ void PlayerController::AttackInitialize()
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
 		attack.MoutionID = AnimeID::AttackLow1;
-		attack.AddSpecial = 10.0f;
+		attack.AddSpecial = 2.0f;
 
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 5.0f;
@@ -806,7 +806,7 @@ void PlayerController::AttackInitialize()
 	attack.NextLowID = -1;
 	attack.NextHighID = -1;
 	attack.MoutionID = AnimeID::AttackLow1;
-	attack.AddSpecial = 10.0f;
+	attack.AddSpecial = 2.0f;
 
 	attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 	attack.KnockbackEffectPower = 5.0f;
@@ -934,7 +934,7 @@ void PlayerController::AttackInitialize()
 	attack.NextLowID = -1;
 	attack.NextHighID = -1;
 	attack.MoutionID = AnimeID::AttackLow1;
-	attack.AddSpecial = 10.0f;
+	attack.AddSpecial = 2.0f;
 
 	attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 	attack.KnockbackEffectPower = 5.0f;

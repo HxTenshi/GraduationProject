@@ -78,6 +78,10 @@ private:
 	TextureAsset texBack;
 	SERIALIZE
 	float m_lerpSpeed;
+
 	int m_num;
+	float m_stickInterval;
+
+
 	std::map<int, std::vector<Struct*>> m_objMap;
 };
