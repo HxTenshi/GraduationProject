@@ -31,9 +31,20 @@ void EnemyArrow::Update() {
 	}
 	gameObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition() + m_Vec * speed * Hx::DeltaTime()->GetDeltaTime());
 	count += Hx::DeltaTime()->GetDeltaTime();
-	if (count > 30.0f) {
+	if (count > 5.0f) {
 		Hx::DestroyObject(gameObject);
 	}
+	auto naviVec = m_DrawVec;
+	auto m_Forward = gameObject->mTransform->Forward();
+	auto fo = m_Forward;
+
+	naviVec = XMVector3Normalize(naviVec);
+	fo = XMVector3Normalize(fo);
+
+	auto cross = XMVector3Normalize(XMVector3Cross(fo, naviVec));
+	auto m_View = acos(clamp(XMVector3Dot(fo, naviVec).x, -1.0f, 1.0f));
+	gameObject->mTransform->WorldQuaternion(
+		XMQuaternionMultiply(gameObject->mTransform->WorldQuaternion(), XMQuaternionRotationAxis(cross, m_View)));
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -50,6 +61,7 @@ void EnemyArrow::OnCollideBegin(GameObject target){
 		enemyScript->Attack(target, COL_TYPE::NORMAL);
 	}
 	else if(count >= 0.1f && target->GetLayer() == 4){
+		m_DrawVec = m_Vec;
 		m_Vec = XMVectorSet(0, 0, 0, 0);
 		m_Stop = true;
 	}
