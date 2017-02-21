@@ -136,7 +136,6 @@ void VolumeScene::Decision(){
 	int se = seCtrl->GetVolume();
 
 	writeCSV("Assets/data/Volume.csv", bgm, se);
-	Hx::LoadScene("Assets/Mossan/Config.scene");
 
 	if (!m_fader) return;
 	auto fader = m_fader->GetScript<Fader>();

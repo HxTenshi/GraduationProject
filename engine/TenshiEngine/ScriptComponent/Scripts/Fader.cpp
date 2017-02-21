@@ -36,6 +36,8 @@ void Fader::Update(){
 	color.w = max(min(color.w, 1.0f), 0.0f);
 	material->GetMaterialPtr(0)->SetAlbedo(color);
 
+	
+
 	if (m_isSceneChange && color.w >= 1.0f) {
 		Hx::Debug()->Log(m_nextScenePass + "‚É‘JˆÚ‚µ‚Ü‚µ‚½");
 		Hx::LoadScene(m_nextScenePass);
