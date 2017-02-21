@@ -768,6 +768,7 @@ void EnemyRezardMan::DeadModeInitilize()
 	}
 
 	AnimChange(ANIM_ID::ANIM_DEAD, 5.0f, false, true);
+	gameObject->RemoveComponent<CharacterControllerComponent>();
 }
 
 void EnemyRezardMan::DeadModeUpdate()
@@ -906,7 +907,6 @@ void EnemyRezardMan::ChildFinalize()
 {
 	Hx::DestroyObject(m_MyWeapon);
 	//gameObject->Disable();
-	gameObject->RemoveComponent<CharacterControllerComponent>();
 	Hx::DestroyObject(gameObject);
 }
 
