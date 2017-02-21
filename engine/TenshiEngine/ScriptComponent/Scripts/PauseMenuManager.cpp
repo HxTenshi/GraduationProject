@@ -92,11 +92,11 @@ void PauseMenuManager::UpdateOpne() {
 		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
 		bool isUpLS = ls.y > 0.5f;
 		bool isDownLS = ls.y < -0.5f;
-		if (Input::Trigger(KeyCode::Key_UP)&& STICK_INTERVAL) { 
+		if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && STICK_INTERVAL) { 
 			m_num--;
 			m_stickInterval = 0.0f;
 		}
-		if (Input::Trigger(KeyCode::Key_DOWN) && STICK_INTERVAL) { 
+		if ((Input::Trigger(KeyCode::Key_DOWN) || isDownLS) && STICK_INTERVAL) { 
 			m_num++; 
 			m_stickInterval = 0.0f;
 		}
