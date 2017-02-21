@@ -137,6 +137,7 @@ bool EnemyWoodMan::LostPlayer()
 
 void EnemyWoodMan::ChildFinalize()
 {
+	gameObject->RemoveComponent<CharacterControllerComponent>();
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
@@ -393,7 +394,6 @@ void EnemyWoodMan::DeadInitilize()
 	m_AccelVec += XMVectorSet(0, -10, 0, 0);
 	AnimChange(ANIM_ID::ANIM_DOWN, 5.0f, false, true);
 	m_DeadIsGround = false;
-	gameObject->RemoveComponent<CharacterControllerComponent>();
 }
 
 void EnemyWoodMan::DeadUpdate()

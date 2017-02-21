@@ -160,6 +160,7 @@ bool EnemyEbilEye::LostPlayer()
 
 void EnemyEbilEye::ChildFinalize()
 {
+	gameObject->RemoveComponent<CharacterControllerComponent>();
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
@@ -465,7 +466,6 @@ void EnemyEbilEye::DeadInitilize()
 	m_AccelVec += XMVectorSet(0,-10,0,0);
 	AnimChange(ANIM_ID::ANIM_WINCE, 5.0f, false, true);
 	m_DeadIsGround = false;
-	gameObject->RemoveComponent<CharacterControllerComponent>();
 }
 
 void EnemyEbilEye::DeadUpdate()
