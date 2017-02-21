@@ -21,6 +21,8 @@
 # include "OutputChangeSceneGimick.h"
 #include "OutputReisStartGimick.h"
 # include "EventWave.h"
+# include "OutputEventTimer.h"
+
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 {
 	if (!target)return NULL;
@@ -45,6 +47,8 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 	if (auto scr = target->GetScript<OutPlayEnemyAnimation>())return scr;
 	if (auto scr = target->GetScript<OutputInstaanceObject>())return scr;
 	if (auto scr = target->GetScript<EventWave>())return scr;
+	if (auto scr = target->GetScript<OutputEventTimer>())return scr;
+	
 	
 
 	return NULL;
