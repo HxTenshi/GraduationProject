@@ -1,6 +1,8 @@
 
 #pragma once
 #include "main.h"
+#include "SoundManager.h"
+#include "UniqueObject.h"
 #include <map>
 #include <vector>
 
@@ -46,6 +48,7 @@ public:
 	void BackMenu();
 	void BackToTitle();
 	void LerpFunc(Struct* structObj,float lerpTime);
+	void SE(SoundManager::SoundSE_ID::Enum key);
 
 private:
 	//ƒƒ“ƒo•Ï”

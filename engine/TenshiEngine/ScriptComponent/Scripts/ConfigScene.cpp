@@ -68,12 +68,12 @@ void ConfigScene::CursourMove() {
 	if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && isStickInterval) {
 		num--;
 		m_stickInterval = 0.0f;
-		SE(SoundManager::SoundSE_ID::Enum::Weapon_Break);
+		SE(SoundManager::SoundSE_ID::Enum::Cursour);
 	}
 	if (Input::Trigger(KeyCode::Key_DOWN) || isDownLS && isStickInterval) {
 		num++;
 		m_stickInterval = 0.0f;
-		SE(SoundManager::SoundSE_ID::Enum::Weapon_Break);
+		SE(SoundManager::SoundSE_ID::Enum::Cursour);
 	}
 
 	//ƒNƒ‰ƒ“ƒvˆ—
@@ -91,6 +91,7 @@ void ConfigScene::EnterScene(int num){
 	bool isSpaceKey = Input::Trigger(KeyCode::Key_SPACE);
 	bool isPad_B_Button = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (isSpaceKey || isPad_B_Button) {
+		SE(SoundManager::SoundSE_ID::Enum::Decision);
 		std::string nextScenePass = GetScenePass(num);
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
