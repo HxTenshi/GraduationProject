@@ -22,6 +22,8 @@
 #include "OutputReisStartGimick.h"
 # include "EventWave.h"
 # include "OutputEventTimer.h"
+#include "OutpuChangeDeltaTimeGimick.h"
+#include "OutputShakeObjectGimick.h"
 
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 {
@@ -40,6 +42,8 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 	if (auto scr = target->GetScript<OutputConnectorCooldownGimic>())return scr;
 	if (auto scr = target->GetScript<OutputChangeSceneGimick>())return scr;
 	if (auto scr = target->GetScript<OutputReisStartGimick>())return scr;
+	if (auto scr = target->GetScript<OutpuChangeDeltaTimeGimick>())return scr;
+	if (auto scr = target->GetScript<OutputShakeObjectGimick>())return scr;
 
 	if (auto scr = target->GetScript<OutputChangePhysicesGimic>())return scr;
 	if (auto scr = target->GetScript<OutputAnimation>())return scr;
