@@ -6,6 +6,8 @@
 #include "Game/Component/NaviMeshComponent.h"
 #include "UniqueObject.h"
 #include "SoundManager.h"
+#include "Score.h"
+
 EnemyOrc::EnemyOrc()
 {
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemyOrc::TrackingModeInitilize, this/*,std::placeholders::_1*/);
@@ -189,6 +191,7 @@ bool EnemyOrc::LostPlayer()
 
 void EnemyOrc::ChildFinalize()
 {
+	Score::AddScore();
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);

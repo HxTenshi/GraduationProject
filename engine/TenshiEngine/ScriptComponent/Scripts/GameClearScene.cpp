@@ -1,6 +1,7 @@
 #include "GameClearScene.h"
 #include "Fader.h"
-#include "SoundManager.h"
+#include "FuckTenshiEngine.h"
+
 
 /****************************************************
 
@@ -179,8 +180,9 @@ void GameClearScene::Initialize(){
 	m_texClearObj.WaitSmall();
 	m_texKillObj.WaitBig();
 	m_texTimeObj.WaitBig();
-	m_textKillObj.SetScore(200);
-	m_textTimeObj.SetScore(150);
+	std::vector<std::vector<std::string>> scoreVec = Mossan::CSVScript::readCSV("Assets/data/Score.csv");
+	m_textKillObj.SetScore(stoi(scoreVec[0][0]));
+	m_textTimeObj.SetScore(stoi(scoreVec[0][1]));
 	m_phase = Phase::phase1;
 }
 
@@ -264,7 +266,6 @@ void GameClearScene::DoPhase3(){
 void GameClearScene::DoPhase4(){
 	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Decision,XMVectorZero());
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
 		fader->OnSceneChnage("Assets/Mossan/Credit.scene");

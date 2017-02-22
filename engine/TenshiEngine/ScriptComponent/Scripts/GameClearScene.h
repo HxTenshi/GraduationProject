@@ -65,6 +65,7 @@ public:
 	void DoPhase3();
 	void DoPhase4();
 
+
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
