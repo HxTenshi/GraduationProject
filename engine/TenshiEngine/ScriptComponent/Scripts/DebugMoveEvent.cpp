@@ -14,11 +14,6 @@ void DebugMoveEvent::Update(){
 
 }
 
-bool DebugMoveEvent::OnStart(GameObject Sender)
-{
-	return false;
-}
-
 void DebugMoveEvent::MoveToPont(GameObject target, KeyCode key)
 {
 	if (target) {
