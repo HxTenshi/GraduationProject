@@ -14,6 +14,8 @@
 
 #include "Enemy.h"
 
+#include "Score.h"
+
 
 struct ReisMode {
 	enum Enum {
@@ -277,6 +279,7 @@ void reis::Start(){
 		ChangeAnime(AnimeID::Dead);
 		if (m_AttackStage.stage == 0) {
 			m_AttackStage.stage++;
+			Score::AddScore();
 			if (auto obj = Hx::Instance(m_DeadParticle)) {
 				obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
 			}

@@ -3,7 +3,7 @@
 #include "../h_standard.h"
 #include "../h_component.h"
 #include "PlayerController.h"
-
+#include "Score.h"
 EnemyWoodMan::EnemyWoodMan()
 {
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemyWoodMan::TrackingModeInitilize, this/*,std::placeholders::_1*/);
@@ -137,6 +137,7 @@ bool EnemyWoodMan::LostPlayer()
 
 void EnemyWoodMan::ChildFinalize()
 {
+	Score::AddScore();
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);

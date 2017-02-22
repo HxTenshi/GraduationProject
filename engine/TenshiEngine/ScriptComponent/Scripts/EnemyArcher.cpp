@@ -4,6 +4,8 @@
 #include "Game/Component/CharacterControllerComponent.h"
 #include "PlayerController.h"
 #include "EnemyArrow.h"
+#include "Score.h"
+#include "UniqueObject.h"
 
 EnemyArcher::EnemyArcher()
 {
@@ -73,6 +75,7 @@ void EnemyArcher::SoloAction()
 
 void EnemyArcher::ChildFinalize()
 {
+	Score::AddScore();
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);

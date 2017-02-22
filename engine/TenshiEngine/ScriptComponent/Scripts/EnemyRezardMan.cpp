@@ -4,6 +4,7 @@
 #include "Game/Component/CharacterControllerComponent.h"
 #include "PlayerController.h"
 #include "SoundManager.h"
+#include "Score.h"
 
 EnemyRezardMan::EnemyRezardMan()
 {
@@ -909,6 +910,7 @@ bool EnemyRezardMan::LostPlayer()
 
 void EnemyRezardMan::ChildFinalize()
 {
+	Score::AddScore();
 	Hx::DestroyObject(m_MyWeapon);
 	//gameObject->Disable();
 	Hx::DestroyObject(gameObject);
