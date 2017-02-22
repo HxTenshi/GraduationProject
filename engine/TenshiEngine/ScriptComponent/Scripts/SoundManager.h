@@ -47,6 +47,9 @@ public:
 			Player_SW_L2,
 			Player_SW_L3,
 			Player_SW_H1,
+			Rezard_Attack_1,
+			Rezard_Attack_2,
+			WoodMan_Attack
 		};
 	};
 	struct SoundBGM_ID {

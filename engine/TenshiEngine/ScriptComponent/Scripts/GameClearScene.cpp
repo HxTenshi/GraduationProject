@@ -1,5 +1,6 @@
 #include "GameClearScene.h"
 #include "Fader.h"
+#include "FuckTenshiEngine.h"
 
 
 /****************************************************
@@ -179,8 +180,9 @@ void GameClearScene::Initialize(){
 	m_texClearObj.WaitSmall();
 	m_texKillObj.WaitBig();
 	m_texTimeObj.WaitBig();
-	m_textKillObj.SetScore(200);
-	m_textTimeObj.SetScore(150);
+	std::vector<std::vector<std::string>> scoreVec = Mossan::CSVScript::readCSV("Assets/data/Score.csv");
+	m_textKillObj.SetScore(stoi(scoreVec[0][0]));
+	m_textTimeObj.SetScore(stoi(scoreVec[0][1]));
 	m_phase = Phase::phase1;
 }
 

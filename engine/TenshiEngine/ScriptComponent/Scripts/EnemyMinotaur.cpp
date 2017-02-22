@@ -9,6 +9,7 @@
 #include "MossanBall.h"
 #include <random>
 #include "SoundManager.h"
+#include "Score.h"
 //d—Í‚ª’x‚¢
 EnemyMinotaur::EnemyMinotaur()
 {
@@ -275,6 +276,7 @@ void EnemyMinotaur::DeadUpdate()
 				pos += f*3.0f;
 				g->mTransform->WorldPosition(pos);
 				is_dead_anim_end = true;
+				Score::AddScore();
 			}
 			m_crate_dead_effect_timer += Hx::DeltaTime()->GetDeltaTime();
 

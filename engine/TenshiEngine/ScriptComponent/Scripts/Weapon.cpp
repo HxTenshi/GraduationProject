@@ -363,6 +363,11 @@ bool Weapon::GetIsHand()
 	return is_hand;
 }
 
+std::string Weapon::GetName()
+{
+	return m_name;
+}
+
 void Weapon::ThrowAwayAction()
 {
 	if (is_ground_hit || is_hand)return;
