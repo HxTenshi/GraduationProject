@@ -31,9 +31,9 @@ void PlayerUI::Update(){
 		float hppar = hp / maxhp;
 		float x = m_HP_BarSize * hppar;
 
-		auto s = m_HP_Bar->mTransform->Scale();
-		s.x = x;
-		m_HP_Bar->mTransform->Scale(s);
+		auto p = m_HP_Bar->mTransform->Position();
+		p.x = -(m_HP_BarSize - x);
+		m_HP_Bar->mTransform->Position(p);
 
 		if (m_HP_BloomSpeed == 0.0f)return;
 		m_HP_Timer += Hx::DeltaTime()->GetNoScaleDeltaTime();
@@ -58,9 +58,9 @@ void PlayerUI::Update(){
 		float sppar = sp / 100.0f;
 		float x = m_SP_BarSize * sppar;
 
-		auto s = m_SP_Bar->mTransform->Scale();
-		s.x = x;
-		m_SP_Bar->mTransform->Scale(s);
+		auto p = m_SP_Bar->mTransform->Position();
+		p.x = -(m_SP_BarSize - x);
+		m_SP_Bar->mTransform->Position(p);
 
 		if (m_SP_BloomSpeed == 0.0f)return;
 		m_SP_Timer += Hx::DeltaTime()->GetNoScaleDeltaTime();

@@ -13,6 +13,9 @@ void Weapon::Initialize(){
 	break_time = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+	m_ThrowTarget = NULL;
+	m_MirrorTarget = NULL;
+	m_ThrowSpeed = 1.0f;
 	m_Vector = XMVectorZero();
 		m_param.SetAttack(5);
 		m_param.SetDurableDamage(2.0f,3.0f);
@@ -51,6 +54,18 @@ void Weapon::Update(){
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
+
+	{
+		//‚±‚±‚Å‘ÎÛ‚Ì“G‚Ì•R•t‚¯
+		auto mirrer = gameObject->GetComponent<BoneMirrorComponent>();
+		if (!mirrer)return;
+		if (!mirrer->IsEnabled())return;
+		if (!m_MirrorTarget) {
+			m_MirrorTarget = NULL;
+			mirrer->Disable();
+			ThrowAway();
+		}
+	}
 	//PierceSupport(gameObject);
 	//Hx::Debug()->Log(std::to_string(gameObject->mTransform->DegreeRotate().x));
 
@@ -77,7 +92,14 @@ void Weapon::OnCollideBegin(GameObject target){
 					WeaponUsePhysX();
 				}
 
+				m_Recast = 0.0f;
+				//scr->Damage(m_AttackForce);
+				m_HitCollback(target, this, HitState::Damage);
+				
+
 				mIsEnemyThrow = false;
+				m_ThrowTarget = NULL;
+				SetHitCollback([](auto o, auto w, auto t) {});
 			}
 
 			if (target->GetLayer() == 4) {
@@ -89,16 +111,20 @@ void Weapon::OnCollideBegin(GameObject target){
 					//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
 				}
 				mIsEnemyThrow = false;
+				m_ThrowTarget = NULL;
+				SetHitCollback([](auto o, auto w, auto t) {});
 			}
 
-			if (target->GetLayer() == 6) {
-				WeaponUsePhysX();
-
-				//auto wpos = gameObject->mTransform->WorldPosition();
-				//gameObject->mTransform->WorldPosition(wpos - m_Vector);
-				//ThrowAway();
-				mIsEnemyThrow = false;
-			}
+			//if (target->GetLayer() == 6) {
+			//	WeaponUsePhysX();
+			//
+			//	//auto wpos = gameObject->mTransform->WorldPosition();
+			//	//gameObject->mTransform->WorldPosition(wpos - m_Vector);
+			//	//ThrowAway();
+			//	mIsEnemyThrow = false;
+			//	m_ThrowTarget = NULL;
+			//	SetHitCollback([](auto o, auto w, auto t) {});
+			//}
 
 		}
 
@@ -113,7 +139,6 @@ void Weapon::OnCollideBegin(GameObject target){
 				m_HitCollback(target,this,HitState::Damage);
 			}
 		}
-		mIsEnemyThrow = false;
 	}
 } 
 
@@ -162,7 +187,6 @@ bool Weapon::isBreak()
 void Weapon::ThrowAway()
 {
 	break_time = 0.0f;
-	SetHitCollback([](auto o,auto w,auto t) {});
 	is_fly = true;
 	is_hand = false;
 	is_ground_hit = false;
@@ -211,10 +235,45 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 	is_ground_hit = true;
 	is_attack = 1;
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
-	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
+	//gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
 
 	m_Vector = throwdir;
+	m_ThrowSpeed = XMVector3Length(m_Vector).x;
 
+	if (XMVector3Length(m_Vector).x != 0.0f) {
+		auto m = gameObject->mTransform->GetMatrix();
+		auto s = gameObject->mTransform->Scale();
+		//auto fl = XMVector3Length(m.r[0]).x;
+		//auto ul = XMVector3Length(m.r[1]).x;
+		//auto ll = XMVector3Length(m.r[2]).x;
+		auto f = XMVector3Normalize(m.r[0]);
+		auto u = XMVector3Normalize(m_Vector);
+		auto l = XMVector3Cross(f, u);
+		f = XMVector3Cross(u, l);
+		m.r[0] = XMVector3Normalize(f);// * fl;
+		m.r[1] = XMVector3Normalize(u);// * ul;
+		m.r[2] = XMVector3Normalize(l);// * ll;
+		gameObject->mTransform->WorldMatrix(m);
+		gameObject->mTransform->Scale(s);
+	}
+}
+/// <summary>
+///•Ší‚ğÌ‚Ä‚éˆ—
+/// </summary>
+void Weapon::ThrowAway(GameObject target, float speed)
+{
+	mIsEnemyThrow = true;
+	ThrowAway();
+	is_ground_hit = true;
+	is_attack = 1;
+	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
+	//gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
+
+	m_ThrowTarget = target;
+	auto pos = m_ThrowTarget->mTransform->WorldPosition();
+	pos.y += 1.0f;
+	m_Vector = pos - gameObject->mTransform->WorldPosition();
+	m_ThrowSpeed = speed;
 
 	if (XMVector3Length(m_Vector).x != 0.0f) {
 		auto m = gameObject->mTransform->GetMatrix();
@@ -276,6 +335,7 @@ void Weapon::GetWeapon()
 		mirror->ChangeTargetBone(NULL);
 		mirror->SetTargetBoneID(-1);
 		mirror->Disable();
+		m_MirrorTarget = NULL;
 	}
 }
 
@@ -363,8 +423,29 @@ bool Weapon::GetIsHand()
 	return is_hand;
 }
 
+bool Weapon::isThrow()
+{
+	return mIsEnemyThrow;
+}
+
+void Weapon::SetMirrorTarget(GameObject target)
+{
+	m_MirrorTarget = target;
+}
+
 void Weapon::ThrowAwayAction()
 {
+	if (mIsEnemyThrow) {
+		if (m_ThrowTarget) {
+			auto pos = m_ThrowTarget->mTransform->WorldPosition();
+			pos.y += 1.0f;
+			m_Vector = pos - gameObject->mTransform->WorldPosition();
+		}
+		auto pos = gameObject->mTransform->WorldPosition();
+		pos += XMVector3Normalize(m_Vector) * m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime();
+		gameObject->mTransform->WorldPosition(pos);
+	}
+
 	if (is_ground_hit || is_hand)return;
 	m_weapon_rot = max(m_weapon_rot, 0);
 	auto rot = gameObject->mTransform->WorldQuaternion();

@@ -148,7 +148,6 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 		mWeapon->GetComponent<PhysXComponent>()->SetGravity(false);
 		XMVECTOR targetVector = XMVector3Normalize(log);
 		character->mTransform->AddForce(targetVector * 30, ForceMode::eIMPULSE);
-
 		if (auto scr = mWeapon->GetScript<Weapon>()) {
 			auto mirrer = mWeapon->GetComponent<BoneMirrorComponent>();
 			mWeapon = NULL;
@@ -157,22 +156,23 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 			//‚±‚±‚Å‘ÎÛ‚Ì“G‚Ì•R•t‚¯
 
 
-			mirrer->ChangeTargetBone(target);
-			mirrer->Enable();
-			auto vector = mirrer->GetBoneNames();
-			int id = 0;
-			for (auto name : vector)
-			{
-				if (name == "Spine")
-				{
-					break;
-				}
-				id++;
-			}
-			//’Ç]‚·‚é
-			mirrer->SetTargetBoneID(id);
+			//mirrer->ChangeTargetBone(target);
+			//mirrer->Enable();
+			//auto vector = mirrer->GetBoneNames();
+			//int id = 0;
+			//for (auto name : vector)
+			//{
+			//	if (name == "Spine")
+			//	{
+			//		break;
+			//	}
+			//	id++;
+			//}
+			////’Ç]‚·‚é
+			//mirrer->SetTargetBoneID(id);
 
-			scr->ThrowAway(targetVector * m_ThrowPower);
+			scr->ThrowAway(target,m_ThrowPower);
+			//scr->ThrowAway(targetVector * m_ThrowPower);
 			m_ActionFree = false;
 		}
 	}

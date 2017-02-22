@@ -247,6 +247,12 @@ void PlayerController::AttackInitialize()
 		list.resize(AttackID::Count);
 	}
 
+	//+++++++++++++++++++++++
+	m_ThrowAttack.AddSpecial = 2.0f;
+	m_ThrowAttack.KnockbackEffect = BATTLEACTION::WINCEACTION;
+	m_ThrowAttack.KnockbackEffectPower = 1.0f;
+	m_ThrowAttack.DamageScale = 1.0f;
+	m_ThrowAttack.DamageType = DamageType::LowDamage;
 	{
 		AttackState attack;
 		auto& attacklist = m_AttackStateList[WeaponType::Sword];
@@ -1354,6 +1360,9 @@ void PlayerController::FreeExcute()
 
 
 	if (m_CurrentAnimeID == AnimeID::Throw) {
+		if (m_Camera) {
+			mVelocity = m_Camera->mTransform->Forward();
+		}
 		if (auto anime = m_AnimeModel->GetComponent<AnimationComponent>()) {
 			if (anime->IsAnimationEnd(AnimeID::Throw)) {
 				changeAnime(AnimeID::Idle);
@@ -2786,18 +2795,31 @@ void PlayerController::throwWeapon()
 					aim->ChangeAimMode(camera, gameObject, true);
 					m_FreeAIMMode = true;
 				}
-				else if (BindInput(PlayerInput::ThrowWeapon) && m_FreeAIMMode) {
+				if (BindInput(PlayerInput::ThrowWeapon) && m_FreeAIMMode) {
 					mJump.x=0.0f;
 					mJump.z=0.0f;
 					changeAnime(AnimeID::Throw);
 					m_FreeAIMMode = false;
 					aim->ChangeAimMode(camera, gameObject, false);
-					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
-					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
-					Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
+					//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
+					//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
+					//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
 					auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
 					if (weaponHand) {
-						weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+						GameObject target = NULL; /*= camera->GetLookTarget();*/
+						auto camera = m_Camera->GetScript<TPSCamera>();
+						if (camera) {
+							if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+								target = camera->GetLookTarget();
+							}
+						}
+
+						if (target) {
+							throwAway(target);
+						}
+						else {
+							weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+						}
 					}
 					if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
 						weaponCtr->DeleteHitPoint();
@@ -2839,8 +2861,20 @@ void PlayerController::setWeapon(GameObject weapon)
 	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
 	if (!weaponHand) return;
 	weaponHand->SetWeapon(weapon, [&](auto o, Weapon* w, auto t) {
+		Hx::Debug()->Log("ƒqƒbƒg");
 		if (Enemy* scr = Enemy::GetEnemy(o)) {
-			if (w->isAttack()) {
+			Hx::Debug()->Log("“GŽæ“¾");
+			if (w->isThrow()) {
+				Hx::Debug()->Log("•Ší“Š‚°");
+
+				if (scr->Damage(m_ThrowAttack.DamageScale * w->GetAttackPower(), m_ThrowAttack.KnockbackEffect, XMVectorSet(0, m_ThrowAttack.KnockbackEffectPower, 0, 1))) {
+					if (t == Weapon::HitState::Damage) {
+						AddSpecial(m_ThrowAttack.AddSpecial);
+						AddCombo();
+					}
+				}
+			}else if (w->isAttack()) {
+				Hx::Debug()->Log("UŒ‚ƒqƒbƒg");
 
 				if (scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(), m_CurrentAttack.KnockbackEffect, XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower, 0, 1))) {
 					if (t == Weapon::HitState::Damage) {
