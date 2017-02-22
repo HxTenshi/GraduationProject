@@ -102,6 +102,10 @@ public:
 	///手に持っているか
 	/// </summary>
 	bool GetIsHand();
+	/// <summary>
+	///名前の取得
+	/// </summary>
+	std::string GetName();
 private:
 	/// <summary>
 	///投げ捨てる時のアクション

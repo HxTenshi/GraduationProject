@@ -73,5 +73,7 @@ private:
 	SERIALIZE
 		TextureAsset m_sworddh_break_ui;
 
+	SERIALIZE GameObject m_NameTextObject;
+
 	
 };
