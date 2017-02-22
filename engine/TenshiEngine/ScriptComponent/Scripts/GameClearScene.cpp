@@ -1,6 +1,6 @@
 #include "GameClearScene.h"
 #include "Fader.h"
-
+#include "SoundManager.h"
 
 /****************************************************
 
@@ -264,6 +264,7 @@ void GameClearScene::DoPhase3(){
 void GameClearScene::DoPhase4(){
 	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Decision,XMVectorZero());
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
 		fader->OnSceneChnage("Assets/Mossan/Credit.scene");

@@ -1,5 +1,6 @@
 #include "GameOverScene.h"
 #include "Fader.h"
+#include "SoundManager.h"
 #include <h_component.h>
 #include <h_standard.h>
 
@@ -61,6 +62,7 @@ void GameOverScene::Update(){
 	if (isMessage) {
 		bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 		if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Decision, XMVectorZero());
 			if (!m_fader) return;
 			auto fader = m_fader->GetScript<Fader>();
 			fader->OnSceneChnage("Assets/Mossan/Credit.scene");

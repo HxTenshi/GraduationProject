@@ -36,6 +36,7 @@ void VolumeScene::Initialize(){
 	num = 0;
 
 	m_stickIntervalTime = 0.0f;
+	
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -72,6 +73,7 @@ void VolumeScene::Update(){
 		if (!barCtrl) return;
 		//音量下げる
 		barCtrl->VolumeDown();
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::VolumeDown, XMVectorZero());
 	}else if ((Input::Trigger(KeyCode::Key_RIGHT) || isRight)) {
 		if (num >= Enum::BackConfig) return;
 		auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
@@ -79,20 +81,24 @@ void VolumeScene::Update(){
 		if (!barCtrl) return;
 		//音量を上げる
 		barCtrl->VolumeUp();
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::VolumeUp, XMVectorZero());
 	}
 
 	if ((Input::Trigger(KeyCode::Key_UP) || isUp) && interval) {
 		num--;
 		m_stickIntervalTime = 0.0f;
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Cursour, XMVectorZero());
 	}
 	if ((Input::Trigger(KeyCode::Key_DOWN) || isDown) && interval) {
 		num++;
 		m_stickIntervalTime = 0.0f;
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Cursour, XMVectorZero());
 	}
 
 	//Configに戻る
 	else if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
 		if (num != Enum::BackConfig) return;
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Decision, XMVectorZero());
 		//決定
 		Decision();
 	}
@@ -151,7 +157,7 @@ void VolumeScene::writeCSV(std::string fileName, int bgmVolume, int seVolume){
 	std::string se = std::to_string(seVolume);
 	//書き込み
 	ofs << bgm << "," << se << endl;
-}
+} 
 
 std::vector<std::vector<std::string>> VolumeScene::readCSV(std::string fileName){
 	std::vector<std::vector<std::string>> arrays;
