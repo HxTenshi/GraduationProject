@@ -4,6 +4,7 @@
 #include "../h_component.h"
 #include "PlayerController.h"
 #include "Score.h"
+#include "SoundManager.h"
 EnemyWoodMan::EnemyWoodMan()
 {
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemyWoodMan::TrackingModeInitilize, this/*,std::placeholders::_1*/);
@@ -231,6 +232,9 @@ void EnemyWoodMan::RunAttackModeUpdate()
 	}
 
 	if (XMVector3Length(gameObject->mTransform->WorldPosition() - m_StartPos).x > m_LostRange || m_Attacked) {
+		if (m_Attacked) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::WoodMan_Attack, gameObject->mTransform->WorldPosition());
+		}
 		AnimChange(ANIM_ID::ANIM_TIRED, 5.0f, false);
 	}
 }

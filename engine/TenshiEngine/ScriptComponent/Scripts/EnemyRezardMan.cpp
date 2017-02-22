@@ -426,6 +426,7 @@ void EnemyRezardMan::AttackDownModeInitilize()
 		Hx::Debug()->Log("縦切り");
 	AnimChange(ANIM_ID::ANIM_ATTACK_DOWN, 5.0f, false, true);
 	m_AttackHit = false;
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Rezard_Attack_1,gameObject->mTransform->WorldPosition());
 }
 
 void EnemyRezardMan::AttackDownModeUpdate()
@@ -454,6 +455,7 @@ void EnemyRezardMan::JumpAttackModeInitilize()
 	if (m_DrawLog)
 		Hx::Debug()->Log("ジャンプ切り");
 	AnimChange(ANIM_ID::ANIM_JUMPATTACK, 5.0f, false);
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Rezard_Attack_2, gameObject->mTransform->WorldPosition());
 	m_AttackHit = false;
 }
 
@@ -747,6 +749,7 @@ void EnemyRezardMan::AttackMonckeyModeInitilize() {
 	if (m_DrawLog)
 		Hx::Debug()->Log("モンキーアタック");
 	AnimChange(ANIM_ID::ANIM_ATTACK_MONCKEY, 5.0f, false);
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Rezard_Attack_1, gameObject->mTransform->WorldPosition());
 	m_AttackHit = false;
 }
 
@@ -871,15 +874,7 @@ bool EnemyRezardMan::DiscoveryPlayer()
 	m_View = acos(clamp(XMVector3Dot(m_Forward, XMVector3Normalize(m_PlayerVec)).x, -1.0f, 1.0f));
 	if (XMVector3Length(m_Forward - XMVector3Normalize(m_PlayerVec)).x < 0.01f)m_View = 0.0f;
 	if ((XMVector3Length(m_PlayerVec).x < m_TrackingRange && m_View / 3.14f * 180.0f < m_TrackingAngle)) {
-		if (!Hx::PhysX()->Raycast(rayMyPos,
-			XMVector3Normalize(rayBossPos - rayMyPos),
-			XMVector3Length(rayBossPos - rayMyPos).x,
-			Layer::UserTag4)) {
-			return true;
-		}
-		else {
-			return false;
-		}
+		return true;
 	}
 	return false;
 }
