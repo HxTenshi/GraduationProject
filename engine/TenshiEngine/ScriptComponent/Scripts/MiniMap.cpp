@@ -1,6 +1,7 @@
 #include "MiniMap.h"
 #include "h_component.h"
 #include "h_standard.h"
+#include "UniqueObject.h"
 
 static MiniMap* g_Minimap = NULL;
 
@@ -11,7 +12,7 @@ void MiniMap::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void MiniMap::Start(){
-
+	g_Minimap = this;
 }
 
 //毎フレーム呼ばれます
@@ -23,6 +24,7 @@ void MiniMap::Update(){
 	if (!mate)return;
 
 
+	auto m_Player = UniqueObject::GetPlayer();
 	if (!m_Player || !m_LU_Point || !m_RD_Point)return;
 	
 	auto p = m_Player->mTransform->WorldPosition() + XMVectorSet(10000.0f, 10000.0f, 10000.0f, 1.0f);

@@ -9,11 +9,7 @@ void AimController::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void AimController::Start(){
-	if (mUIParent) {
-		for (auto i : mUIParent->mTransform->Children()) {
-			if (i->Name() == "TargetUI")mTargetUI = i;
-		}
-	}
+	if (mTargetUI)mTargetUI->Disable();
 	SoundManager::PlayBGM(SoundManager::SoundBGM_ID::GamePlay);
 }
 
@@ -44,6 +40,7 @@ void AimController::OnCollideExit(GameObject target){
 
 void AimController::ChangeAimMode(TPSCamera* camera,GameObject player, bool isFree)
 {
+	//960 540, 930 420
 	if (isFree)
 	{
 		camera->SetDistance(mAimPoint.z);//0.5f
@@ -51,7 +48,16 @@ void AimController::ChangeAimMode(TPSCamera* camera,GameObject player, bool isFr
 		camera->SetLeft(mAimPoint.x);//2.5f
 		camera->SetSpringDamping(mDamping);
 		camera->SetSpringStiffness(mStiffness);
-		if (mTargetUI)mTargetUI->Enable();
+		if (mTargetUI) {
+			mTargetUI->Enable();
+
+			//if (camera->GetLookTarget()) {
+			//	mTargetUI->mTransform->Position(XMVectorSet(960.0f, 540.0f, 0.0f, 1.0f));
+			//}
+			//else {
+			//	mTargetUI->mTransform->Position(XMVectorSet(930.0f, 420.0f, 0.0f, 1.0f));
+			//}
+		}
 	}
 	else
 	{

@@ -20,7 +20,6 @@ public:
 
 private:
 	//ƒƒ“ƒo•Ï”
-	SERIALIZE GameObject m_Player;
 	GameObject m_LU_Point;
 	GameObject m_RD_Point;
 };

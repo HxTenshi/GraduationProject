@@ -45,6 +45,7 @@ struct AttackID {
 		FloatHigh1,
 		Special,
 		DogdeAttack,
+		SpeedJumpAttack,
 		Count,
 	};
 };
@@ -93,6 +94,8 @@ struct AnimeID {
 		RMove,
 		RDodge,
 		DownUp,
+		AttackSpeedJump,
+		AttackDodgeRoll,
 		Count,
 	};
 };
@@ -309,7 +312,24 @@ void PlayerController::AttackInitialize()
 		attack.ID = AttackID::DogdeAttack;
 		attack.NextLowID = AttackID::Low2;
 		attack.NextHighID = AttackID::High1;
-		attack.MoutionID = AnimeID::AttackLow3;
+		attack.MoutionID = AnimeID::AttackDodgeRoll;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+		attack.Rotate = false;
+
+		attack.DamageScale = 1.0f;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.SEID = -1;
+
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::SpeedJumpAttack;
+		attack.NextLowID = AttackID::Low2;
+		attack.NextHighID = AttackID::High1;
+		attack.MoutionID = AnimeID::AttackSpeedJump;
 
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 9999.0f / 30.0f;
@@ -358,6 +378,8 @@ void PlayerController::AttackInitialize()
 		attack.DamageScale = 1.0f;
 		attack.AttackMove = 0.0f;
 
+		attack.UseGravity = false;
+
 		attack.SEID = -1;
 
 		attacklist[attack.ID] = attack;
@@ -375,6 +397,8 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 11.0f / 30.0f;
 
+		attack.UseGravity = false;
+
 		attack.DamageScale = 1.0f;
 		attack.AttackMove = 0.0f;
 		attack.DamageType = DamageType::LowDamage;
@@ -389,6 +413,8 @@ void PlayerController::AttackInitialize()
 
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 13.0f / 30.0f;
+
+		attack.UseGravity = false;
 
 		attack.DamageScale = 1.5f;
 		attack.AttackMove = 0.0f;
@@ -410,6 +436,9 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 24.0f / 30.0f;
 
+
+		attack.UseGravity = false;
+
 		attack.DamageScale = 2.0f;
 		attack.AttackMove = 0.0f;
 		attack.DamageType = DamageType::HighDamage;
@@ -423,11 +452,17 @@ void PlayerController::AttackInitialize()
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 1.0f;
 
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+
+		attack.UseGravity = true;
+
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.DamageScale = 10.0f;
 		attack.AttackMove = 0.0f;
 		attack.AddSpecial = 0.0f;
 		attack.DamageType = DamageType::DethBrowDamage;
+		attack.Rotate = false;
 		attacklist[attack.ID] = attack;
 
 
@@ -440,14 +475,16 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageEnd = 9999.0f / 30.0f;
 		attack.DamageType = DamageType::LowDamage;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
-		attacklist[attack.ID] = attack;
 		attack.Rotate = true;
+		attack.UseGravity = false;
+		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::HighFloatLow;
 		attack.MoutionID = AnimeID::HighToFloatLow;
 		attack.EndID = AttackID::FloatLow1;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.UseGravity = false;
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -455,6 +492,7 @@ void PlayerController::AttackInitialize()
 		attack.MoutionID = AnimeID::IdleToFloatHigh;
 		attack.EndID = AttackID::FloatHigh1;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.UseGravity = false;
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -462,6 +500,7 @@ void PlayerController::AttackInitialize()
 		attack.MoutionID = AnimeID::HighToFloatHigh;
 		attack.EndID = AttackID::FloatHigh1;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.UseGravity = false;
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -469,6 +508,7 @@ void PlayerController::AttackInitialize()
 		attack.MoutionID = AnimeID::FloatLow1ToFloatHigh;
 		attack.EndID = AttackID::FloatHigh1;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.UseGravity = false;
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -476,6 +516,7 @@ void PlayerController::AttackInitialize()
 		attack.MoutionID = AnimeID::FloatLow2ToFloatHigh;
 		attack.EndID = AttackID::FloatHigh1;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.UseGravity = false;
 		attacklist[attack.ID] = attack;
 
 
@@ -493,6 +534,7 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 0.0f / 30.0f;
 		attack.FreeDogde = true;
+		attack.UseGravity = true;
 
 		attack.DamageScale = 0.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
@@ -521,6 +563,7 @@ void PlayerController::AttackInitialize()
 		attack.ID = AttackID::FloatLow1End;
 		attack.MoutionID = AnimeID::AttackFloatLow1End;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.UseGravity = false;
 		attacklist[attack.ID] = attack;
 
 	}
@@ -580,13 +623,36 @@ void PlayerController::AttackInitialize()
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::DogdeAttack;
-		attack.NextLowID = AttackID::Low1;
+		attack.NextLowID = AttackID::Low2;
 		attack.NextHighID = AttackID::High1;
-		attack.MoutionID = AnimeID::AttackRHigh;
-		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.MoutionID = AnimeID::AttackDodgeRoll;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+		attack.Rotate = false;
+
 		attack.DamageScale = 1.0f;
-		attack.OnDamageStart = 9.0f / 30.0f;
-		attack.OnDamageEnd = 19.0f / 30.0f;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.SEID = -1;
+
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::SpeedJumpAttack;
+		attack.NextLowID = AttackID::Low2;
+		attack.NextHighID = AttackID::High1;
+		attack.MoutionID = AnimeID::AttackSpeedJump;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+		attack.Rotate = false;
+
+		attack.DamageScale = 1.0f;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.SEID = -1;
+
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::High1;
@@ -600,38 +666,60 @@ void PlayerController::AttackInitialize()
 		attack.DamageScale = 1.5f;
 		attack.AttackMove = 0.0f;
 		attack.FloatMove = 0.0f;
+		attack.Rotate = true;
 		attacklist[attack.ID] = attack;
-
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatLow1;
-		attack.NextLowID = -1;
-		attack.NextHighID = -1;
-		attack.EndID = -1;
-		attack.MoutionID = AnimeID::AttackRHigh;
+		attack.NextLowID = AttackID::FloatLow2;
+		attack.NextHighID = AttackID::FloatLow1FloatHigh;
+		attack.MoutionID = AnimeID::AttackFloatLow1;
+		attack.EndID = AttackID::FloatLow1End;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
+		attack.KnockbackEffectPower = 1.0f;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 11.0f / 30.0f;
+
 		attack.DamageScale = 1.0f;
 		attack.AttackMove = 0.0f;
-		attack.FloatMove = 0.0f;
-		attack.OnDamageStart = 9.0f / 30.0f;
-		attack.OnDamageEnd = 19.0f / 30.0f;
 		attack.DamageType = DamageType::LowDamage;
-		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
-		attack.KnockbackEffectPower = 0.0f;
 		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatLow2;
+		attack.NextLowID = -1;
+		attack.NextHighID = AttackID::FloatLow2FloatHigh;
+		attack.MoutionID = AnimeID::AttackFloatLow2;
+		attack.EndID = -1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 13.0f / 30.0f;
+
+		attack.DamageScale = 1.5f;
+		attack.AttackMove = 0.0f;
+		attack.DamageType = DamageType::LowDamage;
+		attacklist[attack.ID] = attack;
+
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatHigh1;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
-		attack.MoutionID = AnimeID::AttackRHigh;
+		attack.MoutionID = AnimeID::AttackFloatHigh;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
-		attack.DamageScale = 1.0f;
+
+
+		//attack.KnockbackEffect = BATTLEACTION::BEATDOWNACTION;
+		attack.KnockbackEffectPower = 1.0f;
+		attack.Rotate = false;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 24.0f / 30.0f;
+
+		attack.DamageScale = 2.0f;
 		attack.AttackMove = 0.0f;
-		attack.FloatMove = 0.0f;
-		attack.OnDamageStart = 9.0f / 30.0f;
-		attack.OnDamageEnd = 19.0f / 30.0f;
 		attack.DamageType = DamageType::HighDamage;
-		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
-		attack.KnockbackEffectPower = 0.0f;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::Special;
@@ -642,30 +730,72 @@ void PlayerController::AttackInitialize()
 		attack.DamageScale = 5.0f;
 		attack.AttackMove = 0.0f;
 		attack.AddSpecial = 0.0f;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+
 		attack.DamageType = DamageType::DethBrowDamage;
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 1.0f;
+		attack.Rotate = false;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::IdleFloatLow;
-		attack.MoutionID = AnimeID::AttackRLow;
+		attack.MoutionID = AnimeID::IdleToFloatLow;
 		attack.EndID = AttackID::FloatLow1;
+		attack.DamageScale = 0.0f;
 		attack.OnDamageEnd = 9999.0f / 30.0f;
 		attack.DamageType = DamageType::LowDamage;
-		attack.AttackTime = 0.0f;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attacklist[attack.ID] = attack;
 		attack.Rotate = true;
+
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::IdleFloatHigh;
-		attack.MoutionID = AnimeID::AttackRHigh;
+		attack.MoutionID = AnimeID::IdleToFloatHigh;
 		attack.EndID = AttackID::FloatHigh1;
-		attack.OnDamageEnd = 9999.0f / 30.0f;
-		attack.DamageType = DamageType::HighDamage;
-		attack.AttackTime = 0.0f;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attacklist[attack.ID] = attack;
-		attack.Rotate = true;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatLow1FloatHigh;
+		attack.MoutionID = AnimeID::FloatLow1ToFloatHigh;
+		attack.EndID = AttackID::FloatHigh1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatLow2FloatHigh;
+		attack.MoutionID = AnimeID::FloatLow2ToFloatHigh;
+		attack.EndID = AttackID::FloatHigh1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
+
+
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatLow1End;
+		attack.MoutionID = AnimeID::AttackFloatLow1End;
+		attack.NextLowID = -1;
+		attack.NextHighID = -1;
+		attack.EndID = -1;
+		attack.AddSpecial = 0.0f;
+
+		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
+		attack.KnockbackEffectPower = 0.0f;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 0.0f / 30.0f;
+		attack.FreeDogde = true;
+
+		attack.DamageScale = 0.0f;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.AttackMove = 0.0f;
+		attack.AttackFunc = [&]() {};
+		attack.DamageType = DamageType::LowDamage;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attacklist[attack.ID] = attack;
 
 	}
 
@@ -698,8 +828,17 @@ void PlayerController::AttackInitialize()
 		attack.ID = AttackID::DogdeAttack;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
-		attack.MoutionID = AnimeID::AttackLow1;
+		attack.MoutionID = AnimeID::AttackDodgeRoll;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.Rotate = false;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::SpeedJumpAttack;
+		attack.NextLowID = -1;
+		attack.NextHighID = -1;
+		attack.MoutionID = AnimeID::AttackSpeedJump;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+		attack.Rotate = false;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::High1;
@@ -710,6 +849,7 @@ void PlayerController::AttackInitialize()
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.AttackMove = 0.0f;
 		attack.FloatMove = 0.0f;
+		attack.Rotate = true;
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -750,9 +890,12 @@ void PlayerController::AttackInitialize()
 		attack.DamageScale = 1.0f;
 		attack.AttackMove = 0.0f;
 		attack.AddSpecial = 0.0f;
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
 		attack.DamageType = DamageType::DethBrowDamage;
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 1.0f;
+		attack.Rotate = false;
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -826,8 +969,17 @@ void PlayerController::AttackInitialize()
 	attack.ID = AttackID::DogdeAttack;
 	attack.NextLowID = -1;
 	attack.NextHighID = -1;
-	attack.MoutionID = AnimeID::AttackLow1;
+	attack.MoutionID = AnimeID::AttackDodgeRoll;
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
+	attack.Rotate = false;
+	attacklist[attack.ID] = attack;
+	//+++++++++++++++++++++++
+	attack.ID = AttackID::SpeedJumpAttack;
+	attack.NextLowID = -1;
+	attack.NextHighID = -1;
+	attack.MoutionID = AnimeID::AttackSpeedJump;
+	attack.AttackTime = getMoutionTime(attack.MoutionID);
+	attack.Rotate = false;
 	attacklist[attack.ID] = attack;
 	//+++++++++++++++++++++++
 	attack.ID = AttackID::High1;
@@ -838,6 +990,7 @@ void PlayerController::AttackInitialize()
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	attack.AttackMove = 0.0f;
 	attack.FloatMove = 0.0f;
+	attack.Rotate = true;
 	attacklist[attack.ID] = attack;
 
 	//+++++++++++++++++++++++
@@ -878,9 +1031,12 @@ void PlayerController::AttackInitialize()
 	attack.DamageScale = 1.0f;
 	attack.AttackMove = 0.0f;
 	attack.AddSpecial = 0.0f;
+	attack.OnDamageStart = 0.0f / 30.0f;
+	attack.OnDamageEnd = 9999.0f / 30.0f;
 	attack.DamageType = DamageType::DethBrowDamage;
 	attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 	attack.KnockbackEffectPower = 1.0f;
+	attack.Rotate = false;
 	attacklist[attack.ID] = attack;
 
 	//+++++++++++++++++++++++
@@ -954,8 +1110,17 @@ void PlayerController::AttackInitialize()
 	attack.ID = AttackID::DogdeAttack;
 	attack.NextLowID = -1;
 	attack.NextHighID = -1;
-	attack.MoutionID = AnimeID::AttackLow1;
+	attack.MoutionID = AnimeID::AttackDodgeRoll;
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
+	attack.Rotate = false;
+	attacklist[attack.ID] = attack;
+	//+++++++++++++++++++++++
+	attack.ID = AttackID::SpeedJumpAttack;
+	attack.NextLowID = -1;
+	attack.NextHighID = -1;
+	attack.MoutionID = AnimeID::AttackSpeedJump;
+	attack.AttackTime = getMoutionTime(attack.MoutionID);
+	attack.Rotate = false;
 	attacklist[attack.ID] = attack;
 	//+++++++++++++++++++++++
 	attack.ID = AttackID::High1;
@@ -966,6 +1131,7 @@ void PlayerController::AttackInitialize()
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	attack.AttackMove = 0.0f;
 	attack.FloatMove = 0.0f;
+	attack.Rotate = true;
 	attacklist[attack.ID] = attack;
 
 	//+++++++++++++++++++++++
@@ -1006,9 +1172,12 @@ void PlayerController::AttackInitialize()
 	attack.DamageScale = 1.0f;
 	attack.AttackMove = 0.0f;
 	attack.AddSpecial = 0.0f;
+	attack.OnDamageStart = 0.0f / 30.0f;
+	attack.OnDamageEnd = 9999.0f / 30.0f;
 	attack.DamageType = DamageType::DethBrowDamage;
 	attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 	attack.KnockbackEffectPower = 1.0f;
+	attack.Rotate = false;
 	attacklist[attack.ID] = attack;
 
 
@@ -1153,6 +1322,9 @@ void PlayerController::PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum
 
 void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel,bool DodgeInevitable, bool GuardInevitable)
 {
+	if (m_CurrentAttack.ID == AttackID::Special) {
+		return;
+	}
 	if (!GuardInevitable && IsGuard() && XMVector3Dot(gameObject->mTransform->Forward(), attackVect).x < 0) {
 		m_GuardParam.AttackGuard = true;
 
@@ -1306,7 +1478,10 @@ void PlayerController::SpeedJumpWeaponCatch(GameObject weapon)
 {
 	mJump.y += m_JumpPower * 3;
 	setWeapon(weapon);
-	SetPlayerState(PlayerState::Free);
+
+	m_NextAttack = AttackID::SpeedJumpAttack;
+	SetPlayerState(PlayerState::Attack);
+	//SetPlayerState(PlayerState::Free);
 }
 
 void PlayerController::AddMove(XMVECTOR v)
@@ -1529,28 +1704,14 @@ void PlayerController::GuardExit()
 
 void PlayerController::AttackEnter()
 {
-	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
-
-	if (m_NextAttack >= 0 && m_NextAttack < AttackID::Count) {
-		if (auto w = GetWeapon()) {
-			WeaponType t = w->GetWeaponType();
-			m_CurrentWeaponType = (int)t;
-			m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
-		}
+	if (m_CurrentAttack.ID == (int)AttackID::Special) {
+		m_MoutionSpeed = 1.0f;
 	}
-	if (m_CurrentAttack.AttackTime <= -1.0f) {
-		m_CurrentAttack.AttackTime = getMoutionTime(m_CurrentAttack.MoutionID);
+	else {
+		m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
 	}
 
-	if (m_CurrentAttack.SEID >= 0) {
-		SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
-	}
-
-	m_CurrentAttack.AttackFunc();
-
-	changeAnime(m_CurrentAttack.MoutionID);
-
-	m_NextAttack = -1;
+	currentAttackChange(m_NextAttack);
 
 	mJump.x = 0.0f;
 	mJump.z = 0.0f;
@@ -1558,15 +1719,16 @@ void PlayerController::AttackEnter()
 
 	m_RotateLimit = Init::RotateLimit_attack;
 
-	if (m_CurrentAttack.FloatMove != 0.0f) {
-		mJump.y = 0.0f;
-		mJump.y += m_CurrentAttack.FloatMove;
-	}
 }
 
 void PlayerController::AttackExcute()
 {
-	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
+	if (m_CurrentAttack.ID == (int)AttackID::Special) {
+		m_MoutionSpeed = 1.0f;
+	}
+	else {
+		m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
+	}
 	dontmove();
 
 	moveUpdate();
@@ -1656,23 +1818,7 @@ void PlayerController::AttackExcute()
 			}
 		}
 
-		m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
-		if (m_CurrentAttack.AttackTime <= -1.0f) {
-			m_CurrentAttack.AttackTime = getMoutionTime(m_CurrentAttack.MoutionID);
-		}
-		if (m_CurrentAttack.SEID >= 0) {
-			SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
-		}
-		m_CurrentAttack.AttackFunc();
-
-		changeAnime(m_CurrentAttack.MoutionID);
-
-		if (m_CurrentAttack.FloatMove != 0.0f) {
-			mJump.y = 0.0f;
-			mJump.y += m_CurrentAttack.FloatMove;
-		}
-
-		m_NextAttack = -1;
+		currentAttackChange(m_NextAttack);
 
 		if (auto w = GetWeapon()) {
 			w->SetAttackFlag(false);
@@ -1690,23 +1836,7 @@ void PlayerController::AttackExcute()
 			}
 		}
 
-		m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
-		if (m_CurrentAttack.AttackTime <= -1.0f) {
-			m_CurrentAttack.AttackTime = getMoutionTime(m_CurrentAttack.MoutionID);
-		}
-		if (m_CurrentAttack.SEID >= 0) {
-			SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
-		}
-		m_CurrentAttack.AttackFunc();
-
-		changeAnime(m_CurrentAttack.MoutionID);
-
-		if (m_CurrentAttack.FloatMove != 0.0f) {
-			mJump.y = 0.0f;
-			mJump.y += m_CurrentAttack.FloatMove;
-		}
-
-		m_NextAttack = -1;
+		currentAttackChange(m_NextAttack);
 
 		if (auto w = GetWeapon()) {
 			w->SetAttackFlag(false);
@@ -1738,6 +1868,8 @@ void PlayerController::AttackExit()
 	m_RotateLimit = Init::RotateLimit_default;
 
 	m_MoveVelo = XMVectorZero();
+
+	m_UseGravity = true;
 }
 
 void PlayerController::DodgeEnter()
@@ -1745,9 +1877,9 @@ void PlayerController::DodgeEnter()
 	m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
 	m_RotateLimit = Init::RotateLimit_dodge;
 
-	if (m_BoneMirrorObject) {
-		m_BoneMirrorObject->Disable();
-	}
+	//if (m_BoneMirrorObject) {
+	//	m_BoneMirrorObject->Disable();
+	//}
 
 
 	float x = 0, y = 0;
@@ -1830,22 +1962,22 @@ void PlayerController::DodgeEnter()
 void PlayerController::DodgeExcute()
 {
 	float time = Hx::DeltaTime()->GetDeltaTime();
-	if (m_BoneHips) {
-		auto model = m_AnimeModel->mTransform->Position();
-		//auto bone = m_BoneHips->mTransform->Position();
-		//model.y = 0.0f;
-		//bone.y = 0.0f;
-		//bone -= model;
-		float bone_z = model.z;
-		if (time != 0) {
-			m_MoveVelo = m_AnimeModel->mTransform->Forward() * (bone_z - m_DogdeParam.HipsZ) * (1.0f/time);
-		}
-		else {
-			m_MoveVelo = XMVectorZero();
-		}
-		m_DogdeParam.HipsZ = bone_z;
-
-	}
+	//if (m_BoneHips) {
+	//	auto model = m_AnimeModel->mTransform->Position();
+	//	//auto bone = m_BoneHips->mTransform->Position();
+	//	//model.y = 0.0f;
+	//	//bone.y = 0.0f;
+	//	//bone -= model;
+	//	float bone_z = model.z;
+	//	if (time != 0) {
+	//		m_MoveVelo = m_AnimeModel->mTransform->Forward() * (bone_z - m_DogdeParam.HipsZ) * (1.0f/time);
+	//	}
+	//	else {
+	//		m_MoveVelo = XMVectorZero();
+	//	}
+	//	m_DogdeParam.HipsZ = bone_z;
+	//
+	//}
 
 	//AddDelayUpdate([&]() {
 	//	if (m_BoneHips) {
@@ -1916,9 +2048,9 @@ void PlayerController::DodgeExcute()
 
 void PlayerController::DodgeExit()
 {
-	if (m_BoneMirrorObject) {
-		m_BoneMirrorObject->Enable();
-	}
+	//if (m_BoneMirrorObject) {
+	//	m_BoneMirrorObject->Enable();
+	//}
 	m_MoutionSpeed = 1.0f;
 
 	m_DogdeParam.Timer = 0.0f;
@@ -2858,6 +2990,49 @@ void PlayerController::setWeapon(GameObject weapon)
 	});
 }
 
+void PlayerController::currentAttackChange(int attackid)
+{
+	m_NextAttack = attackid;
+	if (m_NextAttack >= 0 && m_NextAttack < (int)AttackID::Count) {
+		if (auto w = GetWeapon()) {
+			WeaponType t = w->GetWeaponType();
+			m_CurrentWeaponType = (int)t;
+			m_CurrentAttack = m_AttackStateList[m_CurrentWeaponType][m_NextAttack];
+		}
+	}
+	if (m_CurrentAttack.AttackTime <= -1.0f) {
+		m_CurrentAttack.AttackTime = getMoutionTime(m_CurrentAttack.MoutionID);
+	}
+
+	if (m_CurrentAttack.SEID >= 0) {
+		SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
+	}
+
+	m_CurrentAttack.AttackFunc();
+
+	if (m_CurrentAttack.ID == (int)AttackID::Special) {
+		m_MoutionSpeed = 1.0f;
+	}
+	else {
+		m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
+	}
+
+	changeAnime(m_CurrentAttack.MoutionID);
+
+	m_UseGravity = m_CurrentAttack.UseGravity;
+
+	if (!m_UseGravity) {
+		mJump.y = 0.0f;
+	}
+
+	m_NextAttack = -1;
+
+	if (m_CurrentAttack.FloatMove != 0.0f) {
+		mJump.y = 0.0f;
+		mJump.y += m_CurrentAttack.FloatMove;
+	}
+}
+
 void PlayerController::freeAnimeUpdate()
 {
 	if (m_FreeAIMMode) {
@@ -3095,7 +3270,7 @@ void PlayerController::BoneMoveUpdate()
 			flag = true;
 		}
 		bone -= model;
-		bone.y = 0.0f;
+		//bone.y = 0.0f;
 		//m_AnimeModel->mTransform->Position(m_BoneMirrorObject->mTransform->Position()*0.02);
 		if (flag) {
 			auto move = bone - m_BoneBackPos;
