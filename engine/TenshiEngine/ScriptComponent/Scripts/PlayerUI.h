@@ -15,9 +15,6 @@ public:
 
 private:
 	//ƒƒ“ƒo•Ï”
-	SERIALIZE
-	GameObject m_Player;
-	//weak_ptr<TextComponent> m_TextComponent;
 	
 	SERIALIZE float m_HP_BarSize;
 	SERIALIZE GameObject m_HP_Bar;

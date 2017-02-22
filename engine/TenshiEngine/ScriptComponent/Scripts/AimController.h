@@ -31,6 +31,5 @@ private:
 	//UI
 	GameObject mAimUISet;
 	SERIALIZE
-	GameObject mUIParent;
 	GameObject mTargetUI;
 };

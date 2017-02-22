@@ -30,6 +30,7 @@ struct AttackState {
 	float OnDamageEnd = 999999.0f;
 	bool FreeDogde = false;
 	bool Rotate = true;
+	bool UseGravity = true;
 	std::function<void(void)> AttackFunc = []() {};
 	DamageType DamageType = DamageType::LowDamage;
 	BATTLEACTION::Enum KnockbackEffect = BATTLEACTION::WINCEACTION;
@@ -160,6 +161,7 @@ private:
 	void GettingWeapon();
 	void throwWeapon();
 	void setWeapon(GameObject weapon);
+	void currentAttackChange(int attackid);
 
 	void freeAnimeUpdate();
 
