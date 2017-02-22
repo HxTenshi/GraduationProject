@@ -64,48 +64,48 @@ void PauseMenuManager::OnCollideExit(GameObject target){
 //開いている間の処理
 void PauseMenuManager::UpdateOpne() {
 
-	//Lerp処理
-	for (int i = 0; i < m_objMap.size(); i++) {
-		//左上のテクスチャのみ処理固定
-		for (int j = 0; j < m_objMap[i].size(); j++) {
+	//リターン処理
+	for (int i = 0; i < m_objMap.size(); i++)
+		for (int j = 0; j < m_objMap[i].size(); j++)
 			if (m_objMap[i][j] == nullptr) return;
-		}
-	}
 
-	//左上のポーズテクスチャ
-	m_lerpTimers[0] += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
-	m_lerpTimers[0] = min(max(0.0f, m_lerpTimers[0]), 1.0f);
-	LerpFunc(m_objMap[0][0], m_lerpTimers[0]);
+	//入力間隔
+	const float STICK_INTERVAL = 0.3f;
+	//インターバル加算
+	m_stickInterval += 1.0f * Hx::DeltaTime()->GetNoScaleDeltaTime();
+	//上限設定
+	m_stickInterval = min(m_stickInterval, STICK_INTERVAL);
+	//入力間隔を見たいしているか
+	bool isStickInterval = m_stickInterval >= STICK_INTERVAL;
+
+
+	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);	//左スティック
+	bool isUpLS = ls.y > 0.5f;	//スティック上方向
+	bool isDownLS = ls.y < -0.5f;//スティック下方向
+	bool isStartKey = Input::Trigger(PAD_X_KeyCode::Button_B);//Bボタン
 
 	if (!m_isItimie) {
 		//lerpの計算
 		m_lerpTimers[1] += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 		m_lerpTimers[2] -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
-		m_lerpTimers[1] = min(max(0.0f, m_lerpTimers[1]), 1.0f);
-		m_lerpTimers[2] = min(max(0.0f, m_lerpTimers[2]), 1.0f);
-
 		
-		m_stickInterval += 1.0f * Hx::DeltaTime()->GetDeltaTime();
-		m_stickInterval = min(m_stickInterval, 1.0f);
-		const float STICK_INTERVAL = 0.5f;
-		bool isStickInterval = m_stickInterval > STICK_INTERVAL;
-		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
-		bool isUpLS = ls.y > 0.5f;
-		bool isDownLS = ls.y < -0.5f;
-		if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && STICK_INTERVAL) { 
+		
+		if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && isStickInterval) { 
 			m_num--;
 			m_stickInterval = 0.0f;
+			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
-		if ((Input::Trigger(KeyCode::Key_DOWN) || isDownLS) && STICK_INTERVAL) { 
+		if ((Input::Trigger(KeyCode::Key_DOWN) || isDownLS) && isStickInterval) { 
 			m_num++; 
 			m_stickInterval = 0.0f;
+			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
 		//0～3の間にクランプ
 		m_num = min(max(0, m_num), 3);
 
-		bool isSpace = Input::Trigger(PAD_X_KeyCode::Button_B);
+		
 		//それぞれの反応を起こす
-		if (Input::Trigger(KeyCode::Key_SPACE) || isSpace) MenuReAction(m_num);
+		if (Input::Trigger(KeyCode::Key_SPACE) || isStartKey) MenuReAction(m_num);
 
 		//囲い有効,座標移動
 		m_kakoi->Enable();
@@ -116,25 +116,31 @@ void PauseMenuManager::UpdateOpne() {
 		//lerpの計算
 		m_lerpTimers[1] -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 		m_lerpTimers[2] += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
-		m_lerpTimers[1] = min(max(0.0f, m_lerpTimers[1]), 1.0f);
-		m_lerpTimers[2] = min(max(0.0f, m_lerpTimers[2]), 1.0f);
 
 		//めにゅーを閉じる
-		if (Input::Trigger(KeyCode::Key_SPACE))MenuReAction(4);
+		if (Input::Trigger(KeyCode::Key_SPACE) || isStartKey) MenuReAction(4); 
 
 		//囲い無効
 		m_kakoi->Disable();
 	}
 
-	//Lerp処理
-	for (int i = 0; i < m_objMap.size(); i++) {
-		//左上のテクスチャのみ処理固定
-		for (int j = 0; j < m_objMap[i].size(); j++) {
-			LerpFunc(m_objMap[i][j], m_lerpTimers[i]);
-		}
-	}
-	//右下のテクスチャ
+	//左上のポーズテクスチャ
+	m_lerpTimers[0] += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
+
+	//クランプ処理
+	m_lerpTimers[0] = min(max(0.0f, m_lerpTimers[0]), 1.0f);
+	m_lerpTimers[1] = min(max(0.0f, m_lerpTimers[1]), 1.0f);
+	m_lerpTimers[2] = min(max(0.0f, m_lerpTimers[2]), 1.0f);
+
+
+	/*座標移動*/
 	LerpFunc(m_objMap[1][3], 1.0f);
+	for (int i = 0; i < m_objMap.size(); i++)
+		//左上のテクスチャのみ処理固定
+		for (int j = 0; j < m_objMap[i].size(); j++)
+			LerpFunc(m_objMap[i][j], m_lerpTimers[i]);
+	//右下のテクスチャ
+	LerpFunc(m_objMap[0][0], m_lerpTimers[0]);
 
 
 	//フェードイン
@@ -210,6 +216,8 @@ void PauseMenuManager::ClosePauseMenu(){
 
 //それぞれの処理を呼ぶ
 void PauseMenuManager::MenuReAction(int num){
+	//決定音声再生
+	SE(SoundManager::SoundSE_ID::Enum::Decision);
 
 	switch (num)
 	{
@@ -259,7 +267,8 @@ void PauseMenuManager::BackMenu(){
 
 //タイトルに飛ぶ
 void PauseMenuManager::BackToTitle(){
-	Hx::LoadScene("Assets/title.scene");
+	Hx::DeltaTime()->SetTimeScale(1.0f);
+	Hx::LoadScene("Assets/Title.scene");
 }
 
 //Lerpを用いた処理
@@ -273,4 +282,9 @@ void PauseMenuManager::LerpFunc(Struct* structObj, float lerpTime){
 	//マテリアルのアルファ値の計算
 	auto material = structObj->m_texObj->GetComponent<MaterialComponent>();
 	material->SetAlbedoColor(XMFLOAT4(1, 1, 1, lerpTime));
+}
+
+void PauseMenuManager::SE(SoundManager::SoundSE_ID::Enum key){
+	XMVECTOR cameraPos = UniqueObject::GetCamera()->mTransform->Position();
+	SoundManager::PlaySE(key, cameraPos);
 }

@@ -64,11 +64,6 @@ namespace funifuni {
 
 	//毎フレーム呼ばれます
 	void TitleManager::Update() {
-		if (!is_bgm) {
-			is_bgm = true;
-			//OnBGM();
-		}
-
 
 		//左スティックの入力を取得
 		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
@@ -80,7 +75,7 @@ namespace funifuni {
 			InitPosition(is_arrow);
 			Back();
 			SetArrowPosition();
-			OnSE(SoundManager::SoundSE_ID::Enum::Weapon_Break);
+			OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
 		if ((Input::Trigger(KeyCode::Key_D) || isRightLS) && !is_next) {
 			is_next = true;
@@ -88,7 +83,7 @@ namespace funifuni {
 			InitPosition(is_arrow);
 			Next();
 			SetArrowPosition();
-			OnSE(SoundManager::SoundSE_ID::Enum::Weapon_Break);
+			OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
 
 		//決定キーを押されたか
@@ -241,17 +236,10 @@ namespace funifuni {
 	}
 
 	void TitleManager::OnBGM(){
-		//if (!m_soundManager) return;
-		//auto sound = m_soundManager->GetScript<SoundManager>();
-		//if (!sound) return;
-		//sound->PlayBGM(SoundManager::SoundBGM_ID::Enum::Title);
 		SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Enum::Title);
 	}
 
 	void TitleManager::OnSE(SoundManager::SoundSE_ID::Enum seID)
 	{
-		//if (!m_soundManager) return;
-		//auto sound = m_soundManager->GetScript<SoundManager>();
-		//if (!sound) return;
 		SoundManager::PlaySE(seID, XMVectorSet(-4.0f,17.0f,-3.0f,0.0f));
 	}

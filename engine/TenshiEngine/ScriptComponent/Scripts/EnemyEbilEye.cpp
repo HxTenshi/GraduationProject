@@ -3,6 +3,7 @@
 #include "../h_standard.h"
 #include "../h_component.h"
 #include "PlayerController.h"
+#include "Score.h"
 
 EnemyEbilEye::EnemyEbilEye()
 {
@@ -161,6 +162,7 @@ bool EnemyEbilEye::LostPlayer()
 
 void EnemyEbilEye::ChildFinalize()
 {
+	Score::AddScore();
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
