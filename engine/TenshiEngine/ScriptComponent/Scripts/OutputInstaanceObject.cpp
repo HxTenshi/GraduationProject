@@ -7,6 +7,7 @@ bool OutputInstaanceObject::OnStart(GameObject Sender)
 	GameObject obj = Hx::Instance(mInstance);
 	obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
 	obj->mTransform->WorldQuaternion(gameObject->mTransform->WorldQuaternion());
+	if (!m_Output)return false;
 	if (m_Output->GetScript<OutPlayEnemyAnimation>()) {
 		m_Output->GetScript<OutPlayEnemyAnimation>()->SetInstanceEnemy(obj);
 	}

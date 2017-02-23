@@ -57,6 +57,7 @@ public:
 			Dodge,
 			SpeedJump,
 			Attack,
+			Special,
 			KnockBack,
 			Down,
 			Movie,
@@ -124,6 +125,10 @@ private:
 	void AttackEnter();
 	void AttackExcute();
 	void AttackExit();
+
+	void SpecialEnter();
+	void SpecialExcute();
+	void SpecialExit();
 
 	void DodgeEnter();
 	void DodgeExcute();
@@ -214,6 +219,8 @@ private:
 	//É{Å[Éìí«è]é¸ÇË
 	SERIALIZE GameObject m_BoneMirrorObject;
 	XMVECTOR m_BoneBackPos;
+
+	SERIALIZE GameObject m_SpecialGimick;
 
 	float m_MoveSpeed_ComboAdd;
 	float m_MoutionSpeed_ComboAdd;

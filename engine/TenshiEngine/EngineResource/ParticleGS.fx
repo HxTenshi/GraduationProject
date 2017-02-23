@@ -284,7 +284,13 @@ void GS0_Main(point GS_IN In[1],                   // ƒ|ƒCƒ“ƒg ƒvƒŠƒ~ƒeƒBƒu‚Ì“ü—
 			//Out.v += -G.xyz;
 		}
 		else{
-			Out.v += G.xyz * GameTime.z;
+			//ƒoƒEƒ“ƒh‚ð10ˆÈã‚É‚·‚é‚ÆGravity‚ªƒ[ƒJƒ‹•ûŒü‚É‚È‚é
+			if (MinMaxScale.z >= 10.0) {
+				Out.v += mul(G.xyz, (float3x3)World) * GameTime.z;
+			}
+			else {
+				Out.v += G.xyz * GameTime.z;
+			}
 		}
 	}
 

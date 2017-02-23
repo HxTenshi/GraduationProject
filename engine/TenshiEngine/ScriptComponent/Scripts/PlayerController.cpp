@@ -13,6 +13,7 @@
 #include "WeaponControl.h"
 #include "GetWeapon.h"
 #include "SoundManager.h"
+#include "OutputGimic.h"
 
 namespace Init {
 	static const float RotateLimit_default = 360.0f * 3.0f;
@@ -218,6 +219,7 @@ void PlayerController::Initialize(){
 	AddFunc(Dodge);
 	AddFunc(SpeedJump);
 	AddFunc(Attack);
+	AddFunc(Special);
 	AddFunc(KnockBack);
 	AddFunc(Down);
 	AddFunc(Movie);
@@ -1725,6 +1727,7 @@ void PlayerController::AttackExcute()
 {
 	if (m_CurrentAttack.ID == (int)AttackID::Special) {
 		m_MoutionSpeed = 1.0f;
+		SetPlayerState(PlayerState::Special);
 	}
 	else {
 		m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
@@ -1866,6 +1869,67 @@ void PlayerController::AttackExit()
 	m_NextAttack = -1;
 
 	m_RotateLimit = Init::RotateLimit_default;
+
+	m_MoveVelo = XMVectorZero();
+
+	m_UseGravity = true;
+}
+
+void PlayerController::SpecialEnter()
+{
+	//Hx::DeltaTime()->SetTimeScale(0.0f);
+	m_MoutionSpeed = 1.0f;
+
+	currentAttackChange((int)AttackID::Special);
+
+	mJump.x = 0.0f;
+	mJump.z = 0.0f;
+
+	if (auto w = GetWeapon()) {
+		w->SetAttackFlag(true);
+	}
+
+	if (auto gimick = OutputGimic::GetOutputGimic(m_SpecialGimick)) {
+		gimick->OnStart(gameObject);
+	}
+}
+
+void PlayerController::SpecialExcute()
+{
+
+	if (!m_AnimeModel)return;
+	auto anime = m_AnimeModel->GetComponent<AnimationComponent>();
+	if (!anime)return;
+
+	m_CurrentAnime_Weight = 1.0f;
+
+	auto endtime = anime->GetTotalTime(m_CurrentAnimeID);
+	auto p = anime->GetAnimetionParam(m_CurrentAnimeID);
+	float timescale = Hx::DeltaTime()->GetTimeScale();
+	float scale = 1.0f - timescale;
+	p.mTime += Hx::DeltaTime()->GetNoScaleDeltaTime() * 30.0f * scale;
+	p.mTime = min(p.mTime, endtime);
+	p.mWeight = 1.0f;
+	p.mTimeScale = 1.0f;
+	anime->SetAnimetionParam(m_CurrentAnimeID, p);
+
+	if (p.mTime == endtime) {
+		SetPlayerState(PlayerState::Free);
+	}
+
+}
+
+void PlayerController::SpecialExit()
+{
+	//Hx::DeltaTime()->SetTimeScale(1.0f);
+	if (auto w = GetWeapon()) {
+		w->SetAttackFlag(false);
+	}
+	m_MoutionSpeed = 1.0f;
+
+	m_CurrentAttack = AttackState();
+
+	m_NextAttack = -1;
 
 	m_MoveVelo = XMVectorZero();
 
