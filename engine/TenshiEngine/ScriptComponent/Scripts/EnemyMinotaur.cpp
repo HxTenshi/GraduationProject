@@ -180,6 +180,7 @@ void EnemyMinotaur::BattleModeUpdate()
 			if (m_Debug_flag)Hx::Debug()->Log("AngerCoor");
 		}
 		auto g = Hx::Instance(m_DeadEffect);
+		Hx::Instance(m_Archer);
 		if (!g)return;
 		auto pos = gameObject->mTransform->WorldPosition();
 		g->mTransform->WorldPosition(pos);
