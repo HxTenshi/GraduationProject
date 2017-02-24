@@ -161,6 +161,38 @@ void EnemyMinotaur::BattleModeInitilize()
 void EnemyMinotaur::BattleModeUpdate()
 {
 	battleActionUpdate[m_BattleModeParam.id]();
+
+
+	//怒り状態に遷移する処理
+	if (m_Hp <= m_MaxHp / 2 & !is_anger) {
+		//[SOUND]
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
+		is_anger = true;
+		AnimType t = ANIM_TAUNT;
+		m_attack_flag = true;
+		anim_loop = false;
+		RoutineSetUp(t);
+		if (auto mat = m_AngerMesh->GetComponent<MaterialComponent>()) {
+			auto albed = mat->mAlbedo;
+			albed.x += 1.0f;
+			m_AngerMesh->GetComponent<MaterialComponent>()->SetAlbedoColor(albed);
+			if (m_Debug_flag)Hx::Debug()->Log("AngerCoor");
+		}
+		auto g = Hx::Instance(m_DeadEffect);
+		if (!g)return;
+		auto pos = gameObject->mTransform->WorldPosition();
+		g->mTransform->WorldPosition(pos);
+		if (!m_Player)return;
+		auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
+		if (m_roucine_module.DistanceCheck(DSI_EM_ATTACK, distance, funifuni::ModuleDistanceType::In)) {
+			auto playerScript = m_Player->GetScript<PlayerController>();
+			if (!playerScript)return;
+			playerScript->Damage(0.0f, XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+
+		}
+
+		if (m_Debug_flag)Hx::Debug()->Log("Anger");
+	}
 	if (is_damage) {
 		if (m_damage_counter>=8) {
 			m_damage_counter = 0;
@@ -202,36 +234,6 @@ void EnemyMinotaur::BattleModeUpdate()
 	//デバッグデッドコード
 	DebugDead();
 
-	//怒り状態に遷移する処理
-	if (m_Hp <= m_MaxHp / 2 & !is_anger) {
-		//[SOUND]
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
-		is_anger = true;
-		AnimType t = ANIM_TAUNT;
-		m_attack_flag = true;
-		anim_loop = false;
-		RoutineSetUp(t);
-		if (auto mat = m_AngerMesh->GetComponent<MaterialComponent>()) {
-			auto albed = mat->mAlbedo;
-			albed.x += 1.0f;
-			m_AngerMesh->GetComponent<MaterialComponent>()->SetAlbedoColor(albed);
-			if (m_Debug_flag)Hx::Debug()->Log("AngerCoor");
-		}
-		auto g = Hx::Instance(m_DeadEffect);
-		if (!g)return;
-		auto pos = gameObject->mTransform->WorldPosition();
-		g->mTransform->WorldPosition(pos);
-		if (!m_Player)return;
-		auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
-		if (m_roucine_module.DistanceCheck(DSI_EM_ATTACK, distance, funifuni::ModuleDistanceType::In)) {
-			auto playerScript = m_Player->GetScript<PlayerController>();
-			if (!playerScript)return;
-			playerScript->Damage(0.0f, XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
-
-		}
-
-		if (m_Debug_flag)Hx::Debug()->Log("Anger");
-	}
 	//HPが０以下になったら死亡処理
 	if (m_Hp <= 0) {
 		is_dead = true;
