@@ -60,6 +60,7 @@ void EnemyMinotaur::ChildInitialize()
 	m_move_attackd_timer = 0.0f;
 	m_move_attackd_timemax = 0.0f;
 	m_damage_counter = 0;
+	Score::AddCountEnemy();
 }
 void EnemyMinotaur::SoloAction()
 {

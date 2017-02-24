@@ -60,6 +60,7 @@ EnemyArcher::EnemyArcher()
 
 void EnemyArcher::ChildInitialize()
 {
+	Score::AddCountEnemy();
 	ModelObject = m_ModelObject;
 	m_MaxHp = hp;
 	m_Hp = hp;

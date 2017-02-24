@@ -10,8 +10,12 @@ using namespace std;
 
 int Score::m_Score = 0;
 float Score::m_Time = 0.0f;
+int Score::m_CountEnemy = 0;
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Score::Initialize(){
+	Score::m_Score = 0;
+	Score::m_Time = 0.0f;
+	Score::m_CountEnemy = 0;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -21,7 +25,7 @@ void Score::Start(){
 
 //毎フレーム呼ばれます
 void Score::Update(){
-	m_Time += Hx::DeltaTime()->GetDeltaTime();
+	m_Time += Hx::DeltaTime()->GetNoScaleDeltaTime();
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -48,6 +52,11 @@ void Score::AddScore()
 {
 	Score::m_Score++;
 	Hx::Debug()->Log("m_Score : " + std::to_string(m_Score));
+}
+
+void Score::AddCountEnemy()
+{
+	Score::m_CountEnemy++;
 }
 
 void Score::Write()
