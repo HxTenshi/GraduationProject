@@ -119,7 +119,8 @@ namespace Mossan{
 		//string変換
 		std::string message = std::to_string(m_number);
 		//めっさーじ変更
-		ChangeText(message);
+	std::vector<std::vector<std::string>> scoreVec = Mossan::CSVScript::readCSV("Assets/data/Score.csv");
+		ChangeText(message + "/" + scoreVec[0][1]);
 	}
 
 	void GameClearTextObj::UpdateTime() {
@@ -135,7 +136,7 @@ namespace Mossan{
 		int minute = m_number / 60;
 		int second = m_number % 60;
 		//string変換
-		std::string message = std::to_string(minute) + " : " + std::to_string(second);
+		std::string message = (minute < 10 ? "0" : "") + std::to_string(minute) + " : " + (second < 10 ? "0" : "") + std::to_string(second);
 		//めっさーじ変更
 		ChangeText(message);
 	}
@@ -182,7 +183,7 @@ void GameClearScene::Initialize(){
 	m_texTimeObj.WaitBig();
 	std::vector<std::vector<std::string>> scoreVec = Mossan::CSVScript::readCSV("Assets/data/Score.csv");
 	m_textKillObj.SetScore(stoi(scoreVec[0][0]));
-	m_textTimeObj.SetScore(stoi(scoreVec[0][1]));
+	m_textTimeObj.SetScore(stoi(scoreVec[0][2]));
 	m_phase = Phase::phase1;
 }
 

@@ -51,6 +51,10 @@ public:
 	/// </summary>
 	void ThrowAway(XMVECTOR& throwdir);
 	/// <summary>
+	///武器を捨てる処理
+	/// </summary>
+	void Weapon::ThrowAway(GameObject target, float speed);
+	/// <summary>
 	///WeaponのPhysXを有効にする
 	/// </summary>
 	void WeaponUsePhysX();
@@ -103,6 +107,14 @@ public:
 	/// </summary>
 	bool GetIsHand();
 	/// <summary>
+	///武器を投げているか
+	/// </summary>
+	bool isThrow();
+	/// <summary>
+	///ボーン追従ターゲット指定
+	/// </summary>
+	void SetMirrorTarget(GameObject target);
+	/// <summary>
 	///名前の取得
 	/// </summary>
 	std::string GetName();
@@ -132,6 +144,11 @@ private:
 	SERIALIZE GameObject mWeaponControl;
 	bool mIsEnemyThrow;
 	AttackType m_attack_type;
+
+	//武器投げ時に誘導する対象
+	GameObject m_ThrowTarget;
+	float m_ThrowSpeed;
+	GameObject m_MirrorTarget;
 
 	//向くべき方向
 	XMVECTOR m_Vector;

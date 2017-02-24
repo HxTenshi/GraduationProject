@@ -60,6 +60,7 @@ EnemyEbilEye::EnemyEbilEye()
 }
 void EnemyEbilEye::ChildInitialize()
 {
+	Score::AddCountEnemy();
 	m_Hp = hp;
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;

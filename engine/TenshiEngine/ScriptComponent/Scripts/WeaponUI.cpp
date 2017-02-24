@@ -81,14 +81,14 @@ void WeaponUI::DurableGage(GameObject weapon)
 			//mul = nowdurable / maxdurable;
 			SetWeaponIcon(type, WeaponDamageType::Break);
 		}
-		m_NameTextObject->GetComponent<TextComponent>()->ChangeText(weapon->GetScript<Weapon>()->GetName());
+		if (m_NameTextObject)m_NameTextObject->GetComponent<TextComponent>()->ChangeText(weapon->GetScript<Weapon>()->GetName());
 		//float gage = 100 * mul*6.0f;
 		//tween.SetTween(gage,maxdurable,0.1f);
 		//XMVECTOR  scale = m_DurableGage->mTransform->Scale();
 		//m_DurableGage->mTransform->Scale(XMVectorSet(gage, scale.y, scale.z, scale.w));
 	}
 	else {
-		m_NameTextObject->GetComponent<TextComponent>()->ChangeText("");
+		if(m_NameTextObject)m_NameTextObject->GetComponent<TextComponent>()->ChangeText("");
 	}
 }
 

@@ -14,8 +14,10 @@ public:
 	void OnCollideExit(GameObject target)override;
 
 	static void AddScore();
+	static void AddCountEnemy();
 	static void Write();
 	static int m_Score;
+	static int m_CountEnemy;
 	static float m_Time;
 
 	

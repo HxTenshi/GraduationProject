@@ -83,6 +83,7 @@ EnemyRezardMan::EnemyRezardMan()
 
 void EnemyRezardMan::ChildInitialize()
 {
+	Score::AddCountEnemy();
 	m_SetPoint = true;
 	ModelObject = m_ModelObject;
 	m_MaxHp = hp;

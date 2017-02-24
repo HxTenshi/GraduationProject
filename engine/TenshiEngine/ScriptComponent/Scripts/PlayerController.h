@@ -314,6 +314,7 @@ private:
 	bool m_AttackMode;
 	int m_NextAttack;
 	AttackState m_CurrentAttack;
+	AttackState m_ThrowAttack;
 	int m_CurrentWeaponType;
 	std::vector<std::vector<AttackState>> m_AttackStateList;
 
