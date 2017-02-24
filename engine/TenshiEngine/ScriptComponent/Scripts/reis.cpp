@@ -92,6 +92,7 @@ struct AnimeID {
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void reis::Initialize(){
+	Score::AddCountEnemy();
 	m_CurrentAnimeID = -1;
 	m_Player = NULL;
 	m_ReisMode = ReisMode::Idle;
