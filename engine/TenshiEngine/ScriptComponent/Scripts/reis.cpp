@@ -92,7 +92,6 @@ struct AnimeID {
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void reis::Initialize(){
-	Score::AddCountEnemy();
 	m_CurrentAnimeID = -1;
 	m_Player = NULL;
 	m_ReisMode = ReisMode::Idle;
@@ -122,6 +121,7 @@ void reis::Initialize(){
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void reis::Start(){
 
+	Score::AddCountEnemy();
 	m_Player = UniqueObject::GetPlayer();
 	m_MoveFunc[ReisMode::Standby] = [&]() {
 		ChangeAnime(AnimeID::Idle);

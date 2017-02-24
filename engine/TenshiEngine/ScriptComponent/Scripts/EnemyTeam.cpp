@@ -26,12 +26,12 @@ void EnemyTeam::Initialize(){
 
 	battlePosFirst = 0;
 
-	TeamInitialize();
 
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void EnemyTeam::Start(){
+	TeamInitialize();
 	m_Player = UniqueObject::GetPlayer();
 }
 
