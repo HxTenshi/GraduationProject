@@ -115,6 +115,10 @@ public:
 	/// </summary>
 	void SetMirrorTarget(GameObject target);
 	/// <summary>
+	///ボーン追従ターゲット
+	/// </summary>
+	GameObject GetMirrorTarget();
+	/// <summary>
 	///名前の取得
 	/// </summary>
 	std::string GetName();
@@ -139,9 +143,13 @@ private:
 	GameObject m_ThrowHit;
 	SERIALIZE
 	GameObject m_WeaponEffect;
-
+	SERIALIZE
+	GameObject m_Break_Mesh;
+	SERIALIZE
+		PrefabAsset m_Break_Particle;
 	//鈴木追加
 	SERIALIZE GameObject mWeaponControl;
+	SERIALIZE PrefabAsset m_break_effect;
 	bool mIsEnemyThrow;
 	AttackType m_attack_type;
 

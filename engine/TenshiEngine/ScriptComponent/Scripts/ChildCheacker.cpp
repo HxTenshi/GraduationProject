@@ -21,6 +21,10 @@ void ChildCheacker::Update(){
 			//Hx::Debug()->Log("“G‚Ì¬‘à‚Ì‘S–Å");
 			Hx::DestroyObject(mDead);
 		}
+		if (mOutput) {
+			auto sender = OutputGimic::GetOutputGimic(mOutput);
+			if (sender)sender->OnStart(gameObject);
+		}
 	}
 
 }

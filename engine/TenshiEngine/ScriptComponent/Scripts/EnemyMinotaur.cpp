@@ -196,6 +196,7 @@ void EnemyMinotaur::BattleModeUpdate()
 		if (m_Debug_flag)Hx::Debug()->Log("Anger");
 	}
 	if (is_damage) {
+		m_AttackHit = true;
 		if (m_damage_counter>=8) {
 			m_damage_counter = 0;
 			//[SOUND]
@@ -267,6 +268,14 @@ void EnemyMinotaur::BattleModeUpdate()
 				RoutineSetUp(ANIM_R_WALK);
 				if (m_Debug_flag)Hx::Debug()->Log("AnimEnd");
 
+			}
+			if (m_anim_state==AnimType::ANIM_STUNNED) {
+				is_changed_take_over = false;
+				m_action_func = [this]() {MoveBack(); };
+				anim_loop = true;
+				m_attackd_func = nullptr;
+				RoutineSetUp(ANIM_B_WALK);
+				
 			}
 		}
 	}
@@ -593,7 +602,7 @@ void EnemyMinotaur::InitThoughRoutineParam()
 		2.0f,1.0f,1.5f,1.5f,
 		1.4f,1.4f,1.4f,1.4f,
 		1.4f,1.4f,1.4f,2.0f,
-		1.0f,1.0f,1.0f,1.0f,
+		1.0f,1.0f,1.0f,2.0f,
 		1.5f,1.4f
 	};
 	for (int i = 0; i < 18; ++i) {

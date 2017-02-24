@@ -47,6 +47,15 @@ void Weapon::Start(){
 
 //毎フレーム呼ばれます
 void Weapon::Update(){	
+	if (m_param.isBreak() & !is_hand) {
+		if (!m_break_effect.IsLoad())Hx::DestroyObject(gameObject);
+		auto g = Hx::Instance(m_break_effect);
+		if (!g)Hx::DestroyObject(gameObject);
+		auto pos = gameObject->mTransform->WorldPosition();
+		g->mTransform->WorldPosition(pos);
+		Hx::DestroyObject(gameObject);
+		return;
+	}
 	if (is_attack == 2) {
 		is_attack = 3;
 	}
@@ -62,6 +71,7 @@ void Weapon::Update(){
 		if (!mirrer->IsEnabled())return;
 		if (!m_MirrorTarget) {
 			m_MirrorTarget = NULL;
+			
 			mirrer->Disable();
 			ThrowAway();
 		}
@@ -96,7 +106,7 @@ void Weapon::OnCollideBegin(GameObject target){
 				//scr->Damage(m_AttackForce);
 				m_HitCollback(target, this, HitState::Damage);
 				
-
+				is_attack = 0;
 				mIsEnemyThrow = false;
 				m_ThrowTarget = NULL;
 				SetHitCollback([](auto o, auto w, auto t) {});
@@ -110,6 +120,7 @@ void Weapon::OnCollideBegin(GameObject target){
 					weapon->Hit();
 					//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
 				}
+				is_attack = 0;
 				mIsEnemyThrow = false;
 				m_ThrowTarget = NULL;
 				SetHitCollback([](auto o, auto w, auto t) {});
@@ -144,7 +155,7 @@ void Weapon::OnCollideBegin(GameObject target){
 
 //コライダーとのヒット中に呼ばれます
 void Weapon::OnCollideEnter(GameObject target) {
-	
+	if (!target)return;
 	if (is_attack == 1 || is_attack == 2) {
 		if (target->GetLayer() == 3 && is_hand) {
 			//敵へのダメージの処理
@@ -173,6 +184,18 @@ void Weapon::OnCollideExit(GameObject target){
 void Weapon::Damage(DamageType type,float mag=1.0f)
 {
 	m_param.Damage(type,mag);
+	if (m_param.isBreak()) {
+		if (m_Break_Mesh) {
+			m_Break_Mesh->Disable();
+			if (m_Break_Particle.IsLoad()) {
+				auto g = Hx::Instance(m_Break_Particle);
+				if (m_ThrowHit) {
+					auto pos = m_ThrowHit->mTransform->WorldPosition();
+					g->mTransform->WorldPosition(pos);
+				}
+			}
+		}
+	}
 }
 /// <summary>
 ///武器が壊れた時の判定
@@ -319,11 +342,12 @@ void Weapon::SetHitCollback(const HitCollbackType & collback)
 void Weapon::GetWeapon()
 {
 	break_time = 0.0f;
-
+	mIsEnemyThrow = false;
 	is_ground_hit = false;
 	is_hand = true;
 	is_fly = false;
 	is_attack = 0;
+	m_ThrowTarget = NULL;
 	//gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
@@ -341,7 +365,7 @@ void Weapon::GetWeapon()
 
 float Weapon::GetAttackPower()
 {
-	return (isBreak())?1.0f:m_param.AttackParam();
+	return (isBreak())?0.1f:m_param.AttackParam();
 }
 
 float Weapon::GetDurable()
@@ -431,6 +455,10 @@ bool Weapon::isThrow()
 void Weapon::SetMirrorTarget(GameObject target)
 {
 	m_MirrorTarget = target;
+}
+GameObject Weapon::GetMirrorTarget()
+{
+	return m_MirrorTarget;
 }
 std::string Weapon::GetName()
 {
