@@ -47,6 +47,15 @@ void Weapon::Start(){
 
 //毎フレーム呼ばれます
 void Weapon::Update(){	
+
+	if (m_param.isBreak() & !is_hand) {
+		auto g = Hx::Instance(m_break_effect);
+		if (!g)Hx::DestroyObject(gameObject);
+		auto pos = gameObject->mTransform->WorldPosition();
+		g->mTransform->WorldPosition(pos);
+		Hx::DestroyObject(gameObject);
+		return;
+	}
 	if (is_attack == 2) {
 		is_attack = 3;
 	}
@@ -144,7 +153,7 @@ void Weapon::OnCollideBegin(GameObject target){
 
 //コライダーとのヒット中に呼ばれます
 void Weapon::OnCollideEnter(GameObject target) {
-	
+	if (!target)return;
 	if (is_attack == 1 || is_attack == 2) {
 		if (target->GetLayer() == 3 && is_hand) {
 			//敵へのダメージの処理
@@ -341,7 +350,7 @@ void Weapon::GetWeapon()
 
 float Weapon::GetAttackPower()
 {
-	return (isBreak())?1.0f:m_param.AttackParam();
+	return (isBreak())?0.1f:m_param.AttackParam();
 }
 
 float Weapon::GetDurable()

@@ -155,6 +155,8 @@ private:
 
 	//武器のパラメータ
 	funifuni::WeaponParametor m_param;
+	SERIALIZE
+	PrefabAsset m_break_effect;
 private:
 	//テスト用
 	SERIALIZE
