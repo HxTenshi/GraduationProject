@@ -166,6 +166,7 @@ void EnemyMinotaur::BattleModeUpdate()
 	//“{‚èó‘Ô‚É‘JˆÚ‚·‚éˆ—
 	if (m_Hp <= m_MaxHp / 2 & !is_anger) {
 		//[SOUND]
+		m_Hp = m_MaxHp / 2;
 		SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
 		is_anger = true;
 		AnimType t = ANIM_TAUNT;
@@ -190,7 +191,7 @@ void EnemyMinotaur::BattleModeUpdate()
 			playerScript->Damage(0.0f, XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 
 		}
-
+		return;
 		if (m_Debug_flag)Hx::Debug()->Log("Anger");
 	}
 	if (is_damage) {
@@ -198,7 +199,6 @@ void EnemyMinotaur::BattleModeUpdate()
 			m_damage_counter = 0;
 			//[SOUND]
 			SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
-			is_anger = true;
 			AnimType t = ANIM_TAUNT;
 			m_attack_flag = true;
 			anim_loop = false;
@@ -224,6 +224,9 @@ void EnemyMinotaur::BattleModeUpdate()
 
 		//UŒ‚
 		m_Hp -= m_Damage;
+		if (m_Hp <= m_MaxHp / 2 & !is_anger) {
+			m_Hp = m_MaxHp / 2;
+		}
 		m_Damage = 0.0f;
 		anim_loop = false;
 		RoutineSetUp(ANIM_STUNNED);
