@@ -252,7 +252,7 @@ void EnemyEbilEye::TackleModeUpdate()
 	if (!cc)return;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (cc->IsGround() || m_Count > m_TackleTime) {
+	if (cc->IsGround() || m_Count > (m_TackleTime / 3.0f)) {
 		m_RotateEnd = true;
 		AnimChange(ANIM_ID::ANIM_ROTATEEYE, 10.0f, false);
 	}
