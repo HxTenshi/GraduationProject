@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "h_standard.h"
+#include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PlayerUI::Initialize(){
@@ -22,6 +23,7 @@ void PlayerUI::Start(){
 
 //毎フレーム呼ばれます
 void PlayerUI::Update(){
+	auto m_Player = UniqueObject::GetPlayer();
 	if (!m_Player)return;
 	auto scr = m_Player->GetScript<PlayerController>();
 	if (!scr)return;
@@ -31,8 +33,9 @@ void PlayerUI::Update(){
 		float hppar = hp / maxhp;
 		float x = m_HP_BarSize * hppar;
 
+		auto s = m_HP_Bar->mTransform->Scale();
 		auto p = m_HP_Bar->mTransform->Position();
-		p.x = -(m_HP_BarSize - x);
+		p.x = -s.x * (1.0f - hppar);
 		m_HP_Bar->mTransform->Position(p);
 
 		if (m_HP_BloomSpeed == 0.0f)return;
@@ -58,8 +61,9 @@ void PlayerUI::Update(){
 		float sppar = sp / 100.0f;
 		float x = m_SP_BarSize * sppar;
 
+		auto s = m_SP_Bar->mTransform->Scale();
 		auto p = m_SP_Bar->mTransform->Position();
-		p.x = -(m_SP_BarSize - x);
+		p.x = -s.x * (1.0f - sppar);
 		m_SP_Bar->mTransform->Position(p);
 
 		if (m_SP_BloomSpeed == 0.0f)return;

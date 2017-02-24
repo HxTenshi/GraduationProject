@@ -114,6 +114,10 @@ public:
 	///ボーン追従ターゲット指定
 	/// </summary>
 	void SetMirrorTarget(GameObject target);
+	/// <summary>
+	///名前の取得
+	/// </summary>
+	std::string GetName();
 private:
 	/// <summary>
 	///投げ捨てる時のアクション

@@ -30,6 +30,7 @@ struct AttackState {
 	float OnDamageEnd = 999999.0f;
 	bool FreeDogde = false;
 	bool Rotate = true;
+	bool UseGravity = true;
 	std::function<void(void)> AttackFunc = []() {};
 	DamageType DamageType = DamageType::LowDamage;
 	BATTLEACTION::Enum KnockbackEffect = BATTLEACTION::WINCEACTION;
@@ -56,6 +57,7 @@ public:
 			Dodge,
 			SpeedJump,
 			Attack,
+			Special,
 			KnockBack,
 			Down,
 			Movie,
@@ -124,6 +126,10 @@ private:
 	void AttackExcute();
 	void AttackExit();
 
+	void SpecialEnter();
+	void SpecialExcute();
+	void SpecialExit();
+
 	void DodgeEnter();
 	void DodgeExcute();
 	void DodgeExit();
@@ -160,6 +166,7 @@ private:
 	void GettingWeapon();
 	void throwWeapon();
 	void setWeapon(GameObject weapon);
+	void currentAttackChange(int attackid);
 
 	void freeAnimeUpdate();
 
@@ -212,6 +219,8 @@ private:
 	//É{Å[Éìí«è]é¸ÇË
 	SERIALIZE GameObject m_BoneMirrorObject;
 	XMVECTOR m_BoneBackPos;
+
+	SERIALIZE GameObject m_SpecialGimick;
 
 	float m_MoveSpeed_ComboAdd;
 	float m_MoutionSpeed_ComboAdd;

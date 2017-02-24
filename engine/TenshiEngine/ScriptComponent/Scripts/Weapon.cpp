@@ -432,6 +432,10 @@ void Weapon::SetMirrorTarget(GameObject target)
 {
 	m_MirrorTarget = target;
 }
+std::string Weapon::GetName()
+{
+	return m_name;
+}
 
 void Weapon::ThrowAwayAction()
 {
