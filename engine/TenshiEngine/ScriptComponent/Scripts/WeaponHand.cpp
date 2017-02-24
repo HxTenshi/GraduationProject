@@ -93,7 +93,7 @@ GameObject WeaponHand::GetHandWeapon()
 	return mWeapon;
 }
 
-void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback)
+void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback,bool FastCatch)
 {
 	if (mWeapon)return;
 	//if (mWeapon) {
@@ -111,6 +111,15 @@ void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& col
 	m_GetPosDistance = XMVector3Length(v).x;
 	mWeapon->mTransform->SetParent(Hx::GetRootActor());
 	mWeapon->mTransform->WorldPosition(pos2);
+
+	if (FastCatch) {
+		mWeapon->mTransform->SetParent(gameObject);
+		mWeapon->mTransform->Position(XMVectorZero());
+		mWeapon->mTransform->Rotate(XMVectorZero());
+
+		m_ActionFree = true;
+		m_NowGetAction = false;
+	}
 
 	if (auto scr = mWeapon->GetScript<Weapon>()) {
 		scr->GetWeapon();

@@ -267,16 +267,18 @@ void PlayerUI::Update(){
 
 
 	if (auto w = scr->GetWeapon()) {
-		if (w->isBreak()) {
-			m_WeaponBreakUI->Enable();
-		}
-		else {
-			m_WeaponBreakUI->Disable();
+		if (m_WeaponBreakUI) {
+			if (w->isBreak()) {
+				m_WeaponBreakUI->Enable();
+			}
+			else {
+				m_WeaponBreakUI->Disable();
+			}
 		}
 	}
 
 	auto target = scr->GetLockonTarget();
-	if (target && m_LockOnScaleTime !=0.0f && Enemy::GetEnemy(target)) {
+	if (target && m_LockOnScaleTime !=0.0f && Enemy::GetEnemy(target) && m_LockOnUI){
 		m_LockOnUI->Enable();
 		m_LockOnScaleTimer += Hx::DeltaTime()->GetDeltaTime();
 		m_LockOnScaleTimer = fmodf(m_LockOnScaleTimer, m_LockOnScaleTime);
@@ -294,7 +296,7 @@ void PlayerUI::Update(){
 
 		m_LockOnUI->mTransform->Scale(XMVectorSet(s,s,1.0f, 1.0f));
 	}
-	else {
+	else if(m_LockOnUI){
 		m_LockOnUI->Disable();
 	}
 	

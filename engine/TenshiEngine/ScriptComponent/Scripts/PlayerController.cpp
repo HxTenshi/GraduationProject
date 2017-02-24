@@ -343,6 +343,7 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 9999.0f / 30.0f;
 		attack.Rotate = false;
+		attack.UseGravity = true;
 
 		attack.DamageScale = 1.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
@@ -360,6 +361,7 @@ void PlayerController::AttackInitialize()
 		attack.AttackTime = 16.0f / 30.0f;
 		//attack.OnDamageStart = 6.0f / 60.0f;
 		attack.Rotate = true;
+		attack.UseGravity = false;
 
 		attack.OnDamageStart = 6.0f / 30.0f;
 		attack.OnDamageEnd = 16.0f / 30.0f;
@@ -656,6 +658,7 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 9999.0f / 30.0f;
 		attack.Rotate = false;
+		attack.UseGravity = true;
 
 		attack.DamageScale = 1.0f;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
@@ -676,6 +679,7 @@ void PlayerController::AttackInitialize()
 		attack.AttackMove = 0.0f;
 		attack.FloatMove = 0.0f;
 		attack.Rotate = true;
+		attack.UseGravity = false;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatLow1;
@@ -848,6 +852,7 @@ void PlayerController::AttackInitialize()
 		attack.MoutionID = AnimeID::AttackSpeedJump;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.Rotate = false;
+		attack.UseGravity = true;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::High1;
@@ -859,6 +864,7 @@ void PlayerController::AttackInitialize()
 		attack.AttackMove = 0.0f;
 		attack.FloatMove = 0.0f;
 		attack.Rotate = true;
+		attack.UseGravity = false;
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -989,6 +995,7 @@ void PlayerController::AttackInitialize()
 	attack.MoutionID = AnimeID::AttackSpeedJump;
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	attack.Rotate = false;
+	attack.UseGravity = true;
 	attacklist[attack.ID] = attack;
 	//+++++++++++++++++++++++
 	attack.ID = AttackID::High1;
@@ -1000,6 +1007,7 @@ void PlayerController::AttackInitialize()
 	attack.AttackMove = 0.0f;
 	attack.FloatMove = 0.0f;
 	attack.Rotate = true;
+	attack.UseGravity = false;
 	attacklist[attack.ID] = attack;
 
 	//+++++++++++++++++++++++
@@ -1130,6 +1138,7 @@ void PlayerController::AttackInitialize()
 	attack.MoutionID = AnimeID::AttackSpeedJump;
 	attack.AttackTime = getMoutionTime(attack.MoutionID);
 	attack.Rotate = false;
+	attack.UseGravity = true;
 	attacklist[attack.ID] = attack;
 	//+++++++++++++++++++++++
 	attack.ID = AttackID::High1;
@@ -1141,6 +1150,7 @@ void PlayerController::AttackInitialize()
 	attack.AttackMove = 0.0f;
 	attack.FloatMove = 0.0f;
 	attack.Rotate = true;
+	attack.UseGravity = false;
 	attacklist[attack.ID] = attack;
 
 	//+++++++++++++++++++++++
@@ -1499,7 +1509,18 @@ void PlayerController::SpeedJumpWeaponCatch(GameObject weapon,bool attack)
 		mJump.y += m_JumpPower * 2;
 		mode = PlayerState::Free;
 	}
-	setWeapon(weapon);
+	if (weapon) {
+		if (XMVector3Length(m_MoveVelo).x != 0.0f) {
+			auto pos = weapon->mTransform->WorldPosition();
+			pos.y -= 0.5f;
+			pos -= XMVector3Normalize(m_MoveVelo);
+			auto ppos = gameObject->mTransform->WorldPosition();
+			m_MoveVelo = pos - ppos;
+			moveUpdate();
+			m_MoveVelo = XMVectorZero();
+		}
+	}
+	setWeapon(weapon,true);
 
 	SetPlayerState(mode);
 	//SetPlayerState(PlayerState::Free);
@@ -3075,7 +3096,7 @@ void PlayerController::throwWeapon()
 	}
 }
 
-void PlayerController::setWeapon(GameObject weapon)
+void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 {
 	//WeaponHandのスクリプトの取得
 	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
@@ -3092,6 +3113,10 @@ void PlayerController::setWeapon(GameObject weapon)
 						AddSpecial(m_ThrowAttack.AddSpecial);
 						AddCombo();
 					}
+
+					if (m_ThrowAttack.DamageType != DamageType::DethBrowDamage) {
+						w->Damage(m_ThrowAttack.DamageType, m_WeaponResist_ComboAdd);
+					}
 				}
 			}else if (w->isAttack()) {
 				Hx::Debug()->Log("攻撃ヒット");
@@ -3101,12 +3126,15 @@ void PlayerController::setWeapon(GameObject weapon)
 						AddSpecial(m_CurrentAttack.AddSpecial);
 						AddCombo();
 					}
+					if (m_CurrentAttack.DamageType != DamageType::DethBrowDamage) {
+						w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
+					}
 				}
 				//WeaponType t = w->GetWeaponType();
 
 			}
 		}
-	});
+	}, FastCatch);
 }
 
 void PlayerController::currentAttackChange(int attackid)

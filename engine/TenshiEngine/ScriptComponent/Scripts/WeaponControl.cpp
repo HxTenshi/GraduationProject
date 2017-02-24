@@ -81,12 +81,12 @@ bool WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::str
 		else if (target->GetLayer() == 12) {
 			targetObject = target->mTransform->GetParent()->mTransform->Children();
 		}
-
+		GameObject enemyModel = NULL;
 		for (auto i : targetObject) {
-			if (i->GetLayer() == 10)target = i;
+			if (i->GetLayer() == 10)enemyModel = i;
 		}
 
-		mirrer->ChangeTargetBone(target);
+		mirrer->ChangeTargetBone(enemyModel);
 		mirrer->Enable();
 
 		auto vector = mirrer->GetBoneNames();

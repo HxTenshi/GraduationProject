@@ -18,4 +18,5 @@ private:
 	SERIALIZE bool mIsDead;
 	SERIALIZE GameObject mDead;
 
+	SERIALIZE GameObject mOutput;
 };
