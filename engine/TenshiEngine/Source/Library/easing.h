@@ -116,17 +116,13 @@ namespace Easing
 	}
 	inline double InOutExp(double t, double totaltime, double max, double min)
 	{
-		if (t == 0.0)
-			return min;
-		if (t == totaltime)
-			return max;
-		max -= min;
+		if (t == 0) return min;
+		if (t == totaltime) return max;
+		totaltime /= 2;
 		t /= totaltime;
-
-		if (t / 2 < 1)
-			return max / 2 * pow(2, 10 * (t - 1)) + min;
-		--t;
-		return max / 2 * (-pow(2, -10 * t) + 2) + min;
+		max -= min;
+		if (t < 1) return max/2 * pow(2, 10 * (t - 1)) + min;
+		return max/2 * (-pow(2, -10 * --t) + 2) + min;
 
 	}
 	inline double InCirc(double t, double totaltime, double max, double min)

@@ -115,6 +115,10 @@ public:
 	/// </summary>
 	void SetMirrorTarget(GameObject target);
 	/// <summary>
+	///ボーン追従ターゲット
+	/// </summary>
+	GameObject GetMirrorTarget();
+	/// <summary>
 	///名前の取得
 	/// </summary>
 	std::string GetName();

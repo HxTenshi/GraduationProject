@@ -105,7 +105,7 @@ void Weapon::OnCollideBegin(GameObject target){
 				//scr->Damage(m_AttackForce);
 				m_HitCollback(target, this, HitState::Damage);
 				
-
+				is_attack = 0;
 				mIsEnemyThrow = false;
 				m_ThrowTarget = NULL;
 				SetHitCollback([](auto o, auto w, auto t) {});
@@ -119,6 +119,7 @@ void Weapon::OnCollideBegin(GameObject target){
 					weapon->Hit();
 					//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
 				}
+				is_attack = 0;
 				mIsEnemyThrow = false;
 				m_ThrowTarget = NULL;
 				SetHitCollback([](auto o, auto w, auto t) {});
@@ -328,11 +329,12 @@ void Weapon::SetHitCollback(const HitCollbackType & collback)
 void Weapon::GetWeapon()
 {
 	break_time = 0.0f;
-
+	mIsEnemyThrow = false;
 	is_ground_hit = false;
 	is_hand = true;
 	is_fly = false;
 	is_attack = 0;
+	m_ThrowTarget = NULL;
 	//gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
@@ -440,6 +442,10 @@ bool Weapon::isThrow()
 void Weapon::SetMirrorTarget(GameObject target)
 {
 	m_MirrorTarget = target;
+}
+GameObject Weapon::GetMirrorTarget()
+{
+	return m_MirrorTarget;
 }
 std::string Weapon::GetName()
 {

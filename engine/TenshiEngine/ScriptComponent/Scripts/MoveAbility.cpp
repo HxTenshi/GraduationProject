@@ -2,6 +2,7 @@
 #include "../h_standard.h"
 #include "../h_component.h"
 #include "PlayerController.h"
+#include "Weapon.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void MoveAbility::Initialize(){
@@ -22,7 +23,11 @@ void MoveAbility::Update(){
 	//投げたところへの移動
 	if (onMove == true && mMovePoint && mPC)
 	{
-		XMVECTOR targetPosition = mMovePoint->mTransform->WorldPosition();
+		if (mPC->GetPlayerState() == PlayerController::PlayerState::Movie) {
+			onMove = false;
+			return;
+		}
+		XMVECTOR targetPosition = GetMovePosition();
 		//ここの1はキャラのYのサイズにしないと・・・。
 		//XMVECTOR characterSize = XMVectorSet(0, 3, 0, 0);
 		//targetPosition += characterSize;
@@ -49,13 +54,21 @@ void MoveAbility::Update(){
 
 		if (OnTargetDistance(targetPosition)) {
 			onMove = false;
-				mPC->SpeedJumpWeaponCatch(mMovePoint);
+			bool attack = false;
+			if (auto w = mMovePoint->GetScript<Weapon>()) {
+				if (auto target = w->GetMirrorTarget()) {
+					if (Enemy::GetEnemy(target)) {
+						attack = true;
+					}
+				}
+			}
+			mPC->SpeedJumpWeaponCatch(mMovePoint, attack);
 		}
 		else {
 			auto temp = mMoveActor->mTransform->WorldPosition();
-			if (XMVector3Length(m_LastPos - temp).x < mSpeed * Hx::DeltaTime()->GetDeltaTime() * 0.5f && !m_MoveFirst) {
+			if (XMVector3Length(m_LastPos - temp).x < mSpeed * Hx::DeltaTime()->GetDeltaTime() * 0.2f && !m_MoveFirst) {
 
-				auto v = XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - mMoveActor->mTransform->WorldPosition()) * -1;
+				auto v = XMVector3Normalize(GetMovePosition() - mMoveActor->mTransform->WorldPosition()) * -1;
 				mPC->Damage(0.0f, v, PlayerController::KnockBack::Down, true, true);
 				onMove = false;
 				mTime = 0;
@@ -63,11 +76,15 @@ void MoveAbility::Update(){
 			else {
 				m_LastPos = temp;
 				mMoveActor = gameObject->mTransform->GetParent();
-				mPC->SpeedJump(XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - temp) * mSpeed);
+				mPC->SpeedJump(XMVector3Normalize(GetMovePosition() - temp) * mSpeed);
 			}
 			m_MoveFirst = false;
 		}
 
+	}
+	else if (onMove == true && mPC) {
+		onMove = false;
+		mPC->Damage(0.0f, XMVectorZero(), PlayerController::KnockBack::Down, true, true);
 	}
 }
 
@@ -110,8 +127,18 @@ void MoveAbility::OnMove()
 	m_MoveFirst = true;
 	m_LastPos = mMoveActor->mTransform->WorldPosition();
 	if(mPC){
-		mPC->SpeedJump(XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - m_LastPos) * mSpeed);
+		mPC->SpeedJump(XMVector3Normalize(GetMovePosition() - m_LastPos) * mSpeed);
 	}
+}
+
+XMVECTOR MoveAbility::GetMovePosition()
+{
+	if (mMovePoint) {
+		auto pos = mMovePoint->mTransform->WorldPosition();
+		pos.y += 1.0f;
+		return pos;
+	}
+	return XMVectorZero();
 }
 
 //敵に当たった際のノックバック処理
@@ -125,7 +152,7 @@ void MoveAbility::KnockBack(GameObject target)
 		mTime = 0;
 		onMove = false;
 		if (mPC) {
-			auto v = XMVector3Normalize(mMovePoint->mTransform->WorldPosition() - mMoveActor->mTransform->WorldPosition()) * -1;
+			auto v = XMVector3Normalize(GetMovePosition() - mMoveActor->mTransform->WorldPosition()) * -1;
 			mPC->Damage(0.0f, v, PlayerController::KnockBack::Down, true, true);
 		}
 	}

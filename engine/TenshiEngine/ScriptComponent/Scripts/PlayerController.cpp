@@ -198,6 +198,7 @@ void PlayerController::Initialize(){
 	m_MoveSpeed_ComboAdd = 0.0f;
 	m_MoutionSpeed_ComboAdd = 0.0f;
 	m_WeaponResist_ComboAdd = 0.0f;
+	m_ATK_ComboAdd = 0.0f;
 
 	m_MoutionSpeed = 1.0f;
 
@@ -1294,6 +1295,11 @@ void PlayerController::OnCollideExit(GameObject target){
 
 void PlayerController::SetPlayerState(PlayerState::Enum state)
 {
+	if (m_PlayerState_Stack == PlayerState::Movie) {
+		if (state != PlayerState::Free) {
+			return;
+		}
+	}
 	if (state < 0)return;
 	if (state >= PlayerState::Count)return;
 
@@ -1482,13 +1488,20 @@ void PlayerController::SpeedJump(const XMVECTOR & vect)
 	SetPlayerState(PlayerState::SpeedJump);
 }
 
-void PlayerController::SpeedJumpWeaponCatch(GameObject weapon)
+void PlayerController::SpeedJumpWeaponCatch(GameObject weapon,bool attack)
 {
-	mJump.y += m_JumpPower * 3;
+	PlayerState::Enum mode = PlayerState::Free;
+	if (attack) {
+		m_NextAttack = AttackID::SpeedJumpAttack;
+		mode = PlayerState::Attack;
+	}
+	else {
+		mJump.y += m_JumpPower * 2;
+		mode = PlayerState::Free;
+	}
 	setWeapon(weapon);
 
-	m_NextAttack = AttackID::SpeedJumpAttack;
-	SetPlayerState(PlayerState::Attack);
+	SetPlayerState(mode);
 	//SetPlayerState(PlayerState::Free);
 }
 
@@ -1510,6 +1523,16 @@ Weapon * PlayerController::GetWeapon()
 		}
 	}
 	return nullptr;
+}
+
+GameObject PlayerController::GetLockonTarget()
+{
+	if (m_Camera) {
+		if (auto cam = m_Camera->GetScript<TPSCamera>()) {
+			return cam->GetLookTarget();
+		}
+	}
+	return NULL;
 }
 
 void PlayerController::LockEnter()
@@ -1932,6 +1955,7 @@ void PlayerController::SpecialExit()
 {
 	//Hx::DeltaTime()->SetTimeScale(1.0f);
 	if (auto w = GetWeapon()) {
+		w->Damage(DamageType::DethBrowDamage, m_WeaponResist_ComboAdd);
 		w->SetAttackFlag(false);
 	}
 	m_MoutionSpeed = 1.0f;
@@ -3063,7 +3087,7 @@ void PlayerController::setWeapon(GameObject weapon)
 			if (w->isThrow()) {
 				Hx::Debug()->Log("•Ší“Š‚°");
 
-				if (scr->Damage(m_ThrowAttack.DamageScale * w->GetAttackPower(), m_ThrowAttack.KnockbackEffect, XMVectorSet(0, m_ThrowAttack.KnockbackEffectPower, 0, 1))) {
+				if (scr->Damage(m_ThrowAttack.DamageScale * w->GetAttackPower() * m_ATK_ComboAdd, m_ThrowAttack.KnockbackEffect, XMVectorSet(0, m_ThrowAttack.KnockbackEffectPower, 0, 1))) {
 					if (t == Weapon::HitState::Damage) {
 						AddSpecial(m_ThrowAttack.AddSpecial);
 						AddCombo();
@@ -3072,13 +3096,10 @@ void PlayerController::setWeapon(GameObject weapon)
 			}else if (w->isAttack()) {
 				Hx::Debug()->Log("UŒ‚ƒqƒbƒg");
 
-				if (scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower(), m_CurrentAttack.KnockbackEffect, XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower, 0, 1))) {
+				if (scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower() * m_ATK_ComboAdd, m_CurrentAttack.KnockbackEffect, XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower, 0, 1))) {
 					if (t == Weapon::HitState::Damage) {
 						AddSpecial(m_CurrentAttack.AddSpecial);
 						AddCombo();
-					}
-					if (m_CurrentAttack.DamageType != DamageType::DethBrowDamage) {
-						w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
 					}
 				}
 				//WeaponType t = w->GetWeaponType();
@@ -3301,39 +3322,46 @@ void PlayerController::ComboAdvantage()
 		m_WeaponResist_ComboAdd = 1.0f;
 		m_MoveSpeed_ComboAdd = 1.0f;
 		m_MoutionSpeed_ComboAdd = 1.0f;
+		m_ATK_ComboAdd = 1.0f;
 	}
 	if (m_HitCount >= 4) {
-		m_MoutionSpeed_ComboAdd = 1.1f;
+		m_MoutionSpeed_ComboAdd = 1.04f;
+		m_MoveSpeed_ComboAdd = 1.04f;
 
 	}
 	if (m_HitCount >= 5) {
-		m_MoveSpeed_ComboAdd = 1.25f;
+		m_ATK_ComboAdd = 1.05f;
 
 	}
 	if (m_HitCount >= 8) {
-		m_MoutionSpeed_ComboAdd = 1.2f;
+		m_MoutionSpeed_ComboAdd = 1.08f;
+		m_MoveSpeed_ComboAdd = 1.08f;
 
 	}
 	if (m_HitCount >= 10) {
 		m_WeaponResist_ComboAdd = 0.8f;
 		m_MoveSpeed_ComboAdd = 1.5f;
+		m_ATK_ComboAdd = 1.1f;
 	}
 	if (m_HitCount >= 12) {
-		m_MoutionSpeed_ComboAdd = 1.3f;
+		m_MoutionSpeed_ComboAdd = 1.12f;
+		m_MoveSpeed_ComboAdd = 1.12f;
 
 	}
 	if (m_HitCount >= 15) {
-		m_MoveSpeed_ComboAdd = 1.75f;
+		m_ATK_ComboAdd = 1.15f;
 
 	}
 	if (m_HitCount >= 16) {
-		m_MoutionSpeed_ComboAdd = 1.4f;
+		m_MoutionSpeed_ComboAdd = 1.16f;
+		m_MoveSpeed_ComboAdd = 1.16f;
 
 	}
 	if (m_HitCount >= 20) {
 		m_WeaponResist_ComboAdd = 0.4f;
-		m_MoveSpeed_ComboAdd = 2.0f;
-		m_MoutionSpeed_ComboAdd = 1.5f;
+		m_MoutionSpeed_ComboAdd = 1.2f;
+		m_MoveSpeed_ComboAdd = 1.2f;
+		m_ATK_ComboAdd = 1.2f;
 	}
 }
 

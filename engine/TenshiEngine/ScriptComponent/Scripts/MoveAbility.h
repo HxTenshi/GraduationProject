@@ -17,6 +17,8 @@ public:
 	void SetPoint(GameObject target, PlayerController* pc);
 	void OnMove();
 
+	XMVECTOR GetMovePosition();
+
 	void KnockBack(GameObject target);
 
 	bool OnTargetDistance(XMVECTOR target);
