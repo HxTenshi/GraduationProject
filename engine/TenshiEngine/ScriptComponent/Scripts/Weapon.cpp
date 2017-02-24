@@ -47,8 +47,8 @@ void Weapon::Start(){
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void Weapon::Update(){	
-
 	if (m_param.isBreak() & !is_hand) {
+		if (!m_break_effect.IsLoad())Hx::DestroyObject(gameObject);
 		auto g = Hx::Instance(m_break_effect);
 		if (!g)Hx::DestroyObject(gameObject);
 		auto pos = gameObject->mTransform->WorldPosition();
@@ -71,6 +71,7 @@ void Weapon::Update(){
 		if (!mirrer->IsEnabled())return;
 		if (!m_MirrorTarget) {
 			m_MirrorTarget = NULL;
+			
 			mirrer->Disable();
 			ThrowAway();
 		}
@@ -183,6 +184,18 @@ void Weapon::OnCollideExit(GameObject target){
 void Weapon::Damage(DamageType type,float mag=1.0f)
 {
 	m_param.Damage(type,mag);
+	if (m_param.isBreak()) {
+		if (m_Break_Mesh) {
+			m_Break_Mesh->Disable();
+			if (m_Break_Particle.IsLoad()) {
+				auto g = Hx::Instance(m_Break_Particle);
+				if (m_ThrowHit) {
+					auto pos = m_ThrowHit->mTransform->WorldPosition();
+					g->mTransform->WorldPosition(pos);
+				}
+			}
+		}
+	}
 }
 /// <summary>
 ///•Ší‚ª‰ó‚ê‚½Žž‚Ì”»’è
