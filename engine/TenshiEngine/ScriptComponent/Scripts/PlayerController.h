@@ -166,7 +166,7 @@ private:
 	void lockOn();
 	void GettingWeapon();
 	void throwWeapon();
-	void setWeapon(GameObject weapon);
+	void setWeapon(GameObject weapon,bool FastCatch=false);
 	void currentAttackChange(int attackid);
 
 	void freeAnimeUpdate();

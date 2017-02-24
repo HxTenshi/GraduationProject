@@ -135,7 +135,7 @@ XMVECTOR MoveAbility::GetMovePosition()
 {
 	if (mMovePoint) {
 		auto pos = mMovePoint->mTransform->WorldPosition();
-		pos.y += 1.0f;
+		pos.y += 0.0f;
 		return pos;
 	}
 	return XMVectorZero();

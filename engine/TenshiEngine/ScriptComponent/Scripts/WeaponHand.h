@@ -18,7 +18,7 @@ public:
 	}
 
 	GameObject GetHandWeapon();
-	void SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback);
+	void SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback, bool FastCatch);
 
 	void ThrowAway();
 	void ThrowAway(XMVECTOR vector);
