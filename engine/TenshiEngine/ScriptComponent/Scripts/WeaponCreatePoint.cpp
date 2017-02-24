@@ -16,7 +16,7 @@ void WeaponCreatePoint::Start(){
 //毎フレーム呼ばれます
 void WeaponCreatePoint::Update(){
 
-}z	
+}
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void WeaponCreatePoint::Finish(){
