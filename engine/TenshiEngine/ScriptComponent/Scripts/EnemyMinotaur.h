@@ -227,5 +227,6 @@ private:
 	float m_move_attackd_timer;
 	//攻撃移動中のタイマー上限
 	float m_move_attackd_timemax;
-
+	//攻撃をもらったときのカウンタ
+	int m_damage_counter;
 };

@@ -59,6 +59,7 @@ void EnemyMinotaur::ChildInitialize()
 	m_crate_dead_effect_timer = 0.0f;
 	m_move_attackd_timer = 0.0f;
 	m_move_attackd_timemax = 0.0f;
+	m_damage_counter = 0;
 }
 void EnemyMinotaur::SoloAction()
 {
@@ -101,8 +102,12 @@ bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTO
 	//	return true;
 	//}
 	//anim_loop = false;
-	//RoutineSetUp(ANIM_STUNNED);
-	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+	//m_damage_counter++;
+
+
+
+
+	//ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 
 	return true;
 }
@@ -130,19 +135,12 @@ void EnemyMinotaur::ChildFinalize()
 
 void EnemyMinotaur::BattleModeInitilize()
 {
-	//プレイヤーからの攻撃ダメージ
-	if (is_damage) {
-		m_Hp -= m_Damage;
-		m_Damage = 0.0f;
-		is_damage = false;
-		//[SOUND]
-		//SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
-	}
-	//攻撃
-	m_Hp -= m_Damage;
-	m_Damage = 0.0f;
+
+
 	if (is_dead)return;
 	if (!m_Player)return;
+	if (!is_damage)m_damage_counter = 0;
+	is_damage = false;
 	battleActionInitilize[m_BattleModeParam.id]();
 	m_attackd_func = nullptr;
 	
@@ -156,22 +154,53 @@ void EnemyMinotaur::BattleModeInitilize()
 
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (m_Debug_flag)Hx::Debug()->Log("Anim:" + debug_draw_anim[m_roucine_module.GetAnimState()] + ":Loop:" + std::to_string(anim_loop));
-	if(m_anim_state != m_roucine_module.GetAnimState())AnimChange(m_roucine_module.GetAnimState(), 10.0f,anim_loop, true);
+	AnimChange(m_roucine_module.GetAnimState(), 10.0f,anim_loop, true,true);
 
 }
 void EnemyMinotaur::BattleModeUpdate()
 {
 	battleActionUpdate[m_BattleModeParam.id]();
+	if (is_damage) {
+		if (m_damage_counter>=8) {
+			m_damage_counter = 0;
+			//[SOUND]
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
+			is_anger = true;
+			AnimType t = ANIM_TAUNT;
+			m_attack_flag = true;
+			anim_loop = false;
+			RoutineSetUp(t);
+			auto g = Hx::Instance(m_DeadEffect);
+			if (!g)return;
+			auto pos = gameObject->mTransform->WorldPosition();
+			g->mTransform->WorldPosition(pos);
+			if (!m_Player)return;
+			auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
+			if (m_roucine_module.DistanceCheck(DSI_EM_ATTACK, distance, funifuni::ModuleDistanceType::In)) {
+				auto playerScript = m_Player->GetScript<PlayerController>();
+				if (!playerScript)return;
+				playerScript->Damage(0.0f, XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+
+			}
+			return;
+		}
+		m_attackd_func = nullptr;
+		m_action_func = nullptr;
+		m_damage_counter++;
+		m_attack_flag = true;
+
+		//攻撃
+		m_Hp -= m_Damage;
+		m_Damage = 0.0f;
+		anim_loop = false;
+		RoutineSetUp(ANIM_STUNNED);
+		return;
+	}
+
 	if (is_dead)return;
 	//デバッグデッドコード
 	DebugDead();
-	//HPが０以下になったら死亡処理
-	if (m_Hp <= 0) {
-		is_dead = true;
-		if (m_Debug_flag)Hx::Debug()->Log("dead");
-		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::DEADACTION);
-		battleActionInitilize[m_BattleModeParam.id]();
-	}
+
 	//怒り状態に遷移する処理
 	if (m_Hp <= m_MaxHp / 2 & !is_anger) {
 		//[SOUND]
@@ -202,6 +231,14 @@ void EnemyMinotaur::BattleModeUpdate()
 
 		if (m_Debug_flag)Hx::Debug()->Log("Anger");
 	}
+	//HPが０以下になったら死亡処理
+	if (m_Hp <= 0) {
+		is_dead = true;
+		if (m_Debug_flag)Hx::Debug()->Log("dead");
+		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::DEADACTION);
+		battleActionInitilize[m_BattleModeParam.id]();
+		return;
+	}
 	//戦闘モードと追跡モードの変更
 	if (is_change_attack) {
 		BattleRoutine();
@@ -214,7 +251,7 @@ void EnemyMinotaur::BattleModeUpdate()
 		if (anim->IsAnimationEnd(m_roucine_module.GetAnimState())&m_attack_flag) {
 			m_attack_flag = false;
 			m_AttackHit = true;
-
+			
 			if (is_changed_take_over) {
 				is_changed_take_over = false;
 				m_action_func = [this]() {MoveSide(); };
@@ -270,6 +307,7 @@ void EnemyMinotaur::DeadUpdate()
 		if (anim->IsAnimationEnd(ANIM_DYING)) {
 			if (!is_dead_anim_end) {
 				//Hx::DestroyObject(gameObject);
+				Hx::Debug()->Log("is\Dead_anim_end!");
 				auto g = Hx::Instance(m_DeadEffect);
 				auto f = gameObject->mTransform->Forward();
 				auto pos = gameObject->mTransform->WorldPosition();
@@ -278,11 +316,13 @@ void EnemyMinotaur::DeadUpdate()
 				is_dead_anim_end = true;
 				Score::AddScore();
 			}
+			Hx::Debug()->Log("time++");
 			m_crate_dead_effect_timer += Hx::DeltaTime()->GetDeltaTime();
 
 		}
 	}
 	if (m_crate_dead_effect_timer > 1.0f) {
+		gameObject->RemoveComponent<CharacterControllerComponent>();
 		Hx::DestroyObject(gameObject);
 	}
 }
@@ -546,7 +586,7 @@ void EnemyMinotaur::InitThoughRoutineParam()
 		2.0f,1.0f,1.5f,1.5f,
 		1.4f,1.4f,1.4f,1.4f,
 		1.4f,1.4f,1.4f,2.0f,
-		1.0f,1.0f,1.0f,2.0f,
+		1.0f,1.0f,1.0f,1.0f,
 		1.5f,1.4f
 	};
 	for (int i = 0; i < 18; ++i) {
