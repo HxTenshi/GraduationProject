@@ -64,8 +64,9 @@ void Score::Write()
 	//ファイルを開く
 	ofstream ofs("Assets/data/Score.csv");
 	//BGM,SEの音量をstring型に変換
-	std::string bgm = std::to_string(m_Score);
-	std::string se = std::to_string((int)m_Time);
+	std::string score = std::to_string(m_Score);
+	std::string countEnemy = std::to_string(m_CountEnemy);
+	std::string time = std::to_string((int)m_Time);
 	//書き込み
-	ofs << bgm << "," << se << endl;
+	ofs << score << "," << countEnemy << "," << time << endl;
 }
