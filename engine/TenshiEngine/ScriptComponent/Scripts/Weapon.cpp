@@ -48,11 +48,13 @@ void Weapon::Start(){
 //毎フレーム呼ばれます
 void Weapon::Update(){	
 	if (m_param.isBreak() & !is_hand) {
-		if (!m_break_effect.IsLoad())Hx::DestroyObject(gameObject);
-		auto g = Hx::Instance(m_break_effect);
-		if (!g)Hx::DestroyObject(gameObject);
-		auto pos = gameObject->mTransform->WorldPosition();
-		g->mTransform->WorldPosition(pos);
+		if (m_break_effect.IsLoad()) {
+			auto g = Hx::Instance(m_break_effect);
+			if (g) {
+				auto pos = gameObject->mTransform->WorldPosition();
+				g->mTransform->WorldPosition(pos);
+			}
+		}
 		Hx::DestroyObject(gameObject);
 		return;
 	}
@@ -151,6 +153,9 @@ void Weapon::OnCollideBegin(GameObject target){
 			}
 		}
 	}
+	if (target->GetLayer() == 4 && !is_hand) {
+		WeaponUsePhysX();
+	}
 } 
 
 //コライダーとのヒット中に呼ばれます
@@ -216,13 +221,14 @@ void Weapon::ThrowAway()
 	m_weapon_rot = 0.0f;
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(true);
 	XMVECTOR wpos = gameObject->mTransform->WorldPosition();
-	wpos.y -= 0.6f;
+	wpos.y += 0.6f;
 	gameObject->mTransform->SetParent(Hx::GetRootActor());
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	//gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
 
 	m_Vector = XMVectorSet(0,-1,0,1);
+	m_ThrowSpeed = 10.0f;
 
 	if (XMVector3Length(m_Vector).x != 0.0f) {
 		auto m = gameObject->mTransform->GetMatrix();
@@ -325,6 +331,7 @@ void Weapon::WeaponUsePhysX()
 		is_ground_hit = true;
 		is_fly = false;
 		is_attack = 0;
+		m_Vector = XMVectorZero();
 		//Hx::Debug()->Log("Hit");
 	}
 }
@@ -472,6 +479,23 @@ void Weapon::ThrowAwayAction()
 			auto pos = m_ThrowTarget->mTransform->WorldPosition();
 			pos.y += 1.0f;
 			m_Vector = pos - gameObject->mTransform->WorldPosition();
+			
+
+			if (XMVector3Length(m_Vector).x < m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime()) {
+				OnCollideBegin(m_ThrowTarget);
+				return;
+			}
+		}
+		else {
+			auto pos = gameObject->mTransform->WorldPosition();
+			auto v = XMVector3Normalize(m_Vector);
+			RaycastHit hit;
+			if(Hx::PhysX()->RaycastHit(pos, v, m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime(), &hit, (Layer::Enum)(Layer::UserTag3 | Layer::UserTag4))){
+
+				gameObject->mTransform->WorldPosition(hit.position);
+				OnCollideBegin(hit.hit);
+				return;
+			}
 		}
 		auto pos = gameObject->mTransform->WorldPosition();
 		pos += XMVector3Normalize(m_Vector) * m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime();
@@ -479,9 +503,27 @@ void Weapon::ThrowAwayAction()
 	}
 
 	if (is_ground_hit || is_hand)return;
-	m_weapon_rot = max(m_weapon_rot, 0);
-	auto rot = gameObject->mTransform->WorldQuaternion();
-	gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*900 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
+
+	if(XMVector3Length(m_Vector).x!=0.0f){
+		{
+			auto pos = gameObject->mTransform->WorldPosition();
+			auto v = XMVector3Normalize(m_Vector);
+			RaycastHit hit;
+			if (Hx::PhysX()->RaycastHit(pos, v, m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime(), &hit, Layer::UserTag4)) {
+
+				gameObject->mTransform->WorldPosition(hit.position);
+				OnCollideBegin(hit.hit);
+				return;
+			}
+		}
+		auto pos = gameObject->mTransform->WorldPosition();
+		pos += XMVector3Normalize(m_Vector) * m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime();
+		gameObject->mTransform->WorldPosition(pos);
+	}
+
+	//m_weapon_rot = max(m_weapon_rot, 0);
+	//auto rot = gameObject->mTransform->WorldQuaternion();
+	//gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*900 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
 }
 
 void Weapon::PierceSupport(GameObject obj)

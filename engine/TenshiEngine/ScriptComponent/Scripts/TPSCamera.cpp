@@ -19,7 +19,7 @@ void TPSCamera::Initialize(){
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void TPSCamera::Start(){
 
-	Hx::System()->LockCursorPositionToWindowCenter(true);
+	//Hx::System()->LockCursorPositionToWindowCenter(true);
 
 	//auto currentPos = gameObject->mTransform->WorldPosition();
 	//auto pos = mTarget->mTransform->WorldPosition();
@@ -48,9 +48,9 @@ void TPSCamera::Update(){
 	if (Input::Down(KeyCode::Key_ESCAPE)) {
 		Hx::System()->LockCursorPositionToWindowCenter(false);
 	}
-	if (Input::Down(MouseCode::Left)) {
-		Hx::System()->LockCursorPositionToWindowCenter(true);
-	}
+	//if (Input::Down(MouseCode::Left)) {
+	//	Hx::System()->LockCursorPositionToWindowCenter(true);
+	//}
 
 	if (!m_CharacterControllerComponent) {
 		m_CharacterControllerComponent = gameObject->GetComponent<CharacterControllerComponent>();

@@ -60,6 +60,14 @@ void WeaponControl::HitActor(GameObject target,GameObject weapon)
 		if (SearchEnemyBone(target, weapon, "センター"))return;
 		if (SearchEnemyBone(target, weapon, "master"))return;
 		if (SearchEnemyBone(target, weapon, "Spine"))return;
+		{//その他の敵（ドア
+			isHit = true;
+			if (weapon) {
+				if (auto w = weapon->GetScript<Weapon>()) {
+					w->SetMirrorTarget(target);
+				}
+			}
+		}
 	}
 	else if (target->GetLayer() == 12) {
 		Hx::Debug()->Log("体に");

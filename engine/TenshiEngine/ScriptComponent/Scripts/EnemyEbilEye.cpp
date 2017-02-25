@@ -141,6 +141,7 @@ bool EnemyEbilEye::DiscoveryPlayer()
 
 bool EnemyEbilEye::LostPlayer()
 {
+	if (m_BattleModeParam.id == BATTLEACTION::DEADACTION)return false;
 	auto groundPos = gameObject->mTransform->WorldPosition();
 	if (!m_Player)return false;
 	auto playerPos = m_Player->mTransform->WorldPosition();
@@ -157,7 +158,7 @@ void EnemyEbilEye::ChildFinalize()
 {
 	Score::AddScore();
 	////gameObject->Disable();
-	Hx::Debug()->Log(gameObject->Name());
+	Hx::Debug()->Log(gameObject->Name() + " is Die");
 	Hx::DestroyObject(this->gameObject);
 }
 

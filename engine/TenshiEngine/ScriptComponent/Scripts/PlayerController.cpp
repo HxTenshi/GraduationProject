@@ -97,6 +97,7 @@ struct AnimeID {
 		DownUp,
 		AttackSpeedJump,
 		AttackDodgeRoll,
+		WeaponDrop,
 		Count,
 	};
 };
@@ -189,10 +190,15 @@ void PlayerController::Initialize(){
 	m_CurrentWeaponType = 0;
 	m_ChangeAnime = false;
 	m_FreeAIMMode = false;
+	m_GoingWeapon = false;
 	m_DownUp = false;
 	m_BoneBackPos = XMVectorZero();
 	m_GameOverTime = 0.0f;
 	m_MoveSETimer = 0.0f;
+
+	m_JumpThrowWeapon=false;
+	m_JumpLowAttack = false;
+	m_JumpHighAttack = false;
 
 	m_HitCount = 0;
 	m_MoveSpeed_ComboAdd = 0.0f;
@@ -206,6 +212,8 @@ void PlayerController::Initialize(){
 	m_MoveZ = 0.0f;
 
 	m_MoveVelo = XMVectorZero();
+
+	m_AttackCoolDownTimer = 0.0f;
 
 	m_StateFunc.resize(PlayerState::Count);
 
@@ -254,11 +262,11 @@ void PlayerController::AttackInitialize()
 	}
 
 	//+++++++++++++++++++++++
-	m_ThrowAttack.AddSpecial = 2.0f;
+	m_ThrowAttack.AddSpecial = 1.0f;
 	m_ThrowAttack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 	m_ThrowAttack.KnockbackEffectPower = 1.0f;
-	m_ThrowAttack.DamageScale = 1.0f;
-	m_ThrowAttack.DamageType = DamageType::LowDamage;
+	m_ThrowAttack.DamageScale = 0.5f;
+	m_ThrowAttack.DamageType = DamageType::HighDamage;
 	{
 		AttackState attack;
 		auto& attacklist = m_AttackStateList[WeaponType::Sword];
@@ -1263,6 +1271,11 @@ void PlayerController::Update(){
 	//	m_AnimeModel->mTransform->Position(XMVectorSet(0, 0, model_z - bone_z, 1));
 	//}
 
+	if (m_PlayerState != PlayerState::Attack) {
+		m_AttackCoolDownTimer -= Hx::DeltaTime()->GetDeltaTime();
+		m_AttackCoolDownTimer = max(m_AttackCoolDownTimer, 0.0f);
+	}
+
 
 	for (auto& func : m_DelayUpdate) {
 		func();
@@ -1513,11 +1526,10 @@ void PlayerController::SpeedJumpWeaponCatch(GameObject weapon,bool attack)
 		if (XMVector3Length(m_MoveVelo).x != 0.0f) {
 			auto pos = weapon->mTransform->WorldPosition();
 			pos.y -= 0.5f;
-			pos -= XMVector3Normalize(m_MoveVelo);
+			pos -= XMVector3Normalize(m_MoveVelo)*3.0f;
 			auto ppos = gameObject->mTransform->WorldPosition();
 			m_MoveVelo = pos - ppos;
-			moveUpdate();
-			m_MoveVelo = XMVectorZero();
+			m_CharacterControllerComponent->Move(m_MoveVelo);
 		}
 	}
 	setWeapon(weapon,true);
@@ -1774,6 +1786,8 @@ void PlayerController::AttackEnter()
 
 	m_RotateLimit = Init::RotateLimit_attack;
 
+	m_AttackCoolDownTimer = 0.25f;
+
 }
 
 void PlayerController::AttackExcute()
@@ -1805,9 +1819,11 @@ void PlayerController::AttackExcute()
 		}
 		else if (BindInput(PlayerInput::ATK_L)) {
 			m_NextAttack = m_CurrentAttack.NextLowID;
+			m_JumpLowAttack = true;
 		}
 		else if (BindInput(PlayerInput::ATK_H)) {
 			m_NextAttack = m_CurrentAttack.NextHighID;
+			m_JumpHighAttack = true;
 		}
 
 		if (dodge()) {
@@ -2655,7 +2671,30 @@ void PlayerController::moveUpdate()
 		m_IsGround = m_CharacterControllerComponent->IsGround();
 
 		if (m_IsGround) {
+			RaycastHit hit;
+			if (Hx::PhysX()->RaycastHit(gameObject->mTransform->WorldPosition(), XMVectorSet(0.0f, -1.0f, 0.0f, 1.0f), 0.25f, &hit, Layer::UserTag3)) {
+				if (hit.hit) {
+					auto epos = hit.hit->mTransform->WorldPosition();
+					auto ppos = gameObject->mTransform->WorldPosition();
+					epos.y = 0.0f;
+					ppos.y = 0.0f;
+					auto v = ppos - epos;
+					if (XMVector3Length(v).x != 0.0f) {
+						v = XMVector3Normalize(v);
+						v *= 0.5f;
+						m_CharacterControllerComponent->Move(v);
+					}
+					m_IsGround = false;
+				}
+			}
+		}
+
+		if (m_IsGround) {
 			mJump.y = 0.0f;
+
+			m_JumpThrowWeapon = false;
+			m_JumpLowAttack = false;
+			m_JumpHighAttack = false;
 		}
 	}
 
@@ -2717,9 +2756,16 @@ bool PlayerController::attack()
 			if (GetSpecial() >= m_SpecialPowerMax) {
 				m_NextAttack = AttackID::Special;
 				SetSpecial(0.0f);
+				return true;
 			}
 		}
-		else if (BindInput(PlayerInput::ATK_L)) {
+	}
+	if (m_AttackCoolDownTimer > 0.0f) {
+		return false;
+	}
+
+	if (m_IsGround) {
+		if (BindInput(PlayerInput::ATK_L)) {
 			m_NextAttack = AttackID::Low1;
 		}
 		else if (BindInput(PlayerInput::ATK_H)) {
@@ -2728,12 +2774,14 @@ bool PlayerController::attack()
 
 	}
 	else {
-		if (BindInput(PlayerInput::ATK_L)) {
+		if (BindInput(PlayerInput::ATK_L) && !m_JumpLowAttack) {
 			m_NextAttack = AttackID::IdleFloatLow;
+			m_JumpLowAttack = true;
 		}
 
-		if (BindInput(PlayerInput::ATK_H)) {
+		if (BindInput(PlayerInput::ATK_H) && !m_JumpHighAttack) {
 			m_NextAttack = AttackID::IdleFloatHigh;
+			m_JumpHighAttack = true;
 		}
 	}
 	return (m_NextAttack != -1);
@@ -2749,7 +2797,14 @@ void PlayerController::throwAway(GameObject target,bool isMove)
 			weaponHand->ThrowAway(target, isMove);
 		}
 		else{
-			weaponHand->ThrowAway();
+			if (auto weapon = weaponHand->GetHandWeapon()) {
+				if (auto w = weapon->GetScript<Weapon>()) {
+					if (!w->isBreak()) {
+						changeAnime(AnimeID::WeaponDrop);
+					}
+				}
+				weaponHand->ThrowAway();
+			}
 		}
 	}
 }
@@ -2797,10 +2852,12 @@ void PlayerController::lockOn()
 
 			if (camera) {
 				camera->SetLookTarget(enemy);
+				m_LockOnEnabled = true;
 			}
 		}
-	
-		m_LockOnEnabled = !m_LockOnEnabled;
+		else {
+			m_LockOnEnabled = false;
+		}
 	}
 	camera->SetLeft(0.0f);
 
@@ -2999,6 +3056,10 @@ void PlayerController::throwWeapon()
 	//10 / 29 XV
 	if (mMoveAvility) {
 		if (BindInput(PlayerInput::GoingWeapon) && mWeaponControl) {
+			m_GoingWeapon = true;
+		}
+
+		if (m_GoingWeapon) {
 			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
 				if (weaponCtr->IsHit())
 				{
@@ -3008,7 +3069,6 @@ void PlayerController::throwWeapon()
 					}
 				}
 			}
-
 		}
 
 		if (m_WeaponHand) {
@@ -3016,6 +3076,10 @@ void PlayerController::throwWeapon()
 				if (!weaponHand->GetHandWeapon())return;
 			}
 
+		}
+
+		if (m_JumpThrowWeapon) {
+			return;
 		}
 
 		auto camera = m_Camera->GetScript<TPSCamera>();
@@ -3065,6 +3129,8 @@ void PlayerController::throwWeapon()
 					if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
 						weaponCtr->DeleteHitPoint();
 					}
+					m_JumpThrowWeapon = true;
+					m_GoingWeapon = false;
 					//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
 				}
 				else if (BindInput(PlayerInput::ThrowWeapon)) {
@@ -3075,14 +3141,17 @@ void PlayerController::throwWeapon()
 						if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
 							target = scr->GetHandWeapon();
 						}
-						if (target) {
+						auto camtar = camera->GetLookTarget();
+						if (target && camtar) {
 							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 								script->SetPoint(target, this);
 							}
-							throwAway(camera->GetLookTarget());
+							throwAway(camtar);
 							if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
 								weaponCtr->DeleteHitPoint();
 							}
+							m_JumpThrowWeapon = true;
+							m_GoingWeapon = false;
 						}
 					}
 				}
@@ -3208,6 +3277,15 @@ void PlayerController::freeAnimeUpdate()
 			if (m_CurrentAnimeID == AnimeID::FallGround) {
 				if (auto anime = m_AnimeModel->GetComponent<AnimationComponent>()) {
 					if (!anime->IsAnimationEnd(AnimeID::FallGround)) {
+						return;
+					}
+				}
+			}
+
+
+			if (m_CurrentAnimeID == AnimeID::WeaponDrop) {
+				if (auto anime = m_AnimeModel->GetComponent<AnimationComponent>()) {
+					if (!anime->IsAnimationEnd(AnimeID::WeaponDrop)) {
 						return;
 					}
 				}

@@ -23,13 +23,13 @@ void Enemy::Initialize() {
 
 	m_Isend = false;
 	m_WasAttacked = false;
-	ChildInitialize();
 	m_Forward = gameObject->mTransform->Forward();
 	m_MovieActionFlag = false;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）s
 void Enemy::Start() {
+	ChildInitialize();
 	m_Player = UniqueObject::GetPlayer();
 	m_AttackHit = false;
 }

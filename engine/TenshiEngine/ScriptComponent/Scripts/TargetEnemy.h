@@ -23,7 +23,6 @@ private:
 	//ƒƒ“ƒo•Ï”
 	GameObject m_TargetEnemy;
 
-	SERIALIZE GameObject m_Camera;
 	SERIALIZE GameObject m_EnemyHP_Bar;
 	SERIALIZE GameObject m_EnemyHP_BarFrame;
 	SERIALIZE GameObject m_EnemyTargetMarkar;

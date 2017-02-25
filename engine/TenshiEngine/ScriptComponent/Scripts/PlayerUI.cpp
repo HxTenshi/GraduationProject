@@ -149,7 +149,8 @@ void PlayerUI::Update(){
 				m_HIT_Text->Enable();
 				combo = min(combo,999);
 				auto t = std::to_string(combo);
-				for (int i = 0; i < 3 - t.size(); i++) {
+				int l = 3 - t.size();
+				for (int i = 0; i < l; i++) {
 					t = "0" + t;
 				}
 				text->ChangeText(t);
@@ -265,15 +266,18 @@ void PlayerUI::Update(){
 		m_LastCombo = combo;
 	}
 
-
+	bool _break = false;
 	if (auto w = scr->GetWeapon()) {
-		if (m_WeaponBreakUI) {
-			if (w->isBreak()) {
-				m_WeaponBreakUI->Enable();
-			}
-			else {
-				m_WeaponBreakUI->Disable();
-			}
+		if (w->isBreak()) {
+			_break = true;
+		}
+	}
+	if (m_WeaponBreakUI) {
+		if (_break) {
+			m_WeaponBreakUI->Enable();
+		}
+		else {
+			m_WeaponBreakUI->Disable();
 		}
 	}
 
@@ -298,6 +302,13 @@ void PlayerUI::Update(){
 	}
 	else if(m_LockOnUI){
 		m_LockOnUI->Disable();
+	}
+
+	if (scr->GetPlayerState() == PlayerController::PlayerState::Movie) {
+
+		if(m_HIT_Text)m_HIT_Text->Disable();
+		if(m_WeaponBreakUI)m_WeaponBreakUI->Disable();
+		if(m_LockOnUI)m_LockOnUI->Disable();
 	}
 	
 	
