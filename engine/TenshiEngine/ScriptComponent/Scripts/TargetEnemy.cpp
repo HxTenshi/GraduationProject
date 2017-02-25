@@ -3,17 +3,19 @@
 #include "h_standard.h"
 #include "TPSCamera.h"
 #include "Enemy.h"
+#include "UniqueObject.h"
+#include "PlayerController.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void TargetEnemy::Initialize(){
 	m_TargetEnemy = NULL;
 
-	if (!m_EnemyTargetMarkar) {
+	if (m_EnemyTargetMarkar) {
 		m_EnemyTargetMarkar->Disable();
 	}
-	if (!m_EnemyHP_Bar) {
+	if (m_EnemyHP_Bar) {
 		m_EnemyHP_Bar->Disable();
-	}if (!m_EnemyHP_BarFrame) {
+	}if (m_EnemyHP_BarFrame) {
 		m_EnemyHP_BarFrame->Disable();
 	}
 }
@@ -25,6 +27,7 @@ void TargetEnemy::Start(){
 
 //毎フレーム呼ばれます
 void TargetEnemy::Update(){
+	auto m_Camera = UniqueObject::GetCamera();
 	if (!m_Camera)return;
 	auto camera = m_Camera->GetScript<TPSCamera>();
 	if (!camera)return;
@@ -44,6 +47,21 @@ void TargetEnemy::Update(){
 	
 	MarkarUpdate();
 	BarUpdate();
+
+	auto p = UniqueObject::GetPlayer();
+	if (!p)return;
+	auto scr = p->GetScript<PlayerController>();
+	if (!scr)return;
+	if (scr->GetPlayerState() == PlayerController::PlayerState::Movie) {
+		if (m_EnemyTargetMarkar) {
+			m_EnemyTargetMarkar->Disable();
+		}
+		if (m_EnemyHP_Bar) {
+			m_EnemyHP_Bar->Disable();
+		}if (m_EnemyHP_BarFrame) {
+			m_EnemyHP_BarFrame->Disable();
+		}
+	}
 
 }
 
@@ -79,6 +97,8 @@ GameObject TargetEnemy::GetTargetEnemy()
 
 void TargetEnemy::MarkarUpdate()
 {
+
+	auto m_Camera = UniqueObject::GetCamera();
 	if (!m_EnemyTargetMarkar)return;
 	if (!m_Camera)return;
 

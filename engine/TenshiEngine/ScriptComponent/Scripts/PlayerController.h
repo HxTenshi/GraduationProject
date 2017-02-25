@@ -309,6 +309,7 @@ private:
 	float m_CurrentAnime_Weight;
 
 	bool m_FreeAIMMode;
+	bool m_GoingWeapon;
 	bool m_UseGravity;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;
@@ -319,6 +320,11 @@ private:
 	AttackState m_ThrowAttack;
 	int m_CurrentWeaponType;
 	std::vector<std::vector<AttackState>> m_AttackStateList;
+	float m_AttackCoolDownTimer;
+
+	bool m_JumpThrowWeapon;
+	bool m_JumpLowAttack;
+	bool m_JumpHighAttack;
 
 
 	std::list<std::function<bool(void)>> m_UpdateCoroutine;
