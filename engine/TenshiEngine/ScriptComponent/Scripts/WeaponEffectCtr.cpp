@@ -34,3 +34,8 @@ void WeaponEffectCtr::SetLifeTime(float time,float stoptime) {
 	m_lifetime = time;
 	m_stop_particle_time = stoptime;
 }
+
+void WeaponEffectCtr::Reset()
+{
+	m_now_lifetime = 0.0f;
+}
