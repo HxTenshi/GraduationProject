@@ -31,7 +31,7 @@ void WeaponEffect::Action()
 		}
 	}
 }
-
+//ストップタイムを超えるとCapacityがゼロになる
 void WeaponEffect::SetLifeTime(float time,float dtime)
 {
 	m_stop_particle_time = time;
