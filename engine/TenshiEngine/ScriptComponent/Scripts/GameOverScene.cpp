@@ -11,6 +11,7 @@ void GameOverScene::Initialize(){
 	if (m_texMessage == NULL) return;
 
 	m_intervalTime = 0.0f;
+	m_tempTime = 0.0f;
 
 	auto material1 = m_texRogo->GetComponent<MaterialComponent>();
 	material1->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1,1,1,0));
@@ -31,6 +32,7 @@ void GameOverScene::Update(){
 	bool isIntarval = false;
 	bool isMessage = false;
 
+	//ゲームオーバーのロゴを表示
 	auto material1 = m_texRogo->GetComponent<MaterialComponent>();
 	XMFLOAT4 color1 = material1->GetMaterialPtr(0)->GetAlbedo();
 	color1.w += 0.5f * Hx::DeltaTime()->GetDeltaTime();
@@ -40,7 +42,9 @@ void GameOverScene::Update(){
 	}
 	material1->GetMaterialPtr(0)->SetAlbedo(color1);
 
+	//ロゴが表示終わったなら
 	if (isRogo) {
+		//0.5秒の間を取る
 		m_intervalTime += 1.0f * Hx::DeltaTime()->GetDeltaTime();
 		if (m_intervalTime > 0.5f) {
 			isIntarval = true;
@@ -48,7 +52,9 @@ void GameOverScene::Update(){
 		}
 	}
 
+	//間を取ったなら
 	if (isIntarval) {
+		//メッセージを表示する
 		auto material2 = m_texMessage->GetComponent<MaterialComponent>();
 		XMFLOAT4 color2 = material2->GetMaterialPtr(0)->GetAlbedo();
 		color2.w += 0.5f * Hx::DeltaTime()->GetDeltaTime();
@@ -59,10 +65,14 @@ void GameOverScene::Update(){
 		material2->GetMaterialPtr(0)->SetAlbedo(color2);
 	}
 
+	//メッセージが表示完了したなら
 	if (isMessage) {
-		bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
-		if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
-			SoundManager::PlaySE(SoundManager::SoundSE_ID::Decision, XMVectorZero());
+		const float TEMP = 2.0f;
+		m_tempTime += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+		m_tempTime = min(m_tempTime, TEMP);
+
+
+		if (m_tempTime >= TEMP) {
 			if (!m_fader) return;
 			auto fader = m_fader->GetScript<Fader>();
 			fader->OnSceneChnage("Assets/Mossan/Credit.scene");

@@ -23,4 +23,5 @@ private:
 		GameObject m_fader;
 
 	float m_intervalTime;
+	float m_tempTime;
 };

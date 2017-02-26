@@ -11,12 +11,12 @@ void PauseMenuManager::Initialize(){
 	m_lerpTimers[0] = 0.0f;
 	m_lerpTimers[1] = 0.0f;
 	m_lerpTimers[2] = 0.0f;
-	m_objMap[0].push_back(new Struct(m_texPause,  XMVectorSet(200,900,0,0)));
-	m_objMap[1].push_back(new Struct(m_texHowTo,  XMVectorSet(960,740,0,0)));
-	m_objMap[1].push_back(new Struct(m_texCombo,  XMVectorSet(960,540,0,0)));
-	m_objMap[1].push_back(new Struct(m_texToTitle,XMVectorSet(960,340,0,0)));
-	m_objMap[1].push_back(new Struct(m_texMigisita,XMVectorSet(1680,140,0,0)));
-	m_objMap[2].push_back(new Struct(m_texItimie, XMVectorSet(1680,540,0,0)));
+	m_objMap[0].push_back(new Struct(m_texPause,  XMVectorSet(200,900,10001,0)));
+	m_objMap[1].push_back(new Struct(m_texHowTo,  XMVectorSet(960,740,10001,0)));
+	m_objMap[1].push_back(new Struct(m_texCombo,  XMVectorSet(960,540,10001,0)));
+	m_objMap[1].push_back(new Struct(m_texToTitle,XMVectorSet(960,340,10001,0)));
+	m_objMap[1].push_back(new Struct(m_texMigisita,XMVectorSet(1680,140,10001,0)));
+	m_objMap[2].push_back(new Struct(m_texItimie, XMVectorSet(1680,540,10001,0)));
 	this->gameObject->Enable();
 }
 
@@ -110,6 +110,7 @@ void PauseMenuManager::UpdateOpne() {
 		//ˆÍ‚¢—LŒø,À•WˆÚ“®
 		m_kakoi->Enable();
 		XMVECTOR pos = m_objMap[1][m_num]->m_texObj->mTransform->Position();
+		pos.z += 1.0f;
 		m_kakoi->mTransform->Position(pos);
 	}
 	else {

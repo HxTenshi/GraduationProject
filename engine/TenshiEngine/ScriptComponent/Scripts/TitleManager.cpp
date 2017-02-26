@@ -68,6 +68,9 @@ namespace funifuni {
 		if (Input::Trigger(KeyCode::Key_C)) {
 			SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Enum::Title);
 		}
+		if (Input::Trigger(KeyCode::Key_V)) {
+			SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Enum::Credit);
+		}
 
 		//左スティックの入力を取得
 		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);

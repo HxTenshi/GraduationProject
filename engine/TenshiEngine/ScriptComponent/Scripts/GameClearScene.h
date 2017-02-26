@@ -88,4 +88,5 @@ private:
 	Mossan::GameClearTextObj m_textTimeObj;
 
 	Phase m_phase;
+	float m_timer;
 };

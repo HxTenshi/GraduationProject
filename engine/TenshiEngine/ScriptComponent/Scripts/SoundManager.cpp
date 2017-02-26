@@ -63,7 +63,8 @@ void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
 		Hx::Debug()->Log("BGM Object Instance");
 	}
 	else {
-		Hx::Debug()->Log("null ‚¶‚á‚È‚¢‚Å‚·");
+		Hx::DestroyObject(g_soundManager->m_bgmObj);
+		g_soundManager->m_bgmObj = Hx::Instance(g_soundManager->soundBox);
 	}
 	
 	g_soundManager->m_bgmObj->mTransform->WorldPosition(XMVectorSet(0, 0, 0, 0));

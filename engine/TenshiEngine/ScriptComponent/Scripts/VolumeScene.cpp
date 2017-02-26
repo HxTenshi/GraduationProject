@@ -36,7 +36,8 @@ void VolumeScene::Initialize(){
 	num = 0;
 
 	m_stickIntervalTime = 0.0f;
-	
+	m_stickTilTimer = 0.0f;
+	m_continuTimer = 0.0f;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -63,26 +64,42 @@ void VolumeScene::Update(){
 	bool isLeft = ls.x < -0.5f;
 	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 
-	
+	bool isFirstTilt = m_stickTilTimer == 0.0f;
+	bool isContinueTilt = m_stickTilTimer > 0.5f && m_continuTimer > 0.1f;
+	if (isFirstTilt || isContinueTilt) {
+		m_continuTimer = 0.0f;
 
-	//ボリュームの調整
-	if ((Input::Trigger(KeyCode::Key_LEFT) || isLeft)) {
-		if (num >= Enum::BackConfig) return;
-		auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
-		//Nullチェック
-		if (!barCtrl) return;
-		//音量下げる
-		barCtrl->VolumeDown();
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::VolumeDown, XMVectorZero());
-	}else if ((Input::Trigger(KeyCode::Key_RIGHT) || isRight)) {
-		if (num >= Enum::BackConfig) return;
-		auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
-		//Nullチェック
-		if (!barCtrl) return;
-		//音量を上げる
-		barCtrl->VolumeUp();
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::VolumeUp, XMVectorZero());
+		//ボリュームの調整
+		if ((Input::Down(KeyCode::Key_LEFT) || isLeft)) {
+			if (num >= Enum::BackConfig) return;
+			auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
+			//Nullチェック
+			if (!barCtrl) return;
+			//音量下げる
+			barCtrl->VolumeDown();
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::VolumeDown, XMVectorZero());
+		}
+		else if ((Input::Down(KeyCode::Key_RIGHT) || isRight)) {
+			if (num >= Enum::BackConfig) return;
+			auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
+			//Nullチェック
+			if (!barCtrl) return;
+			//音量を上げる
+			barCtrl->VolumeUp();
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::VolumeUp, XMVectorZero());
+		}
 	}
+
+	if (isRight || isLeft || Input::Down(KeyCode::Key_RIGHT) || Input::Down(KeyCode::Key_LEFT)) {
+		m_stickTilTimer += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+		m_continuTimer += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+	}
+	else {
+		m_stickTilTimer = 0.0f;
+		m_continuTimer = 0.0f;
+	}
+
+	
 
 	if ((Input::Trigger(KeyCode::Key_UP) || isUp) && interval) {
 		num--;

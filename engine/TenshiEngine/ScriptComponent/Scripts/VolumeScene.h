@@ -35,6 +35,8 @@ private:
 	SERIALIZE
 		float STICK_INTERVAL;
 	float m_stickIntervalTime;
+	float m_stickTilTimer;		//スティックを傾けた時間
+	float m_continuTimer;		
 
 	SERIALIZE
 		GameObject m_fader;
