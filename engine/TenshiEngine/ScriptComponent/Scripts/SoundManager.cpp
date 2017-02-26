@@ -57,9 +57,18 @@ void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
 		Hx::Debug()->Log("soundBox‚È‚¢‚æ");
 		return;
 	}
-	GameObject g = Hx::Instance(g_soundManager->soundBox);
-	g->mTransform->WorldPosition(XMVectorSet(0, 0, 0, 0));
-	auto s = g->GetComponent<SoundComponent>();
+
+	if (g_soundManager->m_bgmObj == NULL) {
+		g_soundManager->m_bgmObj = Hx::Instance(g_soundManager->soundBox);
+		Hx::Debug()->Log("BGM Object Instance");
+	}
+	else {
+		Hx::Debug()->Log("null ‚¶‚á‚È‚¢‚Å‚·");
+	}
+	
+	g_soundManager->m_bgmObj->mTransform->WorldPosition(XMVectorSet(0, 0, 0, 0));
+
+	auto s = g_soundManager->m_bgmObj->GetComponent<SoundComponent>();
 	if (!s) {
 		Hx::Debug()->Log("SoundManageruSoundCommponent‚È‚¢‚æv");
 		return;

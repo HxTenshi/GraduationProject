@@ -77,6 +77,7 @@ private:
 	SERIALIZE
 	PrefabAsset soundBox;
 
+	GameObject m_bgmObj;
 	float se_master_volume;
 	float bgm_master_volume;
 };
