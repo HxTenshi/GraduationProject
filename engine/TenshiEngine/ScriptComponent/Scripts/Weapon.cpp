@@ -433,10 +433,7 @@ void Weapon::SetAttackFlag(bool flag)
 	if (flag) {
 		if (is_attack == 0) {
 			is_attack = 1;
-			if (m_WeaponEffect) {
-				auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
-				scr->Action();
-			}
+
 		}
 	}
 	else {
@@ -470,6 +467,19 @@ GameObject Weapon::GetMirrorTarget()
 std::string Weapon::GetName()
 {
 	return m_name;
+}
+
+void Weapon::CreateEffect()
+{
+	if (m_WeaponEffect) {
+		auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
+		scr->Action();
+	}
+}
+
+funifuni::WeaponParametor Weapon::GetWeaponParam()
+{
+	return m_param;
 }
 
 void Weapon::ThrowAwayAction()

@@ -153,8 +153,8 @@ void GS0_Main(point GS_IN In[1],                   // ƒ|ƒCƒ“ƒg ƒvƒŠƒ~ƒeƒBƒu‚Ì“ü—
 			float2 rand2 = float2(rand, 1 - rand);
 
 				float l = abs(Out.time.x) / GameTime.z;
-				Out.pos = lerp(World._41_42_43, BeforeWorld._41_42_43, l);
-
+				//Out.pos = lerp(World._41_42_43, BeforeWorld._41_42_43, l);
+				Out.pos = World._41_42_43;
 			float px = GetRandomNumber(rand2, 353 + ID);
 			float py = GetRandomNumber(rand2, 352 + ID);
 			float pz = GetRandomNumber(rand2, 351 + ID);

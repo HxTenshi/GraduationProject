@@ -10,7 +10,6 @@ void WeaponTip::Initialize(){
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void WeaponTip::Start(){
 	m_weapon = gameObject->mTransform->GetParent();
-
 }
 
 //毎フレーム呼ばれます
@@ -27,6 +26,7 @@ void WeaponTip::Finish(){
 void WeaponTip::OnCollideBegin(GameObject target){
 	if (!target)return;
 	if (target->GetLayer() == 4) {
+		if (!m_weapon)return;
 		if (m_weapon->GetScript<Weapon>()) {
 			m_weapon->GetScript<Weapon>()->WeaponUsePhysX();
 		}
@@ -37,6 +37,7 @@ void WeaponTip::OnCollideBegin(GameObject target){
 void WeaponTip::OnCollideEnter(GameObject target){
 	if (!target)return;
 	if (target->GetLayer() == 4) {
+		if (!m_weapon)return;
 		if (m_weapon->GetScript<Weapon>()) {
 			m_weapon->GetScript<Weapon>()->WeaponUsePhysX();
 		}

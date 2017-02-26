@@ -122,6 +122,15 @@ public:
 	///名前の取得
 	/// </summary>
 	std::string GetName();
+	/// <summary>
+	///軌跡の生成
+	/// </summary>
+	void CreateEffect();
+	/// <summary>
+	///いじれるパラメータの取得
+	/// </summary>
+	funifuni::WeaponParametor GetWeaponParam();
+
 private:
 	/// <summary>
 	///投げ捨てる時のアクション
