@@ -9,6 +9,12 @@
 void OutputTextUI::Start(){
 	mTime = 0;
 	mIsEnd = false;
+
+	if (mTextUI) {
+		auto text = mTextUI->GetComponent<TextComponent>();
+		Hx::Debug()->Log("出力テキスト設定");
+		if (text)text->ChangeText(mPutText);
+	}
 }
 
 //毎フレーム呼ばれます
@@ -23,7 +29,9 @@ void OutputTextUI::Update(){
 		auto mat = mTextUI->GetComponent<MaterialComponent>();
 		//Hx::Debug()->Log(std::to_string(1.0f - mTime / mDeleteTime + mWait));
 		XMFLOAT4 color = XMFLOAT4(0, 0, 0, 1.0f - (mTime / mDeleteTime));
-		mat->SetAlbedoColor(color);
+		if(mat)mat->SetAlbedoColor(color);
+		
+
 	}
 
 	if (mTime > mDeleteTime) {
