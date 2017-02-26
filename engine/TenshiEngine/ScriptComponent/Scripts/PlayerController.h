@@ -73,6 +73,13 @@ public:
 			Down,
 		};
 	};
+	struct LockAction {
+		enum Enum {
+			DropWeapon,
+			ThrowWeapon,
+			Count,
+		};
+	};
 	void SetPlayerState(PlayerState::Enum state);
 	PlayerState::Enum GetPlayerState();
 	void PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel);
@@ -108,6 +115,10 @@ public:
 
 	Weapon* GetWeapon();
 	GameObject GetLockonTarget();
+
+	//特定のアクションを使用不可にする
+	void SetLockAction(LockAction::Enum action, bool lock);
+	bool GetLockAction(LockAction::Enum action);
 private:
 	void AttackInitialize();
 
@@ -321,6 +332,9 @@ private:
 	int m_CurrentWeaponType;
 	std::vector<std::vector<AttackState>> m_AttackStateList;
 	float m_AttackCoolDownTimer;
+
+
+	std::vector<bool> m_LockActions;
 
 	bool m_JumpThrowWeapon;
 	bool m_JumpLowAttack;
