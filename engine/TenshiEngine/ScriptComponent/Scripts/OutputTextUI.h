@@ -14,6 +14,8 @@ private:
 	SERIALIZE GameObject mEndAction;
 	SERIALIZE float mDeleteTime;
 
+	SERIALIZE std::string mPutText;
+
 	SERIALIZE float mTime;
 	SERIALIZE bool mIsEnd;
 };
