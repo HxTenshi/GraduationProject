@@ -126,6 +126,11 @@ public:
 	///軌跡の生成
 	/// </summary>
 	void CreateEffect();
+	/// <summary>
+	///いじれるパラメータの取得
+	/// </summary>
+	funifuni::WeaponParametor GetWeaponParam();
+
 private:
 	/// <summary>
 	///投げ捨てる時のアクション

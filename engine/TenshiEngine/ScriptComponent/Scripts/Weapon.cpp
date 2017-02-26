@@ -477,6 +477,11 @@ void Weapon::CreateEffect()
 	}
 }
 
+funifuni::WeaponParametor Weapon::GetWeaponParam()
+{
+	return m_param;
+}
+
 void Weapon::ThrowAwayAction()
 {
 	if (mIsEnemyThrow) {
