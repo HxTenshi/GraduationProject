@@ -185,6 +185,7 @@ void GameClearScene::Initialize(){
 	m_textKillObj.SetScore(stoi(scoreVec[0][0]));
 	m_textTimeObj.SetScore(stoi(scoreVec[0][2]));
 	m_phase = Phase::phase1;
+	m_timer = 0.0f;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -265,8 +266,11 @@ void GameClearScene::DoPhase3(){
 }
 
 void GameClearScene::DoPhase4(){
-	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
-	if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
+	const float intervalTime = 5.0f;
+	m_timer += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+	m_timer = min(m_timer, intervalTime);
+
+	if (m_timer >= intervalTime) {
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
 		fader->OnSceneChnage("Assets/Mossan/Credit.scene");

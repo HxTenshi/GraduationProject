@@ -15,6 +15,7 @@
 #include "Enemy.h"
 
 #include "Score.h"
+#include "SoundManager.h"
 
 
 struct ReisMode {
@@ -127,9 +128,15 @@ void reis::Start(){
 		ChangeAnime(AnimeID::Idle);
 	};
 	m_MoveFunc[ReisMode::Pop] = [&]() {
+		if (m_AttackStage.stage == 0) {
+			m_AttackStage.stage++;
+
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Pop, gameObject->mTransform->WorldPosition());
+		}
 		ChangeAnime(AnimeID::Pop);
 		if (IsCurrentAnimeEnd()) {
 			m_ReisMode = ReisMode::Idle;
+			m_AttackStage = AttackStage();
 		}
 	};
 	m_MoveFunc[ReisMode::Idle] = [&](){
@@ -207,6 +214,7 @@ void reis::Start(){
 
 		if (m_CurrentAnimeID != AnimeID::Wince) {
 			m_WinceCount++;
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Damage, gameObject->mTransform->WorldPosition());
 		}
 		m_AttackStage = AttackStage();
 		ChangeAnime(AnimeID::Wince);
@@ -226,6 +234,7 @@ void reis::Start(){
 		SetSuperArmor(true);
 		if (m_CurrentAnimeID != AnimeID::Dogde) {
 			m_AttackStage = AttackStage();
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_BackStep, gameObject->mTransform->WorldPosition());
 		}
 
 		ChangeAnime(AnimeID::Dogde);
@@ -276,6 +285,7 @@ void reis::Start(){
 	m_MoveFunc[ReisMode::Dead] = [&]() {
 		if(m_CurrentAnimeID != AnimeID::Dead){
 			m_AttackStage = AttackStage();
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Dead, gameObject->mTransform->WorldPosition());
 		}
 		ChangeAnime(AnimeID::Dead);
 		if (m_AttackStage.stage == 0) {
@@ -295,14 +305,17 @@ void reis::Start(){
 	
 	m_MoveFunc[ReisMode::Attack_v1] = [&]() {
 		if (m_AttackStage.stage == 0) {
-			m_AutoDogdeMode = true;
+			m_AttackStage.stage++;
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Near1, gameObject->mTransform->WorldPosition());
+		}
+		if (m_AttackStage.stage == 1) {
 			ChangeAnime(AnimeID::Attack_Ch_v1);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
 				m_AutoDogdeMode = false;
 			}
 		}
-		else if(m_AttackStage.stage == 1) {
+		else if(m_AttackStage.stage == 2) {
 			SetWeapon(true, 10.0f);
 			ChangeAnime(AnimeID::Attack_v1);
 			if (IsCurrentAnimeEnd()) {
@@ -320,8 +333,11 @@ void reis::Start(){
 			m_AttackStage.stage++;
 			m_SuperArmorHit = 0;
 			SetSuperArmor(true);
+
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Chage1, gameObject->mTransform->WorldPosition());
+
 		}
-		else if (m_AttackStage.stage == 1) {
+		if (m_AttackStage.stage == 1) {
 			auto backt = m_AttackStage.time;
 			m_AttackStage.time += Hx::DeltaTime()->GetDeltaTime();
 			ChangeAnime(AnimeID::Attack_Ch_v2);
@@ -343,6 +359,8 @@ void reis::Start(){
 					p.y += 1.0f;
 					obj->mTransform->WorldPosition(p);
 				}
+
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Chage2, gameObject->mTransform->WorldPosition());
 				m_AttackStage.stage++;
 			}
 		}
@@ -356,21 +374,24 @@ void reis::Start(){
 				SetWeapon(false);
 			}
 		}
-		if (m_SuperArmorHit >= 5) {
+		if (m_SuperArmorHit >= 4) {
 			SetSuperArmor(false);
 			SetWeapon(false);
 		}
 	};
 	m_MoveFunc[ReisMode::Attack_v3] = [&]() {
 		if (m_AttackStage.stage == 0) {
-			m_AutoDogdeMode = true;
+			m_AttackStage.stage++;
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Near2, gameObject->mTransform->WorldPosition());
+		}
+		if (m_AttackStage.stage == 1) {
 			ChangeAnime(AnimeID::Attack_Ch_v3);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
 				m_AutoDogdeMode = false;
 			}
 		}
-		else if (m_AttackStage.stage == 1) {
+		else if (m_AttackStage.stage == 2) {
 			SetWeapon(true, 10.0f);
 			ChangeAnime(AnimeID::Attack_v3);
 			if (IsCurrentAnimeEnd()) {
@@ -398,6 +419,7 @@ void reis::Start(){
 	m_MoveFunc[ReisMode::Attack_Bullet] = [&]() {
 		Rotate(GetPlayerVectH());
 		if (m_CurrentAnimeID != AnimeID::Attack_Bullet) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Shot, gameObject->mTransform->WorldPosition());
 			if (auto obj = Hx::Instance(m_Bullets)) {
 				obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
 				obj->mTransform->WorldQuaternion(gameObject->mTransform->WorldQuaternion());
@@ -421,6 +443,7 @@ void reis::Start(){
 			m_AttackStage.time += Hx::DeltaTime()->GetDeltaTime();
 			if (m_AttackStage.time >= 0.5f) {
 				if (m_CitrusBulletObject = Hx::Instance(m_CitrusBullet)) {
+					SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_CitrusThrow, gameObject->mTransform->WorldPosition());
 					auto pos = gameObject->mTransform->WorldPosition();
 					pos.y += 1.0f;
 					m_CitrusBulletObject->mTransform->WorldPosition(pos);
@@ -485,6 +508,7 @@ void reis::Start(){
 		Rotate(GetPlayerVectH());
 
 		if (m_CurrentAnimeID != AnimeID::Attack_SonicWaveV) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SonicWave1, gameObject->mTransform->WorldPosition());
 			WeaponEffect(0, true);
 			m_SonicWaveObject = Hx::Instance(m_SonicWaveV);
 			m_SonicWaveObject->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
@@ -511,8 +535,11 @@ void reis::Start(){
 	m_MoveFunc[ReisMode::Attack_WarpMelee] = [&]() {
 		Rotate(GetPlayerVectH());
 		SetSuperArmor(true);
-
 		if (m_AttackStage.stage == 0) {
+			m_AttackStage.stage++;
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_WarpNear, gameObject->mTransform->WorldPosition());
+		}
+		if (m_AttackStage.stage == 1) {
 			ChangeAnime(AnimeID::WarpOut);
 			if (IsCurrentAnimeEnd()) {
 				if (auto obj = Hx::Instance(m_WarpParticle)) {
@@ -535,19 +562,19 @@ void reis::Start(){
 				m_AttackStage.stage++;
 			}
 		}
-		else if (m_AttackStage.stage == 1) {
+		else if (m_AttackStage.stage == 2) {
 			ChangeAnime(AnimeID::WarpIn);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
 			}
 		}
-		else if (m_AttackStage.stage == 2) {
+		else if (m_AttackStage.stage == 3) {
 			ChangeAnime(AnimeID::Attack_Ch_v1);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
 			}
 		}
-		else if (m_AttackStage.stage == 3) {
+		else if (m_AttackStage.stage == 4) {
 			SetWeapon(true, 10.0f);
 			ChangeAnime(AnimeID::Attack_v1);
 			if (IsCurrentAnimeEnd()) {
@@ -612,6 +639,11 @@ void reis::BattleStart()
 {
 	if (m_ReisMode == ReisMode::Standby) {
 		m_ReisMode = ReisMode::Pop;
+		if (m_EnemyBase) {
+			if (auto com = m_EnemyBase->GetComponent<PhysXColliderComponent>()) {
+				com->Enable();
+			}
+		}
 	}
 }
 
