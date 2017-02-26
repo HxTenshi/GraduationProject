@@ -18,6 +18,7 @@ void WeaponEffectCtr::Update(){
 	if (m_stop_particle_time < m_now_lifetime) {
 		if (auto scr = gameObject->GetComponent<ParticleComponent>()) {
 			scr->mParticleParam.Param.x = 0;
+			gameObject->mTransform->SetParent(nullptr);
 		}
 	}
 	if (m_lifetime < m_now_lifetime) {
