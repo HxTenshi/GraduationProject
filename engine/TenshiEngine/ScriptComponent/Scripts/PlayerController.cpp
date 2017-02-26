@@ -8,10 +8,11 @@
 #include "GetWeapon.h"
 #include "TimeManager.h"
 #include "GetEnemy.h"
+#include "GetWeapon.h"
+#include "GetMapShift.h"
 #include "AimController.h"
 #include "SoundManager.h"
 #include "WeaponControl.h"
-#include "GetWeapon.h"
 #include "SoundManager.h"
 #include "OutputGimic.h"
 
@@ -191,6 +192,7 @@ void PlayerController::Initialize(){
 	m_CurrentWeaponType = 0;
 	m_ChangeAnime = false;
 	m_FreeAIMMode = false;
+	m_MapShiftFlag = false;
 	m_GoingWeapon = false;
 	m_DownUp = false;
 	m_BoneBackPos = XMVectorZero();
@@ -2822,10 +2824,10 @@ void PlayerController::GettingWeapon(){
 	else {
 		//ターゲット情報を保存していなかったら
 		if (!camera->GetSaveEnemy()) {
-			//フリールック
-			camera->SetLookTarget(NULL);
+//フリールック
+camera->SetLookTarget(NULL);
 		}
-		else{
+		else {
 			//ロックオンしていた
 			if (m_LockOnEnabled) {
 				camera->SetLookTarget(camera->GetSaveEnemy());
@@ -2851,8 +2853,8 @@ void PlayerController::GettingWeapon(){
 			};
 		}
 		throwAway();
-		if (m_tempWeapon) { 
-		//選択した武器をセット
+		if (m_tempWeapon) {
+			//選択した武器をセット
 			setWeapon(m_tempWeapon);
 		}
 		//カウントをリセット
@@ -2868,7 +2870,7 @@ void PlayerController::GettingWeapon(){
 			getWeapon->SetExClusionWeapon(NULL);
 		}
 		//常に一番近い武器を取得
-		m_tempWeapon = getWeapon->GetMinWeapon();	
+		m_tempWeapon = getWeapon->GetMinWeapon();
 	}
 }
 
@@ -2911,8 +2913,7 @@ void PlayerController::throwWeapon()
 
 		if (camera) {
 			if (auto aim = mAimController->GetScript<AimController>()) {
-				if (BindInput(PlayerInput::FreeAIM) && !m_FreeAIMMode) {
-					changeAnime(AnimeID::FreeAIM);
+				if (BindInput(PlayerInput::FreeAIM) && !m_MapShiftFlag) {
 
 					if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
 						if (auto target = scr->GetHandWeapon())
@@ -2922,43 +2923,24 @@ void PlayerController::throwWeapon()
 							}
 						}
 					}
-					aim->ChangeAimMode(camera, gameObject, true);
-					m_FreeAIMMode = true;
-				}
-				if (BindInput(PlayerInput::ThrowWeapon) && m_FreeAIMMode) {
-					mJump.x=0.0f;
-					mJump.z=0.0f;
-					changeAnime(AnimeID::Throw);
-					m_FreeAIMMode = false;
-					aim->ChangeAimMode(camera, gameObject, false);
-					//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
-					//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
-					//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
-					auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
-					if (weaponHand) {
-						GameObject target = NULL; /*= camera->GetLookTarget();*/
-						auto camera = m_Camera->GetScript<TPSCamera>();
-						if (camera) {
-							if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
-								target = camera->GetLookTarget();
+					if (m_GetMapShift) {
+						if(auto ms = m_GetMapShift->GetScript<GetMapShift>()){
+							if (auto shift = ms->GetMinMapShift()) {
+
+								if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+									weaponCtr->DeleteHitPoint();
+								}
+								throwAway(shift);
+								m_JumpThrowWeapon = true;
+								m_GoingWeapon = true;
+
 							}
 						}
+					}
 
-						if (target) {
-							throwAway(target);
-						}
-						else {
-							weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
-						}
-					}
-					if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
-						weaponCtr->DeleteHitPoint();
-					}
-					m_JumpThrowWeapon = true;
-					m_GoingWeapon = false;
-					//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
+					m_MapShiftFlag = true;
 				}
-				else if (BindInput(PlayerInput::ThrowWeapon)) {
+				else if (BindInput(PlayerInput::ThrowWeapon) && !m_MapShiftFlag) {
 					if (!m_Camera)return;
 					auto camera = m_Camera->GetScript<TPSCamera>();
 					if (camera) {
@@ -2971,18 +2953,91 @@ void PlayerController::throwWeapon()
 							if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
 								script->SetPoint(target, this);
 							}
-							throwAway(camtar);
 							if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
 								weaponCtr->DeleteHitPoint();
 							}
+							throwAway(camtar);
 							m_JumpThrowWeapon = true;
 							m_GoingWeapon = false;
 						}
 					}
 				}
-				else if(m_FreeAIMMode){
-					changeAnime(AnimeID::FreeAIM);
+				else if (!BindInput(PlayerInput::FreeAIM)) {
+					m_MapShiftFlag = false;
 				}
+				//if (BindInput(PlayerInput::FreeAIM) && !m_FreeAIMMode) {
+				//	changeAnime(AnimeID::FreeAIM);
+				//
+				//	if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+				//		if (auto target = scr->GetHandWeapon())
+				//		{
+				//			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+				//				script->SetPoint(target, this);
+				//			}
+				//		}
+				//	}
+				//	aim->ChangeAimMode(camera, gameObject, true);
+				//	m_FreeAIMMode = true;
+				//}
+				//if (BindInput(PlayerInput::ThrowWeapon) && m_FreeAIMMode) {
+				//	mJump.x=0.0f;
+				//	mJump.z=0.0f;
+				//	changeAnime(AnimeID::Throw);
+				//	m_FreeAIMMode = false;
+				//	aim->ChangeAimMode(camera, gameObject, false);
+				//	//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().x));
+				//	//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().y));
+				//	//Hx::Debug()->Log("UP : " + std::to_string(camera->gameObject->mTransform->Forward().z));
+				//	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
+				//	if (weaponHand) {
+				//		GameObject target = NULL; /*= camera->GetLookTarget();*/
+				//		auto camera = m_Camera->GetScript<TPSCamera>();
+				//		if (camera) {
+				//			if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+				//				target = camera->GetLookTarget();
+				//			}
+				//		}
+				//
+				//		if (target) {
+				//			throwAway(target);
+				//		}
+				//		else {
+				//			weaponHand->ThrowAway(camera->gameObject->mTransform->Forward());
+				//		}
+				//	}
+				//	if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+				//		weaponCtr->DeleteHitPoint();
+				//	}
+				//	m_JumpThrowWeapon = true;
+				//	m_GoingWeapon = false;
+				//	//throwAway(camera->gameObject->mTransform->WorldPosition() * -1, true);
+				//}
+				//else 
+				//if (BindInput(PlayerInput::ThrowWeapon)) {
+				//	if (!m_Camera)return;
+				//	auto camera = m_Camera->GetScript<TPSCamera>();
+				//	if (camera) {
+				//		GameObject target; /*= camera->GetLookTarget();*/
+				//		if (auto scr = m_WeaponHand->GetScript<WeaponHand>()) {
+				//			target = scr->GetHandWeapon();
+				//		}
+				//		auto camtar = camera->GetLookTarget();
+				//		if (target && camtar) {
+				//			if (auto script = mMoveAvility->GetScript<MoveAbility>()) {
+				//				script->SetPoint(target, this);
+				//			}
+				//			throwAway(camtar);
+				//			if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+				//				weaponCtr->DeleteHitPoint();
+				//			}
+				//			m_JumpThrowWeapon = true;
+				//			m_GoingWeapon = false;
+				//		}
+				//	}
+				//}
+				//else if(m_FreeAIMMode){
+				//	changeAnime(AnimeID::FreeAIM);
+				//}
 
 			}
 		}

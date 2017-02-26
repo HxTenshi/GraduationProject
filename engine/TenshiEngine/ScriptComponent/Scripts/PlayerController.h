@@ -252,6 +252,8 @@ private:
 	SERIALIZE
 	GameObject m_GetWeapon;
 	SERIALIZE
+	GameObject m_GetMapShift;
+	SERIALIZE
 	GameObject m_marker;
 	SERIALIZE
 	GameObject m_TimeManager;
@@ -320,6 +322,7 @@ private:
 	float m_CurrentAnime_Weight;
 
 	bool m_FreeAIMMode;
+	bool m_MapShiftFlag;
 	bool m_GoingWeapon;
 	bool m_UseGravity;
 

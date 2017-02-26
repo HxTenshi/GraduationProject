@@ -247,7 +247,7 @@ void PlayerUI::Update(){
 		if (m_Combo_MoveUI) {
 			auto mate = m_Combo_MoveUI->GetComponent<MaterialComponent>();
 			if (mate) {
-				mate->SetAlbedoColor(movecol[move[0]]);
+				mate->SetAlbedoColor(moucol[move[0]]);
 			}
 		}
 		if (m_Combo_WeaponResistUI) {
@@ -259,7 +259,7 @@ void PlayerUI::Update(){
 		if (m_Combo_ATKUI) {
 			auto mate = m_Combo_ATKUI->GetComponent<MaterialComponent>();
 			if (mate) {
-				mate->SetAlbedoColor(moucol[atk[0]]);
+				mate->SetAlbedoColor(movecol[atk[0]]);
 			}
 		}
 
