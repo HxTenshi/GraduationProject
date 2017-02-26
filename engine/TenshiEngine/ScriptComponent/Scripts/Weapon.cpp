@@ -481,6 +481,14 @@ funifuni::WeaponParametor Weapon::GetWeaponParam()
 {
 	return m_param;
 }
+//dtime‚Ííœ‚Ü‚Å‚ÌŽžŠÔ@t‚ÍCapacity‚ð‚O‚É‚·‚é‚Ü‚Å‚ÌŽžŠÔ
+void Weapon::SetLifeTime(float t, float dtime)
+{
+	if (m_WeaponEffect) {
+		auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
+		scr->SetLifeTime(t, dtime);
+	}
+}
 
 void Weapon::ThrowAwayAction()
 {

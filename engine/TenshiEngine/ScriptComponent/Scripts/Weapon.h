@@ -130,6 +130,11 @@ public:
 	///いじれるパラメータの取得
 	/// </summary>
 	funifuni::WeaponParametor GetWeaponParam();
+	/// <summary>
+	///軌跡のエフェクトのLifeTimeを変更する関数
+	/// </summary>
+	void SetLifeTime(float t, float dtime = 0.5f);
+
 
 private:
 	/// <summary>
