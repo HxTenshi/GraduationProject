@@ -45,7 +45,7 @@ void BombDamageEffect::OnCollideBegin(GameObject target){
 
 		auto enemy = Enemy::GetEnemy(target);
 		if (enemy) {
-			enemy->Damage(m_Damage, BATTLEACTION::WINCEACTION , vect);
+			enemy->Damage(m_Damage * 2, BATTLEACTION::WINCEACTION , vect);
 		}
 	}
 }

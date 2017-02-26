@@ -170,6 +170,7 @@ private:
 	SERIALIZE PrefabAsset m_Attack6Effect;//id 10
 	SERIALIZE PrefabAsset m_Attack7Effect;//id 14
 	SERIALIZE PrefabAsset m_DeadEffect;
+	SERIALIZE PrefabAsset m_Archer;//Archer
 	SERIALIZE GameObject m_AngerEffect;//怒り状態に入った時に出現するエフェクト
 	SERIALIZE GameObject m_AngerMesh;//怒り状態に入ったときに肌に赤みを持たせる
 	//デバッグ用のフラグ
@@ -227,5 +228,6 @@ private:
 	float m_move_attackd_timer;
 	//攻撃移動中のタイマー上限
 	float m_move_attackd_timemax;
-
+	//攻撃をもらったときのカウンタ
+	int m_damage_counter;
 };

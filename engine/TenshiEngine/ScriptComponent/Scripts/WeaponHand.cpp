@@ -93,7 +93,7 @@ GameObject WeaponHand::GetHandWeapon()
 	return mWeapon;
 }
 
-void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback)
+void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& collback,bool FastCatch)
 {
 	if (mWeapon)return;
 	//if (mWeapon) {
@@ -111,6 +111,15 @@ void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& col
 	m_GetPosDistance = XMVector3Length(v).x;
 	mWeapon->mTransform->SetParent(Hx::GetRootActor());
 	mWeapon->mTransform->WorldPosition(pos2);
+
+	if (FastCatch) {
+		mWeapon->mTransform->SetParent(gameObject);
+		mWeapon->mTransform->Position(XMVectorZero());
+		mWeapon->mTransform->Rotate(XMVectorZero());
+
+		m_ActionFree = true;
+		m_NowGetAction = false;
+	}
 
 	if (auto scr = mWeapon->GetScript<Weapon>()) {
 		scr->GetWeapon();
@@ -148,7 +157,6 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 		mWeapon->GetComponent<PhysXComponent>()->SetGravity(false);
 		XMVECTOR targetVector = XMVector3Normalize(log);
 		character->mTransform->AddForce(targetVector * 30, ForceMode::eIMPULSE);
-
 		if (auto scr = mWeapon->GetScript<Weapon>()) {
 			auto mirrer = mWeapon->GetComponent<BoneMirrorComponent>();
 			mWeapon = NULL;
@@ -157,22 +165,23 @@ void WeaponHand::ThrowAway(GameObject target,bool isMove)
 			//‚±‚±‚Å‘ÎÛ‚Ì“G‚Ì•R•t‚¯
 
 
-			mirrer->ChangeTargetBone(target);
-			mirrer->Enable();
-			auto vector = mirrer->GetBoneNames();
-			int id = 0;
-			for (auto name : vector)
-			{
-				if (name == "Spine")
-				{
-					break;
-				}
-				id++;
-			}
-			//’Ç]‚·‚é
-			mirrer->SetTargetBoneID(id);
+			//mirrer->ChangeTargetBone(target);
+			//mirrer->Enable();
+			//auto vector = mirrer->GetBoneNames();
+			//int id = 0;
+			//for (auto name : vector)
+			//{
+			//	if (name == "Spine")
+			//	{
+			//		break;
+			//	}
+			//	id++;
+			//}
+			////’Ç]‚·‚é
+			//mirrer->SetTargetBoneID(id);
 
-			scr->ThrowAway(targetVector * m_ThrowPower);
+			scr->ThrowAway(target,m_ThrowPower);
+			//scr->ThrowAway(targetVector * m_ThrowPower);
 			m_ActionFree = false;
 		}
 	}

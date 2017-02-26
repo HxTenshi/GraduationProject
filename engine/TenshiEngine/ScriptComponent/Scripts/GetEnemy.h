@@ -27,6 +27,4 @@ private:
 	//ƒƒ“ƒo•Ï
 
 	std::list<GameObject> m_EnemyList;
-	SERIALIZE
-		GameObject m_Camera;
 };

@@ -73,6 +73,13 @@ public:
 			Down,
 		};
 	};
+	struct LockAction {
+		enum Enum {
+			DropWeapon,
+			ThrowWeapon,
+			Count,
+		};
+	};
 	void SetPlayerState(PlayerState::Enum state);
 	PlayerState::Enum GetPlayerState();
 	void PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel);
@@ -102,13 +109,18 @@ public:
 	int GetHitComboCount();
 
 	void SpeedJump(const XMVECTOR& vect);
-	void SpeedJumpWeaponCatch(GameObject weapon);
+	void SpeedJumpWeaponCatch(GameObject weapon, bool attack);
 
 	void AddMove(XMVECTOR v);
-private:
-	void AttackInitialize();
 
 	Weapon* GetWeapon();
+	GameObject GetLockonTarget();
+
+	//特定のアクションを使用不可にする
+	void SetLockAction(LockAction::Enum action, bool lock);
+	bool GetLockAction(LockAction::Enum action);
+private:
+	void AttackInitialize();
 
 	void LockEnter();
 	void LockExcute();
@@ -165,7 +177,7 @@ private:
 	void lockOn();
 	void GettingWeapon();
 	void throwWeapon();
-	void setWeapon(GameObject weapon);
+	void setWeapon(GameObject weapon,bool FastCatch=false);
 	void currentAttackChange(int attackid);
 
 	void freeAnimeUpdate();
@@ -225,6 +237,7 @@ private:
 	float m_MoveSpeed_ComboAdd;
 	float m_MoutionSpeed_ComboAdd;
 	float m_WeaponResist_ComboAdd;
+	float m_ATK_ComboAdd;
 
 	float m_MoutionSpeed;
 
@@ -307,6 +320,7 @@ private:
 	float m_CurrentAnime_Weight;
 
 	bool m_FreeAIMMode;
+	bool m_GoingWeapon;
 	bool m_UseGravity;
 
 	weak_ptr<CharacterControllerComponent> m_CharacterControllerComponent;
@@ -314,8 +328,17 @@ private:
 	bool m_AttackMode;
 	int m_NextAttack;
 	AttackState m_CurrentAttack;
+	AttackState m_ThrowAttack;
 	int m_CurrentWeaponType;
 	std::vector<std::vector<AttackState>> m_AttackStateList;
+	float m_AttackCoolDownTimer;
+
+
+	std::vector<bool> m_LockActions;
+
+	bool m_JumpThrowWeapon;
+	bool m_JumpLowAttack;
+	bool m_JumpHighAttack;
 
 
 	std::list<std::function<bool(void)>> m_UpdateCoroutine;

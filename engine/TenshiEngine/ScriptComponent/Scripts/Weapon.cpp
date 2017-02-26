@@ -13,6 +13,9 @@ void Weapon::Initialize(){
 	break_time = 0.0f;
 	is_ground_hit = true;
 	mIsEnemyThrow = false;
+	m_ThrowTarget = NULL;
+	m_MirrorTarget = NULL;
+	m_ThrowSpeed = 1.0f;
 	m_Vector = XMVectorZero();
 		m_param.SetAttack(5);
 		m_param.SetDurableDamage(2.0f,3.0f);
@@ -44,6 +47,17 @@ void Weapon::Start(){
 
 //毎フレーム呼ばれます
 void Weapon::Update(){	
+	if (m_param.isBreak() & !is_hand) {
+		if (m_break_effect.IsLoad()) {
+			auto g = Hx::Instance(m_break_effect);
+			if (g) {
+				auto pos = gameObject->mTransform->WorldPosition();
+				g->mTransform->WorldPosition(pos);
+			}
+		}
+		Hx::DestroyObject(gameObject);
+		return;
+	}
 	if (is_attack == 2) {
 		is_attack = 3;
 	}
@@ -51,6 +65,19 @@ void Weapon::Update(){
 	m_Recast += 1 * Hx::DeltaTime()->GetDeltaTime();
 	ThrowAwayAction();
 	m_weapon_rot += Hx::DeltaTime()->GetDeltaTime()*10.0f;
+
+	{
+		//ここで対象の敵の紐付け
+		auto mirrer = gameObject->GetComponent<BoneMirrorComponent>();
+		if (!mirrer)return;
+		if (!mirrer->IsEnabled())return;
+		if (!m_MirrorTarget) {
+			m_MirrorTarget = NULL;
+			
+			mirrer->Disable();
+			ThrowAway();
+		}
+	}
 	//PierceSupport(gameObject);
 	//Hx::Debug()->Log(std::to_string(gameObject->mTransform->DegreeRotate().x));
 
@@ -77,7 +104,14 @@ void Weapon::OnCollideBegin(GameObject target){
 					WeaponUsePhysX();
 				}
 
+				m_Recast = 0.0f;
+				//scr->Damage(m_AttackForce);
+				m_HitCollback(target, this, HitState::Damage);
+				
+				is_attack = 0;
 				mIsEnemyThrow = false;
+				m_ThrowTarget = NULL;
+				SetHitCollback([](auto o, auto w, auto t) {});
 			}
 
 			if (target->GetLayer() == 4) {
@@ -88,17 +122,22 @@ void Weapon::OnCollideBegin(GameObject target){
 					weapon->Hit();
 					//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
 				}
+				is_attack = 0;
 				mIsEnemyThrow = false;
+				m_ThrowTarget = NULL;
+				SetHitCollback([](auto o, auto w, auto t) {});
 			}
 
-			if (target->GetLayer() == 6) {
-				WeaponUsePhysX();
-
-				//auto wpos = gameObject->mTransform->WorldPosition();
-				//gameObject->mTransform->WorldPosition(wpos - m_Vector);
-				//ThrowAway();
-				mIsEnemyThrow = false;
-			}
+			//if (target->GetLayer() == 6) {
+			//	WeaponUsePhysX();
+			//
+			//	//auto wpos = gameObject->mTransform->WorldPosition();
+			//	//gameObject->mTransform->WorldPosition(wpos - m_Vector);
+			//	//ThrowAway();
+			//	mIsEnemyThrow = false;
+			//	m_ThrowTarget = NULL;
+			//	SetHitCollback([](auto o, auto w, auto t) {});
+			//}
 
 		}
 
@@ -113,13 +152,15 @@ void Weapon::OnCollideBegin(GameObject target){
 				m_HitCollback(target,this,HitState::Damage);
 			}
 		}
-		mIsEnemyThrow = false;
+	}
+	if (target->GetLayer() == 4 && !is_hand) {
+		WeaponUsePhysX();
 	}
 } 
 
 //コライダーとのヒット中に呼ばれます
 void Weapon::OnCollideEnter(GameObject target) {
-	
+	if (!target)return;
 	if (is_attack == 1 || is_attack == 2) {
 		if (target->GetLayer() == 3 && is_hand) {
 			//敵へのダメージの処理
@@ -148,6 +189,18 @@ void Weapon::OnCollideExit(GameObject target){
 void Weapon::Damage(DamageType type,float mag=1.0f)
 {
 	m_param.Damage(type,mag);
+	if (m_param.isBreak()) {
+		if (m_Break_Mesh) {
+			m_Break_Mesh->Disable();
+			if (m_Break_Particle.IsLoad()) {
+				auto g = Hx::Instance(m_Break_Particle);
+				if (m_ThrowHit) {
+					auto pos = m_ThrowHit->mTransform->WorldPosition();
+					g->mTransform->WorldPosition(pos);
+				}
+			}
+		}
+	}
 }
 /// <summary>
 ///武器が壊れた時の判定
@@ -162,20 +215,20 @@ bool Weapon::isBreak()
 void Weapon::ThrowAway()
 {
 	break_time = 0.0f;
-	SetHitCollback([](auto o,auto w,auto t) {});
 	is_fly = true;
 	is_hand = false;
 	is_ground_hit = false;
 	m_weapon_rot = 0.0f;
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(true);
 	XMVECTOR wpos = gameObject->mTransform->WorldPosition();
-	wpos.y -= 0.6f;
+	wpos.y += 0.6f;
 	gameObject->mTransform->SetParent(Hx::GetRootActor());
 	gameObject->mTransform->WorldPosition(wpos);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
 	//gameObject->GetComponent<PhysXComponent>()->AddForce(XMVectorSet(0.0f,1.0f,0.0f,1.0f) * 10, ForceMode::eIMPULSE);
 
 	m_Vector = XMVectorSet(0,-1,0,1);
+	m_ThrowSpeed = 10.0f;
 
 	if (XMVector3Length(m_Vector).x != 0.0f) {
 		auto m = gameObject->mTransform->GetMatrix();
@@ -211,10 +264,45 @@ void Weapon::ThrowAway(XMVECTOR & throwdir)
 	is_ground_hit = true;
 	is_attack = 1;
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
-	gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
+	//gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
 
 	m_Vector = throwdir;
+	m_ThrowSpeed = XMVector3Length(m_Vector).x;
 
+	if (XMVector3Length(m_Vector).x != 0.0f) {
+		auto m = gameObject->mTransform->GetMatrix();
+		auto s = gameObject->mTransform->Scale();
+		//auto fl = XMVector3Length(m.r[0]).x;
+		//auto ul = XMVector3Length(m.r[1]).x;
+		//auto ll = XMVector3Length(m.r[2]).x;
+		auto f = XMVector3Normalize(m.r[0]);
+		auto u = XMVector3Normalize(m_Vector);
+		auto l = XMVector3Cross(f, u);
+		f = XMVector3Cross(u, l);
+		m.r[0] = XMVector3Normalize(f);// * fl;
+		m.r[1] = XMVector3Normalize(u);// * ul;
+		m.r[2] = XMVector3Normalize(l);// * ll;
+		gameObject->mTransform->WorldMatrix(m);
+		gameObject->mTransform->Scale(s);
+	}
+}
+/// <summary>
+///武器を捨てる処理
+/// </summary>
+void Weapon::ThrowAway(GameObject target, float speed)
+{
+	mIsEnemyThrow = true;
+	ThrowAway();
+	is_ground_hit = true;
+	is_attack = 1;
+	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
+	//gameObject->GetComponent<PhysXComponent>()->AddForce(throwdir, ForceMode::eIMPULSE);
+
+	m_ThrowTarget = target;
+	auto pos = m_ThrowTarget->mTransform->WorldPosition();
+	pos.y += 1.0f;
+	m_Vector = pos - gameObject->mTransform->WorldPosition();
+	m_ThrowSpeed = speed;
 
 	if (XMVector3Length(m_Vector).x != 0.0f) {
 		auto m = gameObject->mTransform->GetMatrix();
@@ -243,6 +331,7 @@ void Weapon::WeaponUsePhysX()
 		is_ground_hit = true;
 		is_fly = false;
 		is_attack = 0;
+		m_Vector = XMVectorZero();
 		//Hx::Debug()->Log("Hit");
 	}
 }
@@ -260,11 +349,12 @@ void Weapon::SetHitCollback(const HitCollbackType & collback)
 void Weapon::GetWeapon()
 {
 	break_time = 0.0f;
-
+	mIsEnemyThrow = false;
 	is_ground_hit = false;
 	is_hand = true;
 	is_fly = false;
 	is_attack = 0;
+	m_ThrowTarget = NULL;
 	//gameObject->GetComponent<PhysXComponent>()->SetKinematic(true);
 	gameObject->GetComponent<PhysXComponent>()->SetGravity(false);
 	gameObject->GetComponent<PhysXColliderComponent>()->SetIsTrigger(true);
@@ -276,12 +366,13 @@ void Weapon::GetWeapon()
 		mirror->ChangeTargetBone(NULL);
 		mirror->SetTargetBoneID(-1);
 		mirror->Disable();
+		m_MirrorTarget = NULL;
 	}
 }
 
 float Weapon::GetAttackPower()
 {
-	return (isBreak())?1.0f:m_param.AttackParam();
+	return (isBreak())?0.1f:m_param.AttackParam();
 }
 
 float Weapon::GetDurable()
@@ -363,6 +454,19 @@ bool Weapon::GetIsHand()
 	return is_hand;
 }
 
+bool Weapon::isThrow()
+{
+	return mIsEnemyThrow;
+}
+
+void Weapon::SetMirrorTarget(GameObject target)
+{
+	m_MirrorTarget = target;
+}
+GameObject Weapon::GetMirrorTarget()
+{
+	return m_MirrorTarget;
+}
 std::string Weapon::GetName()
 {
 	return m_name;
@@ -370,10 +474,56 @@ std::string Weapon::GetName()
 
 void Weapon::ThrowAwayAction()
 {
+	if (mIsEnemyThrow) {
+		if (m_ThrowTarget) {
+			auto pos = m_ThrowTarget->mTransform->WorldPosition();
+			pos.y += 1.0f;
+			m_Vector = pos - gameObject->mTransform->WorldPosition();
+			
+
+			if (XMVector3Length(m_Vector).x < m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime()) {
+				OnCollideBegin(m_ThrowTarget);
+				return;
+			}
+		}
+		else {
+			auto pos = gameObject->mTransform->WorldPosition();
+			auto v = XMVector3Normalize(m_Vector);
+			RaycastHit hit;
+			if(Hx::PhysX()->RaycastHit(pos, v, m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime(), &hit, (Layer::Enum)(Layer::UserTag3 | Layer::UserTag4))){
+
+				gameObject->mTransform->WorldPosition(hit.position);
+				OnCollideBegin(hit.hit);
+				return;
+			}
+		}
+		auto pos = gameObject->mTransform->WorldPosition();
+		pos += XMVector3Normalize(m_Vector) * m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime();
+		gameObject->mTransform->WorldPosition(pos);
+	}
+
 	if (is_ground_hit || is_hand)return;
-	m_weapon_rot = max(m_weapon_rot, 0);
-	auto rot = gameObject->mTransform->WorldQuaternion();
-	gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*900 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
+
+	if(XMVector3Length(m_Vector).x!=0.0f){
+		{
+			auto pos = gameObject->mTransform->WorldPosition();
+			auto v = XMVector3Normalize(m_Vector);
+			RaycastHit hit;
+			if (Hx::PhysX()->RaycastHit(pos, v, m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime(), &hit, Layer::UserTag4)) {
+
+				gameObject->mTransform->WorldPosition(hit.position);
+				OnCollideBegin(hit.hit);
+				return;
+			}
+		}
+		auto pos = gameObject->mTransform->WorldPosition();
+		pos += XMVector3Normalize(m_Vector) * m_ThrowSpeed * Hx::DeltaTime()->GetDeltaTime();
+		gameObject->mTransform->WorldPosition(pos);
+	}
+
+	//m_weapon_rot = max(m_weapon_rot, 0);
+	//auto rot = gameObject->mTransform->WorldQuaternion();
+	//gameObject->mTransform->Rotate(XMVectorSet((m_weapon_rot*900 / 180.0f)*XM_PI, 0.0f, 0.0f, 1.0f));
 }
 
 void Weapon::PierceSupport(GameObject obj)

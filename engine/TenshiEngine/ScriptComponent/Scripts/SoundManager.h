@@ -43,13 +43,47 @@ public:
 			Lion2,
 			VolumeDown,
 			VolumeUp,
-			Player_SW_L1,
+			____EmptySE1,//使ってどうぞ
+			____EmptySE2,//使ってどうぞ
+			____EmptySE3,//使ってどうぞ
+			____EmptySE4,//使ってどうぞ
+			Rezard_Attack_1,
+			Rezard_Attack_2,
+			WoodMan_Attack,
+
+
+			Reis_Damage = 60,
+			Reis_Pop,
+			Reis_Dead,
+			Reis_BackStep,
+			Reis_Near1,
+			Reis_Near2,
+			Reis_Shot,
+			Reis_CitrusThrow,
+			Reis_WarpNear,
+			Reis_SonicWave1,
+			Reis_SonicWave2,
+			Reis_Chage1,
+			Reis_Chage2,
+
+			Player_SW_L1=80,
 			Player_SW_L2,
 			Player_SW_L3,
 			Player_SW_H1,
-			Rezard_Attack_1,
-			Rezard_Attack_2,
-			WoodMan_Attack
+			Player_SW_H2,
+			Player_SW_FL1,
+			Player_SW_FL2,
+			Player_SW_FH1,
+			Player_SW_PlaySP,
+			Player_SW_DL,
+			Player_SW_SJL,
+			Player_Throw,
+			Player_Drop,
+			Player_SpeedJump,
+			Player_CV_Damage1,
+			Player_CV_Damage2,
+			Player_CV_Dead,
+			Player_CV_Gurad,
 		};
 	};
 	struct SoundBGM_ID {

@@ -60,6 +60,7 @@ EnemyWoodMan::EnemyWoodMan()
 }
 void EnemyWoodMan::ChildInitialize()
 {
+	Score::AddCountEnemy();
 	m_Hp = hp;
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
@@ -232,7 +233,7 @@ void EnemyWoodMan::RunAttackModeUpdate()
 	}
 
 	if (XMVector3Length(gameObject->mTransform->WorldPosition() - m_StartPos).x > m_LostRange || m_Attacked) {
-		if (m_Attacked) {
+		if (m_Animparam.afterAnimId == ANIM_ID::ANIM_RUNATTACK) {
 			SoundManager::PlaySE(SoundManager::SoundSE_ID::WoodMan_Attack, gameObject->mTransform->WorldPosition());
 		}
 		AnimChange(ANIM_ID::ANIM_TIRED, 5.0f, false);

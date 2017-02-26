@@ -10,7 +10,6 @@ void AimController::Initialize(){
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void AimController::Start(){
 	if (mTargetUI)mTargetUI->Disable();
-	SoundManager::PlayBGM(SoundManager::SoundBGM_ID::GamePlay);
 }
 
 //毎フレーム呼ばれます

@@ -9,7 +9,9 @@
 void EnemyOneTeam::TeamInitialize()
 {
 	auto enemyTeamChild = gameObject->mTransform->Children();
-	if (enemyTeamChild.size() == 0)return;
+	if (enemyTeamChild.size() == 0) {
+		return;
+	}
 	for (auto& i : enemyTeamChild) {
 		if (!i)return;
 		auto iScript = Enemy::GetEnemy(i);
@@ -32,7 +34,7 @@ bool EnemyOneTeam::Alive()
 		if (!jScript)return false;
 		if (jScript->IsEnd()) {
 			//vector‚©‚çíœ
-			Enemy::GetEnemy(j->enemyGameObject)->ChildFinalize();
+			jScript->ChildFinalize();
 			j = teamMember.erase(j);
 			if (teamMember.size() == 0) {
 				return false;

@@ -2,6 +2,7 @@
 #include "h_component.h"
 #include "h_standard.h"
 # include "Game\Component\BoneMirrorComponent.h"
+#include "Weapon.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void WeaponControl::Initialize(){
@@ -55,7 +56,18 @@ void WeaponControl::HitActor(GameObject target,GameObject weapon)
 	Hx::Debug()->Log(" : " + target->Name());
 	if (target->GetLayer() == 3){
 		Hx::Debug()->Log("頭に");
-		SearchEnemyBone(target, weapon, "Head");
+		if (SearchEnemyBone(target, weapon, "Head"))return;
+		if (SearchEnemyBone(target, weapon, "センター"))return;
+		if (SearchEnemyBone(target, weapon, "master"))return;
+		if (SearchEnemyBone(target, weapon, "Spine"))return;
+		{//その他の敵（ドア
+			isHit = true;
+			if (weapon) {
+				if (auto w = weapon->GetScript<Weapon>()) {
+					w->SetMirrorTarget(target);
+				}
+			}
+		}
 	}
 	else if (target->GetLayer() == 12) {
 		Hx::Debug()->Log("体に");
@@ -65,11 +77,11 @@ void WeaponControl::HitActor(GameObject target,GameObject weapon)
 }
 
 //
-void WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::string name)
+bool WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::string name)
 {
 		//ここで対象の敵の紐付け
 		auto mirrer = weapon->GetComponent<BoneMirrorComponent>();
-		if (!mirrer)return;
+		if (!mirrer)return false;
 		std::list<GameObject> targetObject;
 		if (target->GetLayer() == 3){
 			targetObject = target->mTransform->Children();
@@ -77,12 +89,12 @@ void WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::str
 		else if (target->GetLayer() == 12) {
 			targetObject = target->mTransform->GetParent()->mTransform->Children();
 		}
-
+		GameObject enemyModel = NULL;
 		for (auto i : targetObject) {
-			if (i->GetLayer() == 10)target = i;
+			if (i->GetLayer() == 10)enemyModel = i;
 		}
 
-		mirrer->ChangeTargetBone(target);
+		mirrer->ChangeTargetBone(enemyModel);
 		mirrer->Enable();
 
 		auto vector = mirrer->GetBoneNames();
@@ -96,9 +108,22 @@ void WeaponControl::SearchEnemyBone(GameObject target,GameObject weapon,std::str
 			id++;
 		}
 
-		//追従する
-		mirrer->SetTargetBoneID(id);
-		isHit = true;
+		if (id < vector.size()) {
+			//追従する
+			mirrer->SetTargetBoneID(id);
+			isHit = true;
+			if (auto w = weapon->GetScript<Weapon>()) {
+				w->SetMirrorTarget(target);
+			}
+			return true;
+		}
+		else {
+			mirrer->ChangeTargetBone(NULL);
+			mirrer->SetTargetBoneID(-1);
+			mirrer->Disable();
+		}
+		return false;
+
 }
 
 //頭に当たったか?

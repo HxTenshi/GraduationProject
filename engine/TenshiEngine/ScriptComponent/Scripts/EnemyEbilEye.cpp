@@ -60,29 +60,22 @@ EnemyEbilEye::EnemyEbilEye()
 }
 void EnemyEbilEye::ChildInitialize()
 {
+	Score::AddCountEnemy();
 	m_Hp = hp;
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
 	m_MovePositionCenter = gameObject->mTransform->WorldPosition();
 	m_EbilEye = true;
+	m_Gravity = XMVectorSet(0, 0, 0, 1);
 }
 
 void EnemyEbilEye::SoloAction()
 {
-	if (m_AccelVec.y >= 0 || m_BattleModeParam.id == BATTLEACTION::UPPERDOWNACTION || m_BattleModeParam.id == BATTLEACTION::DEADACTION) {
+	if (m_BattleModeParam.id == BATTLEACTION::UPPERDOWNACTION || m_BattleModeParam.id == BATTLEACTION::DEADACTION) {
 		m_Gravity = XMVectorSet(0, -9.8f, 0, 0);
 	}
 	else {
 		m_Gravity = XMVectorSet(0, 0, 0, 0);
-	}
-	if (Input::Trigger(KeyCode::Key_1)) {
-		Damage(1.0f, BATTLEACTION::WINCEACTION,XMVectorSet(0,0,0,0));
-	}
-	if (Input::Trigger(KeyCode::Key_2)) {
-		Damage(1.0f, BATTLEACTION::UPPERDOWNACTION, XMVectorSet(0, 10, 0, 0));
-	}
-	if (Input::Trigger(KeyCode::Key_3)) {
-		Damage(1.0f, BATTLEACTION::BEATDOWNACTION, XMVectorSet(0, -10, 0, 0));
 	}
 }
 
@@ -148,6 +141,7 @@ bool EnemyEbilEye::DiscoveryPlayer()
 
 bool EnemyEbilEye::LostPlayer()
 {
+	if (m_BattleModeParam.id == BATTLEACTION::DEADACTION)return false;
 	auto groundPos = gameObject->mTransform->WorldPosition();
 	if (!m_Player)return false;
 	auto playerPos = m_Player->mTransform->WorldPosition();
@@ -164,7 +158,7 @@ void EnemyEbilEye::ChildFinalize()
 {
 	Score::AddScore();
 	////gameObject->Disable();
-	Hx::Debug()->Log(gameObject->Name());
+	Hx::Debug()->Log(gameObject->Name() + " is Die");
 	Hx::DestroyObject(this->gameObject);
 }
 
@@ -245,10 +239,12 @@ void EnemyEbilEye::TackleModeInitilize()
 	AnimChange(ANIM_ID::ANIM_TACKLE, 10.0f);
 	m_RotateEnd = false;
 	m_AttackHit = false;
+	m_Count = 0;
 }
 
 void EnemyEbilEye::TackleModeUpdate()
 {
+	m_Count += Hx::DeltaTime()->GetDeltaTime();
 	if (!m_RotateEnd) {
 		m_Vec += XMVector3Normalize(m_TackleVec) * m_TackleSpeed;
 		LookPosition(gameObject->mTransform->WorldPosition() + m_Vec, m_RotateSpeed, true);
@@ -257,7 +253,7 @@ void EnemyEbilEye::TackleModeUpdate()
 	if (!cc)return;
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
-	if (cc->IsGround()) {
+	if (cc->IsGround() || m_Count > (m_TackleTime / 3.0f)) {
 		m_RotateEnd = true;
 		AnimChange(ANIM_ID::ANIM_ROTATEEYE, 10.0f, false);
 	}

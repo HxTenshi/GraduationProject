@@ -62,6 +62,7 @@ EnemyOrc::EnemyOrc()
 }
 void EnemyOrc::ChildInitialize()
 {
+	Score::AddCountEnemy();
 	m_SetPoint = true;
 	if (!m_MovePoints)m_SetPoint = false;
 	else {

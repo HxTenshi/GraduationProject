@@ -1,6 +1,7 @@
 #include "GetEnemy.h"
 #include "h_standard.h"
 #include "Enemy.h"
+#include "UniqueObject.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void GetEnemy::Initialize(){
@@ -25,7 +26,10 @@ void GetEnemy::Finish(){
 void GetEnemy::OnCollideBegin(GameObject target){
 	if (!target)return;
 	if (!Enemy::GetEnemy(target))return;
-	m_EnemyList.push_back(target);
+	if (Enemy::GetEnemy(target)->GetEnemyAllParameter(false).hp > 0.0f) {
+
+		m_EnemyList.push_back(target);
+	}
 }
 
 //コライダーとのヒット中に呼ばれます
@@ -43,15 +47,49 @@ void GetEnemy::OnCollideExit(GameObject target){
 
 GameObject GetEnemy::GetMinEnemy()
 {
-	auto pos = gameObject->mTransform->WorldPosition();
+//	auto pos = gameObject->mTransform->WorldPosition();
+//	float lowL = 9999999.0f;
+//	GameObject lowObj = NULL;
+//	for (auto& enemy : m_EnemyList) {
+//		if (!enemy) continue;
+//		auto l = XMVector3Length(pos - enemy->mTransform->WorldPosition()).x;
+//		if (l < lowL) {
+//			lowObj = enemy;
+//			lowL = l;
+//		}
+//	}
+//	return lowObj;
+	auto m_Camera = UniqueObject::GetCamera();
+	if (!m_Camera)return NULL;
+	XMVECTOR camvec;
+	camvec = m_Camera->mTransform->Forward();
+	
 	float lowL = 9999999.0f;
 	GameObject lowObj = NULL;
+
 	for (auto& enemy : m_EnemyList) {
 		if (!enemy) continue;
-		auto l = XMVector3Length(pos - enemy->mTransform->WorldPosition()).x;
-		if (l < lowL) {
+
+		auto pos = gameObject->mTransform->WorldPosition();
+		auto epos = enemy->mTransform->WorldPosition();
+		epos.y += 1.0f;
+		auto v = epos - pos;
+		if (Hx::PhysX()->Raycast(pos, XMVector3Normalize(v), XMVector3Length(v).x, Layer::UserTag4)) {
+			continue;
+		}
+
+
+		XMVECTOR vect2 = XMVector3Normalize(enemy->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition());
+		float dot = XMVector3Dot(camvec, vect2).x;
+		if (dot < 0) {
+			continue;
+		}
+		float l = XMVector3Length(v).x;
+		dot = 1.0f - dot;
+		dot += l/50.0f;
+		if (dot < lowL) {
 			lowObj = enemy;
-			lowL = l;
+			lowL = dot;
 		}
 	}
 	return lowObj;
@@ -61,6 +99,7 @@ GameObject GetEnemy::GetPointMinEnemy(GameObject currentTarget, MinVect::Enum mi
 {
 	if (!currentTarget)return NULL;
 	XMVECTOR camvec;
+	auto m_Camera = UniqueObject::GetCamera();
 	if (m_Camera) {
 		camvec = m_Camera->mTransform->Forward();
 	}
@@ -79,6 +118,15 @@ GameObject GetEnemy::GetPointMinEnemy(GameObject currentTarget, MinVect::Enum mi
 
 	for (auto& enemy : m_EnemyList) {
 		if (!enemy) continue;
+		auto pos = gameObject->mTransform->WorldPosition();
+		auto epos = enemy->mTransform->WorldPosition();
+		epos.y += 1.0f;
+		auto v = epos - pos;
+		if (Hx::PhysX()->Raycast(pos, XMVector3Normalize(v), XMVector3Length(v).x, Layer::UserTag4)) {
+			continue;
+		}
+
+
 		auto posmat = XMMatrixMultiply(XMMatrixTranslationFromVector(enemy->mTransform->WorldPosition()), mat);
 		float l = abs(posmat.r[3].x - CurrentTargetPos.x);
 
