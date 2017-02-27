@@ -4,6 +4,7 @@
 # include "WeaponControl.h"
 #include "WeaponCommon.h"
 #include "WeaponTable.h"
+#include "WeaponEffect.h"
 #include <functional>
 enum AttackType {
 	WEAK,
@@ -125,7 +126,7 @@ public:
 	/// <summary>
 	///‹OÕ‚Ì¶¬
 	/// </summary>
-	void CreateEffect();
+	void CreateEffect(WeaponEffectType type=WeaponEffectType::STRONGEF);
 	/// <summary>
 	///‚¢‚¶‚ê‚éƒpƒ‰ƒ[ƒ^‚Ìæ“¾
 	/// </summary>

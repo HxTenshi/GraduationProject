@@ -2,7 +2,10 @@
 #pragma once
 #include "main.h"
 
-
+enum WeaponEffectType{
+	STRONGEF,
+	THROWEF
+};
 class WeaponEffect :public IDllScriptComponent{
 public:
 	void Initialize()override;
@@ -11,16 +14,19 @@ public:
 	void Finish()override;
 
 	//アクションの起動処理1回で一つ生成
-	void Action();
+	void Action(WeaponEffectType type = WeaponEffectType::STRONGEF);
+	
+	//投げる場合は長い時間をセットして刺さったときにもう一度タイムをセットして
 	//アニメーションの違いによるタイムのセット
 	void SetLifeTime(float time,float dtime=0.5f);
-
 private:
 	//メンバ変数
 	SERIALIZE
 	PrefabAsset m_particle;
 	SERIALIZE
-	GameObject m_now_Effect;
+	PrefabAsset m_throw_particle;
+	SERIALIZE
+	GameObject weaponTip;
 	SERIALIZE
 	float m_life_time;
 	SERIALIZE

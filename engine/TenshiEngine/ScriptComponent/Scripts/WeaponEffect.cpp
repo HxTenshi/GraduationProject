@@ -20,13 +20,16 @@ void WeaponEffect::Finish(){
 
 }
 
-void WeaponEffect::Action()
+void WeaponEffect::Action(WeaponEffectType type)
 {
-	if (m_particle.IsLoad()) {
-		m_now_Effect = Hx::Instance(m_particle);
-		m_now_Effect->mTransform->SetParent(gameObject);
-		m_now_Effect->mTransform->Position(XMVectorSet(0, 0, 0, 0));
-		if (auto scr = m_now_Effect->GetScript<WeaponEffectCtr>()) {
+	
+	if (m_particle.IsLoad()&&m_throw_particle.IsLoad()) {
+		auto p = (type == WeaponEffectType::STRONGEF) ? Hx::Instance(m_particle) : Hx::Instance(m_throw_particle);
+		auto point = (type == WeaponEffectType::STRONGEF) ? gameObject : weaponTip;
+		if (!point)point=gameObject;
+		p->mTransform->SetParent(point);
+		p->mTransform->Position(XMVectorSet(0, 0, 0, 0));
+		if (auto scr = p->GetScript<WeaponEffectCtr>()) {
 			scr->SetLifeTime(m_life_time, m_stop_particle_time);
 		}
 	}

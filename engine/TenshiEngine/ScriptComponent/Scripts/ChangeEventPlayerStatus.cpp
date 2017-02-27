@@ -11,12 +11,22 @@ void ChangeEventPlayerStatus::Start(){
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void ChangeEventPlayerStatus::Update(){
 	OnSetSP();
+	LockWeapon();
 }
 
 void ChangeEventPlayerStatus::OnSetSP()
 {
+	if (!mSPUpdate)return;
 	auto player = UniqueObject::GetPlayer()->GetScript<PlayerController>();
 	if (player) {
 		player->SetSpecial(mSP);
+	}
+}
+
+void ChangeEventPlayerStatus::LockWeapon()
+{
+	auto player = UniqueObject::GetPlayer()->GetScript<PlayerController>();
+	if (player) {
+		player->SetLockAction(PlayerController::LockAction::DropWeapon,mLock);
 	}
 }

@@ -10,6 +10,7 @@ public:
 	void Update()override;
 	void Finish()override;
 	void SetLifeTime(float time,float stoptime);
+	void Reset();
 private:
 	//ƒƒ“ƒo•Ï”
 	float m_lifetime;

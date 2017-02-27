@@ -3,7 +3,6 @@
 #include "h_component.h"
 #include "h_standard.h"
 #include "Enemy.h"
-#include "WeaponEffect.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Weapon::Initialize(){
 	is_hand = false;
@@ -469,11 +468,11 @@ std::string Weapon::GetName()
 	return m_name;
 }
 
-void Weapon::CreateEffect()
+void Weapon::CreateEffect(WeaponEffectType type)
 {
 	if (m_WeaponEffect) {
 		auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
-		scr->Action();
+		scr->Action(type);
 	}
 }
 
