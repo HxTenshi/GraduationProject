@@ -12,8 +12,10 @@ void WeaponHack::Update(){
 
 	auto weapon = mWeapon->GetScript<Weapon>();
 	if (weapon) {
-		weapon->GetWeaponParam().SetDurable(1);
+		weapon->GetWeaponParam().SetDurable(0);
 		gameObject->mTransform->Disable();
+		Hx::Debug()->Log("•Ší‚Ì‘Ï‹v—Í‚ğƒ[ƒ‚É‚µ‚Ä‚¢‚é");
+		Hx::DestroyObject(gameObject);
 	}
 
 }

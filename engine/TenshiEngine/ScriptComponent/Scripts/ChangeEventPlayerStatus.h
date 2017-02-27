@@ -10,6 +10,10 @@ public:
 
 	void OnSetSP();
 
+	void LockWeapon();
+
 private:
 	SERIALIZE float mSP;
+	SERIALIZE bool mSPUpdate;
+	SERIALIZE bool mLock;
 };
