@@ -134,6 +134,11 @@ void GS0_Main(point GS_IN In[1],                   // ƒ|ƒCƒ“ƒg ƒvƒŠƒ~ƒeƒBƒu‚Ì“ü—
 			}
 			else{
 				Out.time.x = In[0].time.x + GameTime.z;
+				//ƒ‰[ƒvˆ—‚ğ³‚µ‚­‚·‚é‚½‚ß‚É-100‚µ‚Ä‚¢‚½ƒ^ƒCƒ€‚ğ–³‚©‚Á‚½‚±‚Æ‚·‚é
+				if (Out.time.x > -100.0f) {
+					Out.time.x = -100.0f - Out.time.x;
+					Out.time.x = Out.time.x / GameTime.z;
+				}
 			}
 		}
 
@@ -152,9 +157,13 @@ void GS0_Main(point GS_IN In[1],                   // ƒ|ƒCƒ“ƒg ƒvƒŠƒ~ƒeƒBƒu‚Ì“ü—
 			float rand = GetRandomNumber(float2(Param.w / 12345.0f, Param.w / 543.0f), 354 + ID + Param.w / 28.0f);
 			float2 rand2 = float2(rand, 1 - rand);
 
-				float l = abs(Out.time.x) / GameTime.z;
-				//Out.pos = lerp(World._41_42_43, BeforeWorld._41_42_43, l);
-				Out.pos = World._41_42_43;
+				//float l = abs(Out.time.x) / GameTime.z;
+				//l = min(max(l, 0.0), 1.0);
+				//Out.time.x‚É‚Íƒ‰[ƒv‚Ìƒ^ƒCƒ€—p”’l‚ªƒ}ƒCƒiƒX‚Å“ü‚Á‚Ä‚¢‚é
+				float l = abs(Out.time.x);
+				Out.pos = lerp(World._41_42_43, BeforeWorld._41_42_43, l);
+				//Out.pos = lerp(World._41_42_43, float3(0,0,0), l);
+
 			float px = GetRandomNumber(rand2, 353 + ID);
 			float py = GetRandomNumber(rand2, 352 + ID);
 			float pz = GetRandomNumber(rand2, 351 + ID);
@@ -163,7 +172,7 @@ void GS0_Main(point GS_IN In[1],                   // ƒ|ƒCƒ“ƒg ƒvƒŠƒ~ƒeƒBƒu‚Ì“ü—
 				if (length(posv) != 0){
 				nposv = normalize(posv);
 				}
-			Out.pos += mul(lerp(nposv, posv, Point.w) * Point.xyz,World);
+			Out.pos += lerp(nposv, posv, Point.w) * Point.xyz;
 
 
 			float scale = GetRandomNumber(rand2, 355 + ID);
@@ -260,6 +269,9 @@ void GS0_Main(point GS_IN In[1],                   // ƒ|ƒCƒ“ƒg ƒvƒŠƒ~ƒeƒBƒu‚Ì“ü—
 
 		// ŠÔ‚ği‚ß‚é
 		Out.time.x = In[0].time.x - GameTime.z;
+		if (Out.time.x <= 0.0) {
+			Out.time.x = Out.time.x / GameTime.z;
+		}
 
 
 		float4 screenpos = mul(float4(Out.pos, 1), matWVP);
@@ -268,7 +280,8 @@ void GS0_Main(point GS_IN In[1],                   // ƒ|ƒCƒ“ƒg ƒvƒŠƒ~ƒeƒBƒu‚Ì“ü—
 		screenpos.xy /= screenpos.w;
 		screenpos.xy = screenpos.xy * 0.5 + 0.5;
 		screenpos.y = 1-screenpos.y;
-		screenpos.xyz *= float3(1200,800,0);
+		//screenpos.xyz *= float3(1200,800,0);
+		screenpos.xyz *= float3(1920, 1080, 0);
 		float r = DepthMap.Load(screenpos).r * Far;
 		float3 nor = txDiffuse.Load(screenpos).rgb * 2 - 1;
 
@@ -386,7 +399,7 @@ float4 PS1_Main(PS_IN In) : SV_TARGET
 	Depth = (Depth - texd);
 	Depth = abs(Depth);
 	float d = 100.0 / Far;
-	Depth = (Depth > 0.01*d) ? 1 : (Depth / (0.01f*d));
+	Depth = (Depth > 0.05*d) ? 1 : (Depth / (0.05f*d));
 	Depth = min(max(Depth, 0), 1);
 	//Depth = 1;
 	
