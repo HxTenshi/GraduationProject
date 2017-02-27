@@ -523,6 +523,7 @@ void PlayerController::AttackInitialize()
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attack.Rotate = true;
 		attack.UseGravity = false;
+		attack.SEID = -1;
 		attacklist[attack.ID] = attack;
 
 		//+++++++++++++++++++++++
@@ -822,6 +823,7 @@ void PlayerController::AttackInitialize()
 		attack.DamageType = DamageType::LowDamage;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 		attacklist[attack.ID] = attack;
+		attack.SEID = -1;
 		attack.Rotate = true;
 
 		//+++++++++++++++++++++++
@@ -974,6 +976,7 @@ void PlayerController::AttackInitialize()
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatHigh1;
+		attack.SEID = -1;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::Special;
@@ -3099,7 +3102,6 @@ void PlayerController::currentAttackChange(int attackid)
 	if (m_CurrentAttack.AttackTime <= -1.0f) {
 		m_CurrentAttack.AttackTime = getMoutionTime(m_CurrentAttack.MoutionID);
 	}
-
 	if (m_CurrentAttack.SEID >= 0) {
 		SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
 	}
@@ -3112,6 +3114,11 @@ void PlayerController::currentAttackChange(int attackid)
 	else {
 		m_MoutionSpeed = m_MoutionSpeed_ComboAdd;
 	}
+
+	if (m_CurrentAttack.DamageType == DamageType::HighDamage) {
+		createWeaponEffect(m_CurrentAttack.AttackTime * (1.0f / m_MoutionSpeed));
+	}
+
 
 	changeAnime(m_CurrentAttack.MoutionID);
 
@@ -3126,6 +3133,14 @@ void PlayerController::currentAttackChange(int attackid)
 	if (m_CurrentAttack.FloatMove != 0.0f) {
 		mJump.y = 0.0f;
 		mJump.y += m_CurrentAttack.FloatMove;
+	}
+}
+
+void PlayerController::createWeaponEffect(float time)
+{
+	if (auto w = GetWeapon()) {
+		w->SetLifeTime(time);
+		w->CreateEffect();
 	}
 }
 

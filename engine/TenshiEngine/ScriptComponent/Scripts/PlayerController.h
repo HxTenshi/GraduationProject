@@ -179,6 +179,7 @@ private:
 	void throwWeapon();
 	void setWeapon(GameObject weapon,bool FastCatch=false);
 	void currentAttackChange(int attackid);
+	void createWeaponEffect(float time);
 
 	void freeAnimeUpdate();
 
