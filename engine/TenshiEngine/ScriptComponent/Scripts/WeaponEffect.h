@@ -28,8 +28,6 @@ private:
 	SERIALIZE
 	GameObject weaponTip;
 	SERIALIZE
-	GameObject m_now_Effect;
-	SERIALIZE
 	float m_life_time;
 	SERIALIZE
 	float m_stop_particle_time;
