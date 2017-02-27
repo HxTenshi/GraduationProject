@@ -9,6 +9,8 @@
 void OutputTextUI::Start(){
 	mTime = 0;
 	mIsEnd = false;
+	mIsPlayEnd = false;
+
 
 	if (mTextUI) {
 		auto text = mTextUI->GetComponent<TextComponent>();
@@ -20,6 +22,12 @@ void OutputTextUI::Start(){
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void OutputTextUI::Update(){
 	if (mIsEnd)return;
+
+	if (!mIsPlayEnd) {
+		auto playSE = OutputGimic::GetOutputGimic(mPlaySound);
+		if (playSE)playSE->OnStart(gameObject);
+		mIsPlayEnd = true;
+	}
 
 	mTime += Hx::DeltaTime()->GetDeltaTime();
 	//Hx::Debug()->Log(std::to_string(mTime));

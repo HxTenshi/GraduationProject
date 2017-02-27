@@ -18,4 +18,7 @@ private:
 
 	SERIALIZE float mTime;
 	SERIALIZE bool mIsEnd;
+
+	SERIALIZE GameObject mPlaySound;
+	bool mIsPlayEnd;
 };
