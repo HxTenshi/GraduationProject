@@ -1,6 +1,7 @@
 #pragma once
 #include "main.h"
 #include "VolumeBarCtrl.h"
+#include "SoundManager.h"
 
 
 class VolumeScene :public IDllScriptComponent{
@@ -15,6 +16,7 @@ public:
 	void Decision();
 	void writeCSV(std::string fileName,int bgmVolume,int seVolume);
 	std::vector<std::vector<std::string>> readCSV(std::string fileName);
+	void OnSE(SoundManager::SoundSE_ID::Enum key);
 	
 
 private:

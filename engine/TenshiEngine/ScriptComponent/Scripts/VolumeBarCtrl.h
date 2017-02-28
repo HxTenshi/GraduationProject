@@ -17,6 +17,8 @@ public:
 	void VolumeDown();
 	void SetVolume(int volume);
 	int GetVolume();
+	bool IsVolumeMax();
+	bool IsVolumeMin();
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE

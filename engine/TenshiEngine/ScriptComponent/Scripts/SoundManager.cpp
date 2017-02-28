@@ -48,6 +48,31 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos){
 	//s->Play();
 }
 
+void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos, float volume){
+	if (g_soundManager == NULL) {
+		Hx::Debug()->Log("SoundManager Null");
+		return;
+	}
+	if (!g_soundManager->soundBox.IsLoad()) {
+		Hx::Debug()->Log("soundBoxないよ");
+		return;
+	}
+	GameObject g = Hx::Instance(g_soundManager->soundBox);
+	g->mTransform->WorldPosition(pos);
+	auto s = g->GetComponent<SoundComponent>();
+	if (!s) {
+		Hx::Debug()->Log("SoundManager「SoundCommponentないよ」");
+		return;
+	}
+
+
+	s->LoadFile(g_soundManager->m_soundSEs[(int)key]);
+	s->SetVolume(volume / VOLUME_RATE);
+	s->Set3DSound(true);
+	s->SetLoop(false);
+	float volumea = s->GetVolume();
+}
+
 void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
 	if (g_soundManager == NULL) {
 		Hx::Debug()->Log("SoundManager Null");
@@ -82,4 +107,25 @@ void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
 	s->Set3DSound(false);
 	s->SetLoop(true);
 	//s->Play();
+}
+
+void SoundManager::SetBGMVolume(float volume){
+	if (g_soundManager == NULL) {
+		Hx::Debug()->Log("SoundManager Null");
+		return;
+	}
+	if (!g_soundManager->soundBox.IsLoad()) {
+		Hx::Debug()->Log("soundBoxないよ");
+		return;
+	}
+	if (g_soundManager->m_bgmObj == NULL) {
+		return;
+	}
+	auto s = g_soundManager->m_bgmObj->GetComponent<SoundComponent>();
+	if (!s) {
+		Hx::Debug()->Log("SoundManager「SoundCommponentないよ」");
+		return;
+	}
+
+	s->SetVolume(volume / VOLUME_RATE);
 }

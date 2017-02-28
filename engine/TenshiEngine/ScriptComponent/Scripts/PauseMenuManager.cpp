@@ -70,7 +70,7 @@ void PauseMenuManager::UpdateOpne() {
 			if (m_objMap[i][j] == nullptr) return;
 
 	//“ü—ÍŠÔŠu
-	const float STICK_INTERVAL = 0.3f;
+	const float STICK_INTERVAL = 0.15f;
 	//ƒCƒ“ƒ^[ƒoƒ‹‰ÁŽZ
 	m_stickInterval += 1.0f * Hx::DeltaTime()->GetNoScaleDeltaTime();
 	//ãŒÀÝ’è
@@ -90,13 +90,24 @@ void PauseMenuManager::UpdateOpne() {
 		m_lerpTimers[2] -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 		
 		
-		if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && isStickInterval) { 
+		if (isUpLS && isStickInterval) { 
 			m_num--;
 			m_stickInterval = 0.0f;
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
-		if ((Input::Trigger(KeyCode::Key_DOWN) || isDownLS) && isStickInterval) { 
+		if (isDownLS && isStickInterval) { 
 			m_num++; 
+			m_stickInterval = 0.0f;
+			SE(SoundManager::SoundSE_ID::Enum::Cursour);
+		}
+
+		if (Input::Trigger(KeyCode::Key_UP)) {
+			m_num--;
+			m_stickInterval = 0.0f;
+			SE(SoundManager::SoundSE_ID::Enum::Cursour);
+		}
+		if (Input::Trigger(KeyCode::Key_DOWN)) {
+			m_num++;
 			m_stickInterval = 0.0f;
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}

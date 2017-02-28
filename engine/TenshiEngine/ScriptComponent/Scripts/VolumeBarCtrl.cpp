@@ -49,10 +49,12 @@ void VolumeBarCtrl::OnCollideExit(GameObject target){
 
 void VolumeBarCtrl::VolumeUp(){
 	m_volume++;
+	m_volume = min(100.0f, m_volume);
 }
 
 void VolumeBarCtrl::VolumeDown(){
 	m_volume--;
+	m_volume = max(0.0f, m_volume);
 }
 
 //‰¹—Ê‚ðƒZƒbƒg
@@ -63,4 +65,14 @@ void VolumeBarCtrl::SetVolume(int volume){
 //‰¹—Ê‚ðŽæ“¾
 int VolumeBarCtrl::GetVolume(){
 	return m_volume;
+}
+
+bool VolumeBarCtrl::IsVolumeMax()
+{
+	return m_volume >= VOLUME_RATE;
+}
+
+bool VolumeBarCtrl::IsVolumeMin()
+{
+	return m_volume <= 0.0f;
 }

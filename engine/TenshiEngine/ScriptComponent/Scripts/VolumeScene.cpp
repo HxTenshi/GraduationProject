@@ -1,6 +1,5 @@
 #include "h_standard.h""
 #include "VolumeScene.h"
-#include "SoundManager.h"
 #include "Fader.h"
 #include "FuckTenshiEngine.h"
 #include <istream>
@@ -42,7 +41,7 @@ void VolumeScene::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void VolumeScene::Start(){
-
+	SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Credit);
 }
 
 //毎フレーム呼ばれます
@@ -51,7 +50,6 @@ void VolumeScene::Update(){
 	if (m_objList[Enum::BGM] == NULL) return;
 	if (m_objList[Enum::SE] == NULL) return;
 	if (m_objList[Enum::BackConfig] == NULL) return;
-
 
 	m_stickIntervalTime += 1.0f * Hx::DeltaTime()->GetDeltaTime();
 	m_stickIntervalTime = min(m_stickIntervalTime, 1.0f);
@@ -65,28 +63,32 @@ void VolumeScene::Update(){
 	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 
 	bool isFirstTilt = m_stickTilTimer == 0.0f;
-	bool isContinueTilt = m_stickTilTimer > 0.5f && m_continuTimer > 0.1f;
+	bool isContinueTilt = m_stickTilTimer > 0.5f && m_continuTimer > 0.05f;
 	if (isFirstTilt || isContinueTilt) {
 		m_continuTimer = 0.0f;
 
 		//ボリュームの調整
 		if ((Input::Down(KeyCode::Key_LEFT) || isLeft)) {
 			if (num >= Enum::BackConfig) return;
+			if (m_objList[num]->GetScript<VolumeBarCtrl>()->IsVolumeMin()) return;
 			auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
 			//Nullチェック
 			if (!barCtrl) return;
 			//音量下げる
 			barCtrl->VolumeDown();
-			SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::VolumeDown, XMVectorZero());
+
+			OnSE(SoundManager::SoundSE_ID::Enum::VolumeDown);
 		}
 		else if ((Input::Down(KeyCode::Key_RIGHT) || isRight)) {
 			if (num >= Enum::BackConfig) return;
+			if (m_objList[num]->GetScript<VolumeBarCtrl>()->IsVolumeMax()) return;
 			auto barCtrl = m_objList[num]->GetScript<VolumeBarCtrl>();
 			//Nullチェック
 			if (!barCtrl) return;
 			//音量を上げる
 			barCtrl->VolumeUp();
-			SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::VolumeUp, XMVectorZero());
+
+			OnSE(SoundManager::SoundSE_ID::Enum::VolumeUp);
 		}
 	}
 
@@ -102,25 +104,28 @@ void VolumeScene::Update(){
 	
 
 	if ((Input::Trigger(KeyCode::Key_UP) || isUp) && interval) {
+		//if (num <= 0) return;
 		num--;
 		m_stickIntervalTime = 0.0f;
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Cursour, XMVectorZero());
+		OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
 	}
 	if ((Input::Trigger(KeyCode::Key_DOWN) || isDown) && interval) {
+		//if (num <= m_objList.size() -1) return;
 		num++;
 		m_stickIntervalTime = 0.0f;
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Cursour, XMVectorZero());
+		OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
 	}
 
 	//Configに戻る
 	else if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
 		if (num != Enum::BackConfig) return;
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Decision, XMVectorZero());
+		OnSE(SoundManager::SoundSE_ID::Enum::Decision);
 		//決定
 		Decision();
 	}
 
-
+	float bgmVolume = m_objList[Enum::BGM]->GetScript<VolumeBarCtrl>()->GetVolume();
+	SoundManager::SetBGMVolume(bgmVolume);
 
 	//クランプ処理
 	int minNum = 0;
@@ -199,4 +204,9 @@ std::vector<std::vector<std::string>> VolumeScene::readCSV(std::string fileName)
 		arrays.push_back(p);
 	}
 	return arrays;
+}
+
+void VolumeScene::OnSE(SoundManager::SoundSE_ID::Enum key){
+	float seVolume = m_objList[Enum::SE]->GetScript<VolumeBarCtrl>()->GetVolume();
+	SoundManager::PlaySE(key, XMVectorZero(), seVolume);
 }
