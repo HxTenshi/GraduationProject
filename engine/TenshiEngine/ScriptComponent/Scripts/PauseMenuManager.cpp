@@ -2,6 +2,10 @@
 #include <h_standard.h>
 #include <h_component.h>
 
+#include "UniqueObject.h"
+#include "PlayerController.h"
+#include "Matinee.h"
+
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PauseMenuManager::Initialize(){
 	m_state = State::Close;
@@ -181,10 +185,14 @@ void PauseMenuManager::UpdateClose(){
 	color.w -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 	if (color.w <= 0.0f) color.w = 0.0f;
 	material->SetAlbedoColor(color);
+
 }
 
 //ポーズメニューを開いた際の処理
 void PauseMenuManager::OpenPauseMenu(){
+	if (Matinee::GlobalNowPlaying()) {
+		return;
+	}
 	m_state = State::Open;
 	m_isItimie = false;
 	m_num = 0;
@@ -207,12 +215,24 @@ void PauseMenuManager::OpenPauseMenu(){
 	auto material = m_texBlack->GetComponent<MaterialComponent>();
 	material->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1, 1, 1, 0));
 	m_texBlack->Enable();
+
+	if (auto player = UniqueObject::GetPlayer()) {
+		if (auto pc = player->GetScript<PlayerController>()) {
+			pc->SetPlayerState(PlayerController::PlayerState::Movie);
+		}
+	}
 }
 
 //ポーズメニューを閉じる
 void PauseMenuManager::ClosePauseMenu(){
 	Hx::DeltaTime()->SetTimeScale(1.0f);
 	m_state = State::Close;
+
+	if (auto player = UniqueObject::GetPlayer()) {
+		if (auto pc = player->GetScript<PlayerController>()) {
+			pc->SetPlayerState(PlayerController::PlayerState::Free);
+		}
+	}
 }
 
 //それぞれの処理を呼ぶ

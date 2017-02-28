@@ -31,7 +31,10 @@ void ReisCitrusBullet::Finish(){
 
 //コライダーとのヒット時に呼ばれます
 void ReisCitrusBullet::OnCollideBegin(GameObject target){
-	(void)target;
+	if (!target)return;
+	if (target->GetLayer() == 4) {
+		m_Vector = XMVectorZero();
+	}
 }
 
 //コライダーとのヒット中に呼ばれます

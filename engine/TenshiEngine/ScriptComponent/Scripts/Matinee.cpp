@@ -7,6 +7,8 @@
 
 #include "UniqueObject.h"
 
+Matinee* g_NowPlayingObject = NULL;
+
 Matinee::Matinee()
 {
 }
@@ -16,6 +18,7 @@ void Matinee::Initialize(){
 	m_DeltaTimeScaleBack = 1.0f;
 	m_WaitMode = false;
 	m_IsPlay = false;
+	m_IsPlayReady = false;
 	m_CurrentPos = 0;
 	SetEndCollback([]() {});
 
@@ -36,6 +39,11 @@ void Matinee::Start(){
 
 //毎フレーム呼ばれます
 void Matinee::Update(){
+
+	if (m_IsPlayReady) {
+		Play();
+	}
+
 	if (!m_IsPlay)return;
 	if (!m_Camera)return;
 
@@ -82,7 +90,7 @@ void Matinee::Update(){
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void Matinee::Finish(){
-
+	Stop();
 }
 
 //コライダーとのヒット時に呼ばれます
@@ -107,7 +115,17 @@ bool Matinee::IsPlay()
 
 void Matinee::Play()
 {
+	if (m_IsPlay)return;
 	if (!m_Camera)return;
+
+	if (g_NowPlayingObject) {
+		m_IsPlayReady = true;
+		return;
+	}
+	if (Hx::DeltaTime()->GetDeltaTime()==0.0f)return;
+
+	m_IsPlayReady = false;
+	g_NowPlayingObject = this;
 
 	auto cam = m_Camera->GetComponent<ScriptComponent>();
 	if (cam) {
@@ -125,6 +143,9 @@ void Matinee::Play()
 
 void Matinee::Stop()
 {
+	m_IsPlayReady = false;
+	if (!m_IsPlay)return;
+	if (!m_Camera)return;
 	auto cam = m_Camera->GetComponent<ScriptComponent>();
 	if (cam) {
 		cam->Enable();
@@ -133,6 +154,10 @@ void Matinee::Stop()
 	m_Timer = 0.0f;
 
 	Hx::DeltaTime()->SetTimeScale(m_DeltaTimeScaleBack);
+
+	if (g_NowPlayingObject == this) {
+		g_NowPlayingObject = NULL;
+	}
 }
 
 void Matinee::SetCurrentCameraPointStart(bool flag)
@@ -168,6 +193,11 @@ void Matinee::SetDeltaTimeScale(float scale)
 float Matinee::GetDeltaTimeScale()
 {
 	return m_DeltaTimeScale;
+}
+
+bool Matinee::GlobalNowPlaying()
+{
+	return (bool)g_NowPlayingObject;
 }
 
 void Matinee::next()

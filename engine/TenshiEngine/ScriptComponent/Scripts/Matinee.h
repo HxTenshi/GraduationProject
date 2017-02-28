@@ -27,6 +27,8 @@ public:
 	void SetDeltaTimeScale(float scale);
 	float GetDeltaTimeScale();
 
+	static bool GlobalNowPlaying();
+
 private:
 
 	void next();
@@ -66,6 +68,8 @@ private:
 	SERIALIZE
 		bool m_CurrentCameraPointStart;
 	bool m_IsPlay;
+	//çƒê∂ó\ñÒ
+	bool m_IsPlayReady;
 	std::function<void(void)> m_EndCollback;
 	float m_Timer;
 	float m_TimerMax;
