@@ -1329,14 +1329,34 @@ void PlayerController::SpeedJumpWeaponCatch(GameObject weapon,bool attack)
 		mode = PlayerState::Free;
 	}
 	if (weapon) {
-		if (XMVector3Length(m_MoveVelo).x != 0.0f) {
-			auto pos = weapon->mTransform->WorldPosition();
-			pos.y -= 0.5f;
-			pos -= XMVector3Normalize(m_MoveVelo)*3.0f;
-			auto ppos = gameObject->mTransform->WorldPosition();
-			m_MoveVelo = pos - ppos;
-			m_CharacterControllerComponent->Move(m_MoveVelo);
-		}
+		//if (XMVector3Length(m_MoveVelo).x != 0.0f) {
+			if (auto w = weapon->GetScript<Weapon>()) {
+				if (auto tar = w->GetMirrorTarget()) {
+					auto pos = tar->mTransform->WorldPosition();
+					auto ppos = gameObject->mTransform->WorldPosition();
+					ppos -= m_MoveVelo;
+					ppos.y = pos.y;
+					auto v = XMVector3Normalize(ppos - pos) * 3.0f;
+					pos += v;
+					v = pos - gameObject->mTransform->WorldPosition();
+					m_CharacterControllerComponent->Move(v);
+
+					pos = tar->mTransform->WorldPosition();
+					ppos = gameObject->mTransform->WorldPosition();
+					mVelocity = XMVector3Normalize(pos - ppos);
+					auto r = m_RotateLimit;
+					m_RotateLimit = Init::RotateLimit_dodge;
+					rotate();
+					m_RotateLimit = r;
+				}
+			}
+			//auto pos = weapon->mTransform->WorldPosition();
+			//pos.y -= 0.5f;
+			//pos -= XMVector3Normalize(m_MoveVelo)*3.0f;
+			//auto ppos = gameObject->mTransform->WorldPosition();
+			//m_MoveVelo = pos - ppos;
+			//m_CharacterControllerComponent->Move(m_MoveVelo);
+		//}
 	}
 	setWeapon(weapon,true);
 
@@ -3054,11 +3074,8 @@ void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 	auto weaponHand = m_WeaponHand->GetScript<WeaponHand>();
 	if (!weaponHand) return;
 	weaponHand->SetWeapon(weapon, [&](auto o, Weapon* w, auto t) {
-		Hx::Debug()->Log("ƒqƒbƒg");
 		if (Enemy* scr = Enemy::GetEnemy(o)) {
-			Hx::Debug()->Log("“GŽæ“¾");
 			if (w->isThrow()) {
-				Hx::Debug()->Log("•Ší“Š‚°");
 
 				if (scr->Damage(m_ThrowAttack.DamageScale * w->GetAttackPower() * m_ATK_ComboAdd, m_ThrowAttack.KnockbackEffect, XMVectorSet(0, m_ThrowAttack.KnockbackEffectPower, 0, 1))) {
 					if (t == Weapon::HitState::Damage) {
@@ -3071,7 +3088,6 @@ void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 					}
 				}
 			}else if (w->isAttack()) {
-				Hx::Debug()->Log("UŒ‚ƒqƒbƒg");
 
 				if (scr->Damage(m_CurrentAttack.DamageScale * w->GetAttackPower() * m_ATK_ComboAdd, m_CurrentAttack.KnockbackEffect, XMVectorSet(0, m_CurrentAttack.KnockbackEffectPower, 0, 1))) {
 					if (t == Weapon::HitState::Damage) {
@@ -3087,6 +3103,11 @@ void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 			}
 		}
 	}, FastCatch);
+	if (mWeaponControl) {
+		if (auto weaponCtr = mWeaponControl->GetScript<WeaponControl>()) {
+			weaponCtr->DeleteHitPoint();
+		}
+	}
 }
 
 void PlayerController::currentAttackChange(int attackid)
