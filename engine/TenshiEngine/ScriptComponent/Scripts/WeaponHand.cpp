@@ -1,6 +1,7 @@
 #include "WeaponHand.h"
 #include "h_standard.h"
 # include "Game\Component\BoneMirrorComponent.h"
+#include "SoundManager.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void WeaponHand::Initialize(){
@@ -46,6 +47,8 @@ void WeaponHand::Update(){
 
 			m_ActionFree = true;
 			m_NowGetAction = false;
+
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_WeaponGet, gameObject->mTransform->WorldPosition());
 		}
 		else {
 			mWeapon->mTransform->WorldPosition(weapon_pos);
@@ -119,6 +122,7 @@ void WeaponHand::SetWeapon(GameObject weapon, const Weapon::HitCollbackType& col
 
 		m_ActionFree = true;
 		m_NowGetAction = false;
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_WeaponGet, gameObject->mTransform->WorldPosition());
 	}
 
 	if (auto scr = mWeapon->GetScript<Weapon>()) {

@@ -2,6 +2,7 @@
 
 #include "UniqueObject.h"
 #include "h_standard.h"
+#include "SoundManager.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void ReisSonicWave::Initialize(){
@@ -21,6 +22,8 @@ void ReisSonicWave::Update(){
 
 	if (m_WaitTime <= m_Timer) {
 		if (m_HitBox && !m_GenEnd) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_SonicWave, gameObject->mTransform->WorldPosition());
+
 			m_GenEnd = true;
 			m_HitBox->Enable();
 

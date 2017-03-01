@@ -131,6 +131,7 @@ void reis::Start(){
 		if (m_AttackStage.stage == 0) {
 			m_AttackStage.stage++;
 
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Warp, gameObject->mTransform->WorldPosition());
 			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Pop, gameObject->mTransform->WorldPosition());
 		}
 		ChangeAnime(AnimeID::Pop);
@@ -313,6 +314,7 @@ void reis::Start(){
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
 				m_AutoDogdeMode = false;
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Near_Swing, gameObject->mTransform->WorldPosition());
 			}
 		}
 		else if(m_AttackStage.stage == 2) {
@@ -335,6 +337,7 @@ void reis::Start(){
 			SetSuperArmor(true);
 
 			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Chage1, gameObject->mTransform->WorldPosition());
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Chage1, gameObject->mTransform->WorldPosition());
 
 		}
 		if (m_AttackStage.stage == 1) {
@@ -361,6 +364,7 @@ void reis::Start(){
 				}
 
 				SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Chage2, gameObject->mTransform->WorldPosition());
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Chage2, gameObject->mTransform->WorldPosition());
 				m_AttackStage.stage++;
 			}
 		}
@@ -389,6 +393,7 @@ void reis::Start(){
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
 				m_AutoDogdeMode = false;
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Near_Swing, gameObject->mTransform->WorldPosition());
 			}
 		}
 		else if (m_AttackStage.stage == 2) {
@@ -406,6 +411,10 @@ void reis::Start(){
 		Rotate(GetPlayerVectH());
 		SetSuperArmor(true);
 		if (m_AttackStage.stage == 0) {
+			m_AttackStage.stage++;
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Near_Swing, gameObject->mTransform->WorldPosition());
+		}
+		if (m_AttackStage.stage == 1) {
 			ChangeAnime(AnimeID::Attack_v1);
 			SetWeapon(true, 10.0f);
 			if (IsCurrentAnimeEnd()) {
@@ -476,6 +485,7 @@ void reis::Start(){
 					pos.y += 3.0f;
 					Teleport(pos);
 					Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
+					SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Warp, gameObject->mTransform->WorldPosition());
 
 					Hx::DestroyObject(m_CitrusBulletObject);
 					m_CitrusBulletObject = NULL;
@@ -555,6 +565,7 @@ void reis::Start(){
 					pos.y += 3.0f;
 					Teleport(pos);
 					Move(XMVectorSet(0.0f, -5.0f, 0.0f, 1.0f));
+					SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Warp, gameObject->mTransform->WorldPosition());
 				}
 				if (auto obj = Hx::Instance(m_WarpParticle)) {
 					obj->mTransform->WorldPosition(gameObject->mTransform->WorldPosition());
@@ -572,6 +583,7 @@ void reis::Start(){
 			ChangeAnime(AnimeID::Attack_Ch_v1);
 			if (IsCurrentAnimeEnd()) {
 				m_AttackStage.stage++;
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Near_Swing, gameObject->mTransform->WorldPosition());
 			}
 		}
 		else if (m_AttackStage.stage == 4) {

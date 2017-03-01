@@ -26,4 +26,6 @@ private:
 	float m_AliveTimer;
 	float m_DestroyWaitTimer;
 	XMVECTOR m_Vector;
+	bool m_PlaySE_Shot;
+	bool m_PlaySE_Spawn;
 };

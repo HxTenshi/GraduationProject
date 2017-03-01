@@ -19,5 +19,6 @@ private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE float m_Speed;
 	SERIALIZE float m_RotateSpeed;
+	float m_SE_Timer;
 	XMVECTOR m_Vector;
 };

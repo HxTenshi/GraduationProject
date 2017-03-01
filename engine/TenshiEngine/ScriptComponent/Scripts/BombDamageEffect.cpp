@@ -2,6 +2,7 @@
 #include "h_standard.h"
 #include "PlayerController.h"
 #include "Enemy.h"
+#include "SoundManager.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void BombDamageEffect::Initialize(){
@@ -15,6 +16,11 @@ void BombDamageEffect::Start(){
 
 //毎フレーム呼ばれます
 void BombDamageEffect::Update(){
+	if (m_PlaySE && !m_DontPlaySE) {
+		m_PlaySE = false;
+
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Bomb2, gameObject->mTransform->WorldPosition());
+	}
 	if (m_dead) {
 		Hx::DestroyObject(gameObject);
 	}

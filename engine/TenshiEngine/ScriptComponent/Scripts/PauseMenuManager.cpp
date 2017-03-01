@@ -229,7 +229,7 @@ void PauseMenuManager::OpenPauseMenu(){
 
 	if (auto player = UniqueObject::GetPlayer()) {
 		if (auto pc = player->GetScript<PlayerController>()) {
-			pc->SetPlayerState(PlayerController::PlayerState::Movie);
+			pc->SetPlayerLock(true);
 		}
 	}
 }
@@ -241,7 +241,7 @@ void PauseMenuManager::ClosePauseMenu(){
 
 	if (auto player = UniqueObject::GetPlayer()) {
 		if (auto pc = player->GetScript<PlayerController>()) {
-			pc->SetPlayerState(PlayerController::PlayerState::Free);
+			pc->SetPlayerLock(false);
 		}
 	}
 }

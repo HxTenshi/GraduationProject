@@ -3,12 +3,15 @@
 #include "h_component.h"
 #include "h_standard.h"
 #include "UniqueObject.h"
+#include "SoundManager.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void ReisBullet::Initialize(){
 	m_IsDestroy=false;
 	m_AliveTimer=0.0f;
 	m_DestroyWaitTimer=0.0f;
+	m_PlaySE_Shot = true;
+	m_PlaySE_Spawn = true;
 
 	m_Vector = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
 }
@@ -18,10 +21,16 @@ void ReisBullet::Start(){
 	if (m_PlayerTarget) {
 		PlayerLockOn();
 	}
+
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Burret_Spawn, gameObject->mTransform->WorldPosition());
 }
 
 //毎フレーム呼ばれます
 void ReisBullet::Update(){
+	if (m_PlaySE_Spawn) {
+		m_PlaySE_Spawn = false;
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Burret_Shot, gameObject->mTransform->WorldPosition());
+	}
 	auto time = Hx::DeltaTime()->GetDeltaTime();
 	if (m_IsDestroy) {
 		if (m_DestroyWaitTimer == 0.0f) {
@@ -44,6 +53,10 @@ void ReisBullet::Update(){
 	else{
 		m_AliveTimer += time;
 		if (m_WaitTime < m_AliveTimer) {
+			if (m_PlaySE_Shot) {
+				m_PlaySE_Shot = false;
+				SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Burret_Shot, gameObject->mTransform->WorldPosition());
+			}
 			auto pos = gameObject->mTransform->WorldPosition();
 			pos += m_Vector * m_Speed * time;
 			gameObject->mTransform->WorldPosition(pos);
@@ -73,6 +86,10 @@ void ReisBullet::OnCollideBegin(GameObject target){
 		if (auto scr = m_BulletModel->GetScript<BurstDamageArea>()) {
 			scr->OnCollideBegin(target);
 		}
+	}
+	if (target->GetLayer() == 4) {
+
+		SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_SE_Burret_Hit, gameObject->mTransform->WorldPosition());
 	}
 }
 
