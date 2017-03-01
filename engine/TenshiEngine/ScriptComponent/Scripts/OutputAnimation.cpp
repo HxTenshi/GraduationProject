@@ -5,6 +5,7 @@
 #include "Enemy.h"
 #include "EnemyRezardMan.h"
 # include "EnemyOrc.h"
+# include "EnemyMinotaur.h"
 
 void OutputAnimation::Update()
 {
@@ -18,6 +19,13 @@ void OutputAnimation::Update()
 	if (isEnd)
 	{
 		mIsEnd = true;
+
+		if (mTargetBossGen) {
+			auto mino = m_Target->mTransform->GetParent()->mTransform->GetParent();
+			Hx::Debug()->Log("Call : ミノタウロス初期化");
+			mino->GetScript<EnemyMinotaur>()->EnemyEmergence(false);
+		}
+
 		if (m_UseEndAction) {
 			
 			auto scr = OutputGimic::GetOutputGimic(m_AnimationEndAction);

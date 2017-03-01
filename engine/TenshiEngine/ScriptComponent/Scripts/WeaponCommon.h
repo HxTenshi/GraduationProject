@@ -9,7 +9,8 @@
 enum DamageType {
 	LowDamage,
 	HighDamage,
-	DethBrowDamage
+	DethBrowDamage,
+	BreakDamage
 };
 enum WeaponType {
 	Sword,

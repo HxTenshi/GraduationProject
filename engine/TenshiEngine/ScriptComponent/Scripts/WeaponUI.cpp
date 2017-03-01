@@ -59,6 +59,8 @@ void WeaponUI::DurableGage(GameObject weapon)
 	if (weapon) {
 		float maxdurable = weapon->GetScript<Weapon>()->GetMaxDurable();
 		float nowdurable = weapon->GetScript<Weapon>()->GetDurable();
+		//Hx::Debug()->Log(std::to_string(nowdurable));
+		//Hx::Debug()->Log(std::to_string(maxdurable));
 		WeaponType type = weapon->GetScript<Weapon>()->GetWeaponType();
 		float damage = maxdurable - (maxdurable - nowdurable);
 		float max = 1;
