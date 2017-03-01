@@ -86,6 +86,8 @@ void PauseMenuManager::UpdateOpne() {
 	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);	//左スティック
 	bool isUpLS = ls.y > 0.5f;	//スティック上方向
 	bool isDownLS = ls.y < -0.5f;//スティック下方向
+	bool isUpKey = Input::Trigger(KeyCode::Key_UP) || Input::Trigger(PAD_X_KeyCode::Button_UP);		//上キー
+	bool isDownKey = Input::Trigger(KeyCode::Key_DOWN) || Input::Trigger(PAD_X_KeyCode::Button_DOWN);//下キー
 	bool isStartKey = Input::Trigger(PAD_X_KeyCode::Button_B);//Bボタン
 	bool isPad_A_Key = Input::Trigger(PAD_X_KeyCode::Button_A);//Aボタン
 
@@ -106,19 +108,23 @@ void PauseMenuManager::UpdateOpne() {
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
 
-		if (Input::Trigger(KeyCode::Key_UP)) {
+		if (isUpKey) {
 			m_num--;
 			m_stickInterval = 0.0f;
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
-		if (Input::Trigger(KeyCode::Key_DOWN)) {
+		if (isDownKey) {
 			m_num++;
 			m_stickInterval = 0.0f;
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
+
+		if (m_lerpTimers[1] >= 1.0f) {
+			if (isPad_A_Key) ClosePauseMenu();
+		}
+
 		//0～3の間にクランプ
 		m_num = min(max(0, m_num), 3);
-
 		
 		//それぞれの反応を起こす
 		if (Input::Trigger(KeyCode::Key_SPACE) || isStartKey) MenuReAction(m_num);
