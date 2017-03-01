@@ -113,6 +113,8 @@ public:
 
 	void AddMove(XMVECTOR v);
 
+	void SetPlayerLock(bool lock);
+
 	Weapon* GetWeapon();
 	GameObject GetLockonTarget();
 
@@ -179,7 +181,7 @@ private:
 	void throwWeapon();
 	void setWeapon(GameObject weapon,bool FastCatch=false);
 	void currentAttackChange(int attackid);
-	void createWeaponEffect(float time);
+	void createWeaponEffect(float time, int type);
 
 	void freeAnimeUpdate();
 
@@ -208,6 +210,7 @@ private:
 
 	std::vector<StateFunc> m_StateFunc;
 
+	bool m_PlayerStateLock;
 	float m_InvisibleTime;
 	bool m_IsInvisible;
 	bool m_IsDead;

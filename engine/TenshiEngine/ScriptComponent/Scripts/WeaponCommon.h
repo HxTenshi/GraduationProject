@@ -53,6 +53,8 @@ namespace funifuni {
 		void SetAttack(float attack);
 		//耐久値のセット
 		void SetDurable(float durable);
+		//耐久地のセット（マックスダメージ無し）
+		void SetChangeMaxDurable(float durable);
 		//耐久値のダメージの設定
 		void SetDurableDamage(float low, float strong);
 		//ウエポンのタイプをセット

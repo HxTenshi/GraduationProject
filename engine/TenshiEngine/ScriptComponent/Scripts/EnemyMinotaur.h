@@ -122,6 +122,8 @@ private:
 	void DeadFinalize();
 	//強制殺害関数
 	void DebugDead();
+	//出現時の設定関数
+	void EnemyEmergence(bool flag);
 
 
 	//プレイヤー追跡中のルーチン
@@ -230,4 +232,7 @@ private:
 	float m_move_attackd_timemax;
 	//攻撃をもらったときのカウンタ
 	int m_damage_counter;
+	//出現時のフラグ
+	SERIALIZE
+	bool m_emergence_flag;
 };

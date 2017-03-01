@@ -52,6 +52,7 @@ public:
 			WoodMan_Attack,
 
 
+			Reis_SE_Warp = 59,
 			Reis_Damage = 60,
 			Reis_Pop,
 			Reis_Dead,
@@ -62,9 +63,17 @@ public:
 			Reis_CitrusThrow,
 			Reis_WarpNear,
 			Reis_SonicWave1,
-			Reis_SonicWave2,
 			Reis_Chage1,
 			Reis_Chage2,
+
+			Reis_SE_Near_Swing,
+			Reis_SE_Burret_Spawn,
+			Reis_SE_Burret_Shot,
+			Reis_SE_Burret_Hit,
+			Reis_SE_Citrus_Throw,
+			Reis_SE_Chage1,
+			Reis_SE_Chage2,
+			Reis_SE_SonicWave,
 
 			Player_SW_L1=80,
 			Player_SW_L2,
@@ -84,6 +93,14 @@ public:
 			Player_CV_Damage2,
 			Player_CV_Dead,
 			Player_CV_Gurad,
+
+			Player_SE_SW_Low_Swing,
+			Player_SE_SW_Low_Hit,
+			Player_SE_SW_High_Swing,
+			Player_SE_SW_High_Hit,
+			Player_SE_R_Low_Hit,
+
+			Player_SE_WeaponGet,
 		};
 	};
 	struct SoundBGM_ID {

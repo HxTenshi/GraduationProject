@@ -144,6 +144,9 @@ void Matinee::Play()
 void Matinee::Stop()
 {
 	m_IsPlayReady = false;
+	if (g_NowPlayingObject == this) {
+		g_NowPlayingObject = NULL;
+	}
 	if (!m_IsPlay)return;
 	if (!m_Camera)return;
 	auto cam = m_Camera->GetComponent<ScriptComponent>();
@@ -155,9 +158,7 @@ void Matinee::Stop()
 
 	Hx::DeltaTime()->SetTimeScale(m_DeltaTimeScaleBack);
 
-	if (g_NowPlayingObject == this) {
-		g_NowPlayingObject = NULL;
-	}
+
 }
 
 void Matinee::SetCurrentCameraPointStart(bool flag)

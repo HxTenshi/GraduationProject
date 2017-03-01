@@ -203,6 +203,8 @@ void PlayerController::Initialize(){
 	m_JumpLowAttack = false;
 	m_JumpHighAttack = false;
 
+	m_PlayerStateLock = false;
+
 	m_HitCount = 0;
 	m_MoveSpeed_ComboAdd = 0.0f;
 	m_MoutionSpeed_ComboAdd = 0.0f;
@@ -724,7 +726,7 @@ void PlayerController::AttackInitialize()
 		attack.AttackMove = 0.0f;
 		attack.FloatMove = 0.0f;
 		attack.Rotate = true;
-		attack.UseGravity = false;
+		attack.UseGravity = true;
 
 		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_H1;
 
@@ -739,6 +741,8 @@ void PlayerController::AttackInitialize()
 
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 1.0f;
+
+		attack.UseGravity = false;
 
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 11.0f / 30.0f;
@@ -808,6 +812,7 @@ void PlayerController::AttackInitialize()
 		attack.KnockbackEffect = BATTLEACTION::WINCEACTION;
 		attack.KnockbackEffectPower = 1.0f;
 		attack.Rotate = false;
+		attack.UseGravity = true;
 
 		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_PlaySP;
 
@@ -825,6 +830,7 @@ void PlayerController::AttackInitialize()
 		attacklist[attack.ID] = attack;
 		attack.SEID = -1;
 		attack.Rotate = true;
+		attack.UseGravity = false;
 
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::IdleFloatHigh;
@@ -1072,6 +1078,9 @@ void PlayerController::Update(){
 	//	float bone_z = m_BoneHips->mTransform->Position().z;
 	//	m_AnimeModel->mTransform->Position(XMVectorSet(0, 0, model_z - bone_z, 1));
 	//}
+	if(m_PlayerStateLock){
+		return;
+	}
 
 	if (m_PlayerState != PlayerState::Attack) {
 		m_AttackCoolDownTimer -= Hx::DeltaTime()->GetDeltaTime();
@@ -1370,6 +1379,11 @@ void PlayerController::AddMove(XMVECTOR v)
 	m_CharacterControllerComponent->Move(v);
 }
 
+void PlayerController::SetPlayerLock(bool lock)
+{
+	m_PlayerStateLock = lock;
+}
+
 
 Weapon * PlayerController::GetWeapon()
 {
@@ -1400,8 +1414,8 @@ void PlayerController::LockEnter()
 
 void PlayerController::LockExcute()
 {
-	SetPlayerState(PlayerState::Free);
 	changeAnime(AnimeID::Idle);
+	SetPlayerState(PlayerState::Free);
 }
 
 void PlayerController::LockExit()
@@ -1488,6 +1502,10 @@ void PlayerController::FreeExit()
 		}
 	}
 	m_FreeAIMMode = false;
+
+
+	//カウントをリセット
+	m_InputF_Time = 0.0f;
 
 	auto timeMgr = m_TimeManager->GetScript<TimeManager>();
 	if (!timeMgr) return;
@@ -2187,6 +2205,7 @@ void PlayerController::DeadEnter()
 	m_IsInvisible = true;
 	m_IsDead = true;
 	mJump = XMVectorZero();
+	SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_CV_Dead, gameObject->mTransform->WorldPosition());
 }
 
 #include "ChangeScene.h"
@@ -2205,7 +2224,6 @@ void PlayerController::DeadExcute()
 		}
 	}
 
-	SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_CV_Dead, gameObject->mTransform->WorldPosition());
 }
 
 void PlayerController::DeadExit()
@@ -2639,6 +2657,8 @@ void PlayerController::throwAway(GameObject target,bool isMove)
 			weaponHand->ThrowAway(target, isMove);
 
 			SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Throw, gameObject->mTransform->WorldPosition());
+			createWeaponEffect(100.0f, (int)WeaponEffectType::THROWEF);
+			
 		}
 		else{
 			if (m_LockActions[LockAction::DropWeapon])return;
@@ -2868,13 +2888,13 @@ camera->SetLookTarget(NULL);
 	}
 	//Fキーを話したら
 	else if (BindInput(PlayerInput::GetWeapon)) {
-		if (m_soundManager) {
-			auto sound = m_soundManager->GetScript<SoundManager>();
-			if (!sound) {
-				Hx::Debug()->Log("SoundManagerないよ");
-				return;
-			};
-		}
+		//if (m_soundManager) {
+		//	auto sound = m_soundManager->GetScript<SoundManager>();
+		//	if (!sound) {
+		//		Hx::Debug()->Log("SoundManagerないよ");
+		//		return;
+		//	};
+		//}
 		throwAway();
 		if (m_tempWeapon) {
 			//選択した武器をセット
@@ -3081,6 +3101,8 @@ void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 					if (t == Weapon::HitState::Damage) {
 						AddSpecial(m_ThrowAttack.AddSpecial);
 						AddCombo();
+
+						SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_R_Low_Hit, gameObject->mTransform->WorldPosition());
 					}
 
 					if (m_ThrowAttack.DamageType != DamageType::DethBrowDamage) {
@@ -3093,6 +3115,18 @@ void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 					if (t == Weapon::HitState::Damage) {
 						AddSpecial(m_CurrentAttack.AddSpecial);
 						AddCombo();
+						if (m_CurrentAttack.DamageType != DamageType::LowDamage) {
+							if (m_CurrentWeaponType == (int)WeaponType::Rance) {
+								SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_R_Low_Hit, gameObject->mTransform->WorldPosition());
+							}
+							else {
+								SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_SW_Low_Hit, gameObject->mTransform->WorldPosition());
+							}
+						}
+						if (m_CurrentAttack.DamageType != DamageType::HighDamage) {
+							SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_SW_High_Hit, gameObject->mTransform->WorldPosition());
+						}
+
 					}
 					if (m_CurrentAttack.DamageType != DamageType::DethBrowDamage) {
 						w->Damage(m_CurrentAttack.DamageType, m_WeaponResist_ComboAdd);
@@ -3125,6 +3159,12 @@ void PlayerController::currentAttackChange(int attackid)
 	}
 	if (m_CurrentAttack.SEID >= 0) {
 		SoundManager::PlaySE((SoundManager::SoundSE_ID::Enum)m_CurrentAttack.SEID, gameObject->mTransform->WorldPosition());
+
+		if (m_CurrentAttack.DamageType == DamageType::LowDamage) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_SW_Low_Swing, gameObject->mTransform->WorldPosition());
+		}else if (m_CurrentAttack.DamageType == DamageType::HighDamage) {
+			SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_SW_High_Swing, gameObject->mTransform->WorldPosition());
+		}
 	}
 
 	m_CurrentAttack.AttackFunc();
@@ -3137,7 +3177,7 @@ void PlayerController::currentAttackChange(int attackid)
 	}
 
 	if (m_CurrentAttack.DamageType == DamageType::HighDamage) {
-		createWeaponEffect(m_CurrentAttack.AttackTime * (1.0f / m_MoutionSpeed));
+		createWeaponEffect(m_CurrentAttack.AttackTime * (1.0f / m_MoutionSpeed), WeaponEffectType::STRONGEF);
 	}
 
 
@@ -3157,11 +3197,11 @@ void PlayerController::currentAttackChange(int attackid)
 	}
 }
 
-void PlayerController::createWeaponEffect(float time)
+void PlayerController::createWeaponEffect(float time, int type)
 {
 	if (auto w = GetWeapon()) {
 		w->SetLifeTime(time);
-		w->CreateEffect();
+		w->CreateEffect((WeaponEffectType)type);
 	}
 }
 
@@ -3324,7 +3364,6 @@ void PlayerController::stateFlip()
 	if (m_PlayerState_Stack == m_PlayerState)return;
 	if (m_PlayerState_Stack < 0)return;
 	if (m_PlayerState_Stack >= PlayerState::Count)return;
-
 	if (m_PlayerState >= 0) {
 		m_StateFunc[m_PlayerState].Exit();
 	}
