@@ -40,6 +40,10 @@ namespace funifuni {
 		m_Durable = durable;
 		m_MaxDurable = durable;
 	}
+	void WeaponParametor::SetChangeMaxDurable(float durable)
+	{
+		m_Durable = durable;
+	}
 	/// <summary>
 	///耐久値のダメージの設定
 	/// </summary>

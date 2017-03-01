@@ -7,7 +7,7 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void WeaponUI::Initialize(){
-	UI->GetComponent<TextureModelComponent>()->SetTexture(m_sword_ui);
+	//UI->GetComponent<TextureModelComponent>()->SetTexture(m_sword_ui);
 
 }
 
@@ -27,12 +27,11 @@ void WeaponUI::Update(){
 	//time += Hx::DeltaTime()->GetDeltaTime();
 	if (weapon=whand->GetScript<WeaponHand>()->GetHandWeapon()) {
 		UIMix->Enable();
-			DurableGage(weapon);
+		DurableGage(weapon);
 	}
 	else {
 		UIMix->Disable();
 	}
-
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -95,7 +94,7 @@ void WeaponUI::DurableGage(GameObject weapon)
 void WeaponUI::SetWeaponIcon(WeaponType wtype,WeaponDamageType wdtype)
 {
 
-	TextureAsset result;
+	TextureAsset result = m_sword_ui;
 	if (wtype == WeaponType::Sword) {
 		if (wdtype == WeaponDamageType::Normal)result = m_sword_ui;
 		if (wdtype == WeaponDamageType::Damage)result = m_sword_damage_ui;

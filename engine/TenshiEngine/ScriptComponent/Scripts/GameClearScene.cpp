@@ -1,7 +1,7 @@
 #include "GameClearScene.h"
 #include "Fader.h"
 #include "FuckTenshiEngine.h"
-
+#include "SoundManager.h"
 
 /****************************************************
 
@@ -190,6 +190,7 @@ void GameClearScene::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void GameClearScene::Start(){
+	SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Enum::GameClear);
 }
 
 //毎フレーム呼ばれます
@@ -266,7 +267,7 @@ void GameClearScene::DoPhase3(){
 }
 
 void GameClearScene::DoPhase4(){
-	const float intervalTime = 5.0f;
+	const float intervalTime = 8.0f;
 	m_timer += 1.0f * Hx::DeltaTime()->GetDeltaTime();
 	m_timer = min(m_timer, intervalTime);
 
