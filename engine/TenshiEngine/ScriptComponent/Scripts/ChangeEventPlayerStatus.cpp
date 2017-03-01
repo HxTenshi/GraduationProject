@@ -12,6 +12,7 @@ void ChangeEventPlayerStatus::Start(){
 void ChangeEventPlayerStatus::Update(){
 	OnSetSP();
 	LockWeapon();
+	ThrowWeapon();
 }
 
 void ChangeEventPlayerStatus::OnSetSP()
@@ -28,5 +29,13 @@ void ChangeEventPlayerStatus::LockWeapon()
 	auto player = UniqueObject::GetPlayer()->GetScript<PlayerController>();
 	if (player) {
 		player->SetLockAction(PlayerController::LockAction::DropWeapon,mLock);
+	}
+}
+
+void ChangeEventPlayerStatus::ThrowWeapon()
+{
+	auto player = UniqueObject::GetPlayer()->GetScript<PlayerController>();
+	if (player) {
+		player->SetLockAction(PlayerController::LockAction::ThrowWeapon, mThrow);
 	}
 }

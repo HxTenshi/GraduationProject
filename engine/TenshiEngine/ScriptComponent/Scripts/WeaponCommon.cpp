@@ -73,7 +73,7 @@ namespace funifuni {
 		if(type==DamageType::LowDamage)m_Durable -= m_LowDurableDamage*mag;
 		if (type == DamageType::HighDamage)m_Durable -= m_StrongDurableDamage*mag;
 		if (type == DamageType::DethBrowDamage)m_Durable = 0;
-
+		if (type == DamageType::BreakDamage)m_Durable = mag;
 	}
 	float WeaponParametor::GetMaxDurable()
 	{

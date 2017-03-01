@@ -362,7 +362,7 @@ void EnemyMinotaur::DebugDead()
 void EnemyMinotaur::EnemyEmergence(bool flag)
 {
 	m_emergence_flag = flag;
-	if (flag) {
+	if (!flag) {
 		ChildInitialize();
 		BattleModeInitilize();
 	}

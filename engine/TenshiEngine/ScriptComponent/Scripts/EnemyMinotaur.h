@@ -73,6 +73,8 @@ public:
 	bool DiscoveryPlayer() override;
 	bool LostPlayer() override;
 	void ChildFinalize() override;
+	//出現時の設定関数
+	void EnemyEmergence(bool flag);
 private:
 	enum StateType {
 		STATE_NO_SEARCH,
@@ -122,8 +124,7 @@ private:
 	void DeadFinalize();
 	//強制殺害関数
 	void DebugDead();
-	//出現時の設定関数
-	void EnemyEmergence(bool flag);
+
 
 
 	//プレイヤー追跡中のルーチン

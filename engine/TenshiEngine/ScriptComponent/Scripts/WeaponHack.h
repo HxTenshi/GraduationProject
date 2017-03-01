@@ -10,4 +10,6 @@ public:
 
 private:
 	SERIALIZE GameObject mWeapon;
+	SERIALIZE GameObject mOutput;
+	bool isEnd;
 };
