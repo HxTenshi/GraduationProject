@@ -40,7 +40,9 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos){
 	}
 
 	//コンポーネントの音量とマスターの音量の値を掛ける
-	auto volume = s->GetVolume() * g_soundManager->se_master_volume;
+	auto volume = (s->GetVolume() * g_soundManager->se_master_volume) / 2.0f;
+	volume += 0.5f;
+	if (g_soundManager->se_master_volume == 0.0f) volume = 0.0f;
 	s->LoadFile(g_soundManager->m_soundSEs[(int)key]);
 	s->SetVolume(volume);
 	s->Set3DSound(true);
@@ -66,8 +68,11 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos, float volume){
 	}
 
 
+	float temp = (volume / VOLUME_RATE) / 2.0f;
+	temp += 0.5f;
+	if (volume == 0.0f) volume = 0.0f;
 	s->LoadFile(g_soundManager->m_soundSEs[(int)key]);
-	s->SetVolume(volume / VOLUME_RATE);
+	s->SetVolume(temp);
 	s->Set3DSound(true);
 	s->SetLoop(false);
 	float volumea = s->GetVolume();
@@ -101,7 +106,9 @@ void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
 	}
 
 	//コンポーネントの音量とマスターの音量の値を掛ける
-	auto volume = s->GetVolume() * g_soundManager->bgm_master_volume;
+	auto volume = (s->GetVolume() * g_soundManager->bgm_master_volume) /2.0f;
+	volume += 0.5f;
+	if (g_soundManager->bgm_master_volume == 0) volume = 0.0f;
 	s->LoadFile(g_soundManager->m_soundBGMs[(int)key]);
 	s->SetVolume(volume);
 	s->Set3DSound(false);
@@ -127,5 +134,8 @@ void SoundManager::SetBGMVolume(float volume){
 		return;
 	}
 
-	s->SetVolume(volume / VOLUME_RATE);
+	float temp = (volume / VOLUME_RATE) / 2.0f;
+	temp += 0.5f;
+	if (volume == 0.0f) temp = 0.0f;
+	s->SetVolume(temp);
 }

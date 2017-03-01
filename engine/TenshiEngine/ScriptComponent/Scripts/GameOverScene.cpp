@@ -21,7 +21,7 @@ void GameOverScene::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void GameOverScene::Start(){
-
+	SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Enum::GameOver);
 }
 
 //毎フレーム
@@ -67,7 +67,7 @@ void GameOverScene::Update(){
 
 	//メッセージが表示完了したなら
 	if (isMessage) {
-		const float TEMP = 2.0f;
+		const float TEMP = 5.0f;
 		m_tempTime += 1.0f * Hx::DeltaTime()->GetDeltaTime();
 		m_tempTime = min(m_tempTime, TEMP);
 

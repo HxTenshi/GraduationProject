@@ -87,6 +87,7 @@ void PauseMenuManager::UpdateOpne() {
 	bool isUpLS = ls.y > 0.5f;	//スティック上方向
 	bool isDownLS = ls.y < -0.5f;//スティック下方向
 	bool isStartKey = Input::Trigger(PAD_X_KeyCode::Button_B);//Bボタン
+	bool isPad_A_Key = Input::Trigger(PAD_X_KeyCode::Button_A);//Aボタン
 
 	if (!m_isItimie) {
 		//lerpの計算
@@ -134,7 +135,7 @@ void PauseMenuManager::UpdateOpne() {
 		m_lerpTimers[2] += m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 
 		//めにゅーを閉じる
-		if (Input::Trigger(KeyCode::Key_SPACE) || isStartKey) MenuReAction(4); 
+		if (Input::Trigger(KeyCode::Key_SPACE) || isStartKey || isPad_A_Key) MenuReAction(4); 
 
 		//囲い無効
 		m_kakoi->Disable();

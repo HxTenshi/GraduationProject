@@ -83,6 +83,7 @@ void ConfigScene::CursourMove() {
 
 	//ˆÍ‚¢‚ÌÀ•WˆÚ“®
 	XMVECTOR kakoiPos = m_texObjs[num]->mTransform->Position();
+	kakoiPos.z += 1.0f;
 	m_kakoiTexObj->mTransform->Position(kakoiPos);
 }
 
