@@ -29,7 +29,7 @@ void CreditScene::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void CreditScene::Start(){
-
+	SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Enum::Credit);
 }
 
 //毎フレーム呼ばれます
