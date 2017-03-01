@@ -91,7 +91,7 @@ void EnemyMinotaur::Attack(GameObject player, COL_TYPE colType)
 
 bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
-
+	if (m_anim_state == AnimType::ANIM_STUNNED)return false;
 	if (is_dead)return false;
 	if (is_damage)return false;
 	//“{‚èó‘Ô‚Ìƒ_ƒ[ƒW‚Í”¼•ª‚ÉÝ’è
@@ -136,7 +136,7 @@ void EnemyMinotaur::ChildFinalize()
 
 void EnemyMinotaur::BattleModeInitilize()
 {
-
+	if (m_emergence_flag)return;
 
 	if (is_dead)return;
 	if (!m_Player)return;
@@ -160,6 +160,7 @@ void EnemyMinotaur::BattleModeInitilize()
 }
 void EnemyMinotaur::BattleModeUpdate()
 {
+	if (m_emergence_flag)return;
 	battleActionUpdate[m_BattleModeParam.id]();
 
 
@@ -259,7 +260,8 @@ void EnemyMinotaur::BattleModeUpdate()
 		if (anim->IsAnimationEnd(m_roucine_module.GetAnimState())&m_attack_flag) {
 			m_attack_flag = false;
 			m_AttackHit = true;
-			
+			AnimChange(AnimType::ANIM_R_WALK, 10.0f, anim_loop, true, true);
+
 			if (is_changed_take_over) {
 				is_changed_take_over = false;
 				m_action_func = [this]() {MoveSide(); };
@@ -355,6 +357,15 @@ void EnemyMinotaur::DebugDead()
 		}
 	}
 
+}
+
+void EnemyMinotaur::EnemyEmergence(bool flag)
+{
+	m_emergence_flag = flag;
+	if (flag) {
+		ChildInitialize();
+		BattleModeInitilize();
+	}
 }
 
 void EnemyMinotaur::HuntRoutine()
