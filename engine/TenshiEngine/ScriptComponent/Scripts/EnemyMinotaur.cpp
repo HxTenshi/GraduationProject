@@ -361,6 +361,7 @@ void EnemyMinotaur::DebugDead()
 
 void EnemyMinotaur::EnemyEmergence(bool flag)
 {
+	Hx::Debug()->Log("E-Emergence");
 	m_emergence_flag = flag;
 	if (!flag) {
 		ChildInitialize();

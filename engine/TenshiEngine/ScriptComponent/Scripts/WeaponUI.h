@@ -30,6 +30,8 @@ private:
 private:
 	SERIALIZE
 	GameObject whand;
+	SERIALIZE
+		GameObject m_weapon_ui_mem;
 	//funifuni::Tween tween;
 private:
 	float nowhp;
@@ -72,6 +74,11 @@ private:
 		TextureAsset m_sworddh_danger_ui;
 	SERIALIZE
 		TextureAsset m_sworddh_break_ui;
+	//other
+	SERIALIZE
+		TextureAsset m_other_ui;
+
+
 
 	SERIALIZE GameObject m_NameTextObject;
 
