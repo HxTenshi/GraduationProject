@@ -21,8 +21,13 @@ void OutputAnimation::Update()
 		mIsEnd = true;
 
 		if (mTargetBossGen) {
-			auto mino = m_Target->mTransform->GetParent()->mTransform->GetParent();
-			Hx::Debug()->Log("Call : ミノタウロス初期化");
+			auto mino = m_Target->mTransform->GetParent();
+			Hx::Debug()->Log("Call : ミノタウロスの初期化");
+			AnimeParam ap;
+			ap = mPlayAnimation->GetAnimetionParam(17);
+			ap.mWeight = 0;
+			ap.mLoop = false;
+			mPlayAnimation->SetAnimetionParam(17, ap);
 			mino->GetScript<EnemyMinotaur>()->EnemyEmergence(false);
 		}
 
