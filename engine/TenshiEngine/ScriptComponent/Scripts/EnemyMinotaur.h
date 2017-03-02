@@ -233,7 +233,4 @@ private:
 	float m_move_attackd_timemax;
 	//攻撃をもらったときのカウンタ
 	int m_damage_counter;
-	//出現時のフラグ
-	SERIALIZE
-	bool m_emergence_flag;
 };
