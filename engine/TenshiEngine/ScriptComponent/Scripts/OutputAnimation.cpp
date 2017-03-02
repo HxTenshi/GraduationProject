@@ -15,6 +15,7 @@ void OutputAnimation::Update()
 	auto mPlayAnimation = m_Target->GetComponent<AnimationComponent>();
 	if (!mPlayAnimation)return;
 	bool isEnd = mPlayAnimation->IsAnimationEnd(0);
+	bool isEnd = mPlayAnimation->IsAnimationEnd(mPlayAnimationID);
 
 	if (isEnd)
 	{
