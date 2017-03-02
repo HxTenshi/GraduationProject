@@ -4,7 +4,7 @@
 #include "Library\easing.h"
 #include "h_standard.h"
 #include "h_component.h"
-
+#include "WeaponUIMemory.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void WeaponUI::Initialize(){
 	//UI->GetComponent<TextureModelComponent>()->SetTexture(m_sword_ui);
@@ -28,6 +28,12 @@ void WeaponUI::Update(){
 	if (weapon=whand->GetScript<WeaponHand>()->GetHandWeapon()) {
 		UIMix->Enable();
 		DurableGage(weapon);
+		if (m_weapon_ui_mem) {
+			if (auto src = m_weapon_ui_mem->GetScript<WeaponUIMemory>()) {
+				int atk = weapon->GetScript<Weapon>()->GetAttackPower();
+				src->WeaponAttackParamMemSet(atk);
+			}
+		}
 	}
 	else {
 		UIMix->Disable();
@@ -120,6 +126,9 @@ void WeaponUI::SetWeaponIcon(WeaponType wtype,WeaponDamageType wdtype)
 		if (wdtype == WeaponDamageType::Damage)result = m_sworddh_damage_ui;
 		if (wdtype == WeaponDamageType::Danger)result = m_sworddh_danger_ui;
 		if (wdtype == WeaponDamageType::Break)result = m_sworddh_break_ui;
+	}
+	if (wtype == WeaponType::Other) {
+		result = m_other_ui;
 	}
 
 	UI->GetComponent<TextureModelComponent>()->SetTexture(result);
