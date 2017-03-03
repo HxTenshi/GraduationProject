@@ -41,6 +41,7 @@ namespace Mossan {
 		int	m_number;			//•\¦‚·‚é”’l
 		int m_pivotNum;			//Šî€’l
 		bool m_isEnd;
+		bool m_isSE;			//SE‚ğ–Â‚ç‚µ‚½‚©
 	};
 };
 
