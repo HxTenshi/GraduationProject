@@ -79,6 +79,35 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos, float volume){
 	float volumea = s->GetVolume();
 }
 
+void SoundManager::PlaySE_2D(SoundSE_ID::Enum key)
+{
+	if (g_soundManager == NULL) {
+		Hx::Debug()->Log("SoundManager Null");
+		return;
+	}
+	if (!g_soundManager->soundBox.IsLoad()) {
+		Hx::Debug()->Log("soundBoxないよ");
+		return;
+	}
+	GameObject g = Hx::Instance(g_soundManager->soundBox);
+	g->mTransform->WorldPosition(XMVectorZero());
+	auto s = g->GetComponent<SoundComponent>();
+	if (!s) {
+		Hx::Debug()->Log("SoundManager「SoundCommponentないよ」");
+		return;
+	}
+
+	//コンポーネントの音量とマスターの音量の値を掛ける
+	auto volume = (s->GetVolume() * g_soundManager->se_master_volume) / 2.0f;
+	volume += 0.5f;
+	if (g_soundManager->se_master_volume == 0.0f) volume = 0.0f;
+	s->LoadFile(g_soundManager->m_soundSEs[(int)key]);
+	s->SetVolume(volume);
+	s->Set3DSound(false);
+	s->SetLoop(false);
+	s->Play();
+}
+
 void SoundManager::PlayBGM(SoundBGM_ID::Enum key){
 	if (g_soundManager == NULL) {
 		Hx::Debug()->Log("SoundManager Null");

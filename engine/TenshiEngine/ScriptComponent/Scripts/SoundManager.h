@@ -43,8 +43,8 @@ public:
 			Lion2,
 			VolumeDown,
 			VolumeUp,
-			____EmptySE1,//使ってどうぞ
-			____EmptySE2,//使ってどうぞ
+			Simbal,
+			DrumRoll,
 			____EmptySE3,//使ってどうぞ
 			____EmptySE4,//使ってどうぞ
 			Rezard_Attack_1,
@@ -119,6 +119,7 @@ public:
 	
 	static void PlaySE(SoundSE_ID::Enum key,XMVECTOR pos);
 	static void PlaySE(SoundSE_ID::Enum key, XMVECTOR pos, float volume);
+	static void PlaySE_2D(SoundSE_ID::Enum key);
 	static void PlayBGM(SoundBGM_ID::Enum key);
 	static void SetBGMVolume(float volume);
 private:
