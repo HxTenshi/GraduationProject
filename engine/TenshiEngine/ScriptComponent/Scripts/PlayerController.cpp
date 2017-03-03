@@ -1815,6 +1815,15 @@ void PlayerController::AttackExcute()
 		}
 	}
 
+	if (m_CurrentAttack.ID == AttackID::FloatHigh1Fall) {
+		if (m_IsGround) {
+			m_NextAttack = AttackID::FloatHigh1End;
+		}
+		else {
+			mJump.y = 0.0f;
+			m_CurrentAttack.AttackTime = 0.0f;
+		}
+	}
 
 	if (m_CurrentAttack.AttackTime > 0.0f) {
 		m_MoveVelo = gameObject->mTransform->Forward() * m_CurrentAttack.AttackMove;
@@ -1830,15 +1839,7 @@ void PlayerController::AttackExcute()
 		return;
 	}
 
-	if (m_CurrentAttack.ID == AttackID::FloatHigh1Fall) {
-		if (m_IsGround) {
-			m_NextAttack = AttackID::FloatHigh1End;
-		}
-		else {
-			mJump.y = 0.0f;
-			return;
-		}
-	}
+
 
 	m_MoveVelo = XMVectorZero();
 
