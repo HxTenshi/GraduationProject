@@ -10,6 +10,7 @@
 #include <random>
 #include "SoundManager.h"
 #include "Score.h"
+#include "EnemyManager.h"
 //d—Í‚ª’x‚¢
 EnemyMinotaur::EnemyMinotaur()
 {
@@ -61,6 +62,7 @@ void EnemyMinotaur::ChildInitialize()
 	m_move_attackd_timemax = 0.0f;
 	m_damage_counter = 0;
 	Score::AddCountEnemy();
+	EnemyManager::EnemyPush(gameObject);
 }
 void EnemyMinotaur::SoloAction()
 {
@@ -364,6 +366,7 @@ void EnemyMinotaur::DeadUpdate()
 				g->mTransform->WorldPosition(pos);
 				is_dead_anim_end = true;
 				Score::AddScore();
+				EnemyManager::EnemyErase(gameObject);
 			}
 			Hx::Debug()->Log("time++");
 			m_crate_dead_effect_timer += Hx::DeltaTime()->GetDeltaTime();
@@ -371,6 +374,7 @@ void EnemyMinotaur::DeadUpdate()
 		}
 	}
 	if (m_crate_dead_effect_timer > 1.0f) {
+
 		gameObject->RemoveComponent<CharacterControllerComponent>();
 		Hx::DestroyObject(gameObject);
 	}

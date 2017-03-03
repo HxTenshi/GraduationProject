@@ -13,18 +13,9 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
+	static std::vector<GameObject> m_Enemys;
+	static void EnemyPush(GameObject gameObject_);
+	static void EnemyErase(GameObject gameObject_);
+	static std::vector<GameObject> GetEnemy();
 private:
-	//ƒƒ“ƒo•Ï”
-	SERIALIZE
-	GameObject m_Enemys;
-	SERIALIZE
-	bool m_DrawFlag;
-	SERIALIZE
-	GameObject m_Player;
-
-	//Enemy‚Ì“ü‚ê•¨‚ÖGameObject‚ğ“ü‚ê‚é
-	void EnemysIntoEnemyContainer();
-
-	//Enemy‚Ì“ü‚ê•¨
-	std::vector<GameObject> m_EnemyTeamVector;
 };

@@ -5,6 +5,7 @@
 #include "PlayerController.h"
 #include "Score.h"
 #include "SoundManager.h"
+#include "EnemyManager.h"
 EnemyWoodMan::EnemyWoodMan()
 {
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemyWoodMan::TrackingModeInitilize, this/*,std::placeholders::_1*/);
@@ -61,6 +62,7 @@ EnemyWoodMan::EnemyWoodMan()
 void EnemyWoodMan::ChildInitialize()
 {
 	Score::AddCountEnemy();
+	EnemyManager::EnemyPush(gameObject);
 	m_Hp = hp;
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
@@ -140,6 +142,7 @@ bool EnemyWoodMan::LostPlayer()
 void EnemyWoodMan::ChildFinalize()
 {
 	Score::AddScore();
+	EnemyManager::EnemyErase(gameObject);
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);

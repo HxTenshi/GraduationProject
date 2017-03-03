@@ -4,6 +4,7 @@
 #include "../h_component.h"
 #include "PlayerController.h"
 #include "Score.h"
+#include "EnemyManager.h"
 
 EnemyEbilEye::EnemyEbilEye()
 {
@@ -61,6 +62,7 @@ EnemyEbilEye::EnemyEbilEye()
 void EnemyEbilEye::ChildInitialize()
 {
 	Score::AddCountEnemy();
+	EnemyManager::EnemyPush(gameObject);
 	m_Hp = hp;
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
@@ -157,6 +159,7 @@ bool EnemyEbilEye::LostPlayer()
 void EnemyEbilEye::ChildFinalize()
 {
 	Score::AddScore();
+	EnemyManager::EnemyErase(gameObject);
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name() + " is Die");
 	Hx::DestroyObject(this->gameObject);

@@ -5,6 +5,7 @@
 #include "PlayerController.h"
 #include "SoundManager.h"
 #include "Score.h"
+#include "EnemyManager.h"
 
 EnemyRezardMan::EnemyRezardMan()
 {
@@ -84,6 +85,7 @@ EnemyRezardMan::EnemyRezardMan()
 void EnemyRezardMan::ChildInitialize()
 {
 	Score::AddCountEnemy();
+	EnemyManager::EnemyPush(gameObject);
 	m_SetPoint = true;
 	ModelObject = m_ModelObject;
 	m_MaxHp = hp;
@@ -907,6 +909,7 @@ bool EnemyRezardMan::LostPlayer()
 void EnemyRezardMan::ChildFinalize()
 {
 	Score::AddScore();
+	EnemyManager::EnemyErase(gameObject);
 	Hx::DestroyObject(m_MyWeapon);
 	//gameObject->Disable();
 	Hx::DestroyObject(gameObject);

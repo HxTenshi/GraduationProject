@@ -7,6 +7,7 @@
 #include "UniqueObject.h"
 #include "SoundManager.h"
 #include "Score.h"
+#include "EnemyManager.h"
 
 EnemyOrc::EnemyOrc()
 {
@@ -63,6 +64,7 @@ EnemyOrc::EnemyOrc()
 void EnemyOrc::ChildInitialize()
 {
 	Score::AddCountEnemy();
+	EnemyManager::EnemyPush(gameObject);
 	m_SetPoint = true;
 	if (!m_MovePoints)m_SetPoint = false;
 	else {
@@ -193,6 +195,7 @@ bool EnemyOrc::LostPlayer()
 void EnemyOrc::ChildFinalize()
 {
 	Score::AddScore();
+	EnemyManager::EnemyErase(gameObject);
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
