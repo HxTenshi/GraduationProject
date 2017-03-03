@@ -86,8 +86,8 @@ void EnemyMinotaur::Attack(GameObject player, COL_TYPE colType)
 	if (!playerScript)return;
 
 	m_AttackHit = true;
-	float mag = (is_anger) ? 1.5f : 1.0f;
-	playerScript->Damage(8.0f*mag, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Low);
+	float mag = (is_anger) ? 2.0f : 1.0f;
+	playerScript->Damage(8.0f*mag, XMVector3Normalize(player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down,true,false);
 
 }
 
@@ -96,8 +96,9 @@ bool EnemyMinotaur::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTO
 	if (m_anim_state == AnimType::ANIM_STUNNED)return false;
 	if (is_dead)return false;
 	if (is_damage)return false;
+
 	//ì{ÇËèÛë‘ÇÃÉ_ÉÅÅ[ÉWÇÕîºï™Ç…ê›íË
-	m_Damage = (is_anger) ? damage_ *( 7.0f/10.0f) : damage_;
+	m_Damage = (is_anger) ? damage_ *( 5.0f/10.0f) : damage_;
 	m_Accel = accelPower_;
 	is_damage = true;
 	//if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
@@ -213,7 +214,7 @@ void EnemyMinotaur::BattleModeUpdate()
 	}
 	if (is_damage) {
 		m_AttackHit = true;
-		if (m_damage_counter>=8) {
+		if (m_damage_counter>=4) {
 			m_damage_counter = 0;
 			//[SOUND]
 			SoundManager::PlaySE(SoundManager::SoundSE_ID::Lion2, gameObject->mTransform->WorldPosition());
@@ -227,27 +228,34 @@ void EnemyMinotaur::BattleModeUpdate()
 			g->mTransform->WorldPosition(pos);
 			if (!m_Player)return;
 			auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
-			if (m_roucine_module.DistanceCheck(DSI_EM_ATTACK, distance, funifuni::ModuleDistanceType::In)) {
+			if  (distance<12.0f) {
 				auto playerScript = m_Player->GetScript<PlayerController>();
 				if (!playerScript)return;
-				playerScript->Damage(0.0f, XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
+				playerScript->Damage(3.0f, XMVector3Normalize(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()), PlayerController::KnockBack::Down);
 
 			}
 			return;
 		}
-		m_attackd_func = nullptr;
-		m_action_func = nullptr;
-		m_damage_counter++;
-		m_attack_flag = true;
-
 		//çUåÇ
 		m_Hp -= m_Damage;
 		if (m_Hp <= m_MaxHp / 2 & !is_anger) {
 			m_Hp = m_MaxHp / 2;
 		}
 		m_Damage = 0.0f;
-		anim_loop = false;
-		RoutineSetUp(ANIM_STUNNED);
+
+		if (!m_attack_flag||m_roucine_module.GetAnimState()==(int)ANIM_STUNNED) {
+			anim_loop = false;
+			RoutineSetUp(ANIM_STUNNED);
+		}
+		else {
+			is_damage = false;
+		}
+		m_attackd_func = nullptr;
+		m_action_func = nullptr;
+		m_damage_counter++;
+		m_attack_flag = true;
+
+
 		return;
 	}
 
@@ -285,32 +293,14 @@ void EnemyMinotaur::BattleModeUpdate()
 				if (m_Debug_flag)Hx::Debug()->Log("AnimEnd");
 
 			}
-			if (m_roucine_module.GetAnimState()==AnimType::ANIM_STUNNED) {
+			if (m_roucine_module.GetAnimState()==AnimType::ANIM_STUNNED|| m_roucine_module.GetAnimState() == AnimType::ANIM_TAUNT) {
 				Hx::Debug()->Log("stunchangeanim");
 				auto distance = XMVector3Length(m_Player->mTransform->WorldPosition() - gameObject->mTransform->WorldPosition()).x;
-				//îΩåÇçUåÇÇÇ∑ÇÈ
-				if (m_roucine_module.DistanceCheck(DSI_BACK, distance, funifuni::ModuleDistanceType::In)) {
-
-					m_action_func = [this]() {MoveBack(); };
-					anim_loop = true;
-					RoutineSetUp(ANIM_B_WALK);
-				}//çUåÇîÕàÕì‡Ç…Ç¢ÇΩÇÁ
-				else if (m_roucine_module.DistanceCheck(DSI_SIDE, distance, funifuni::ModuleDistanceType::In)) {
-					m_action_func = [this]() {MoveSide(); };
-					anim_loop = true;
-					RoutineSetUp(ANIM_R_WALK);
-				}//çUåÇîÕàÕäOÇ…èoÇƒÇ¢ÇΩÇÁ
-				else if (m_roucine_module.DistanceCheck(DSI_MOVE, distance, funifuni::ModuleDistanceType::Over)) {
-					m_action_func = [this]() {Move(walk_speed); };
-					anim_loop = true;
-					RoutineSetUp(ANIM_F_WALK);
-				}
-				else {
-					m_action_func = [this]() {MoveSide(); };
-					anim_loop = true;
-					RoutineSetUp(ANIM_R_WALK);
-				}
 				
+					m_action_func = [this]() {MoveSide(); };
+					anim_loop = true;
+					m_roucine_module.SetAnimState(ANIM_R_WALK);
+					ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 			}
 		}
 	}
@@ -561,7 +551,7 @@ void EnemyMinotaur::BattleRoutine()
 void EnemyMinotaur::RoutineSetUp(AnimType type)
 {
 	m_roucine_module.SetAnimState(type);
-	if (m_anim_state != m_roucine_module.GetAnimState()) {
+	if (m_anim_state != m_roucine_module.GetAnimState()||m_anim_state==ANIM_STUNNED) {
 		if (m_Debug_flag)Hx::Debug()->Log("BattleChange");
 		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 
