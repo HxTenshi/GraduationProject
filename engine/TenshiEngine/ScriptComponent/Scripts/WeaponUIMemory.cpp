@@ -46,10 +46,10 @@ void WeaponUIMemory::OnCollideExit(GameObject target){
 
 XMFLOAT4 WeaponUIMemory::GetMemColor(int n)
 {
-	if (n > 6) {
+	if (n > 5) {
 		return XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
-	else if (n > 3) {
+	else if (n > 2) {
 		return XMFLOAT4(1.0f, 0.6f, 0.0f, 1.0f);
 	}
 	else if (n >= 0) {
@@ -61,7 +61,7 @@ XMFLOAT4 WeaponUIMemory::GetMemColor(int n)
 
 void WeaponUIMemory::FillAlpha()
 {
-	for (int i = 0; i < 15; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
 		if (m_GageMem[i]) {
 			m_GageMem[i]->GetComponent<MaterialComponent>()->SetAlbedoColor(XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -72,7 +72,7 @@ void WeaponUIMemory::FillAlpha()
 void WeaponUIMemory::WeaponAttackParamMemSet(int atk)
 {
 	FillAlpha();
-	int num = (atk > 14) ? 14 : atk;
+	int num = (atk > 10) ? 10 : atk;
 	for (int i = 0; i < num; ++i) {
 		if (m_GageMem[i]) {
 			m_GageMem[i]->GetComponent<MaterialComponent>()->SetAlbedoColor(GetMemColor(i));

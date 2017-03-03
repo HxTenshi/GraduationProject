@@ -20,7 +20,11 @@ public:
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE
-		GameObject m_blackTex;
+		GameObject m_faderTexObj;
+	SERIALIZE
+		TextureAsset blackTex;
+	SERIALIZE
+		TextureAsset loadingTex;
 	bool m_isFadeIn;	//ˆÃ‚­‚È‚Á‚Ä‚¢‚­‚©
 	bool m_isSceneChange;	//ƒV[ƒ“‚ğ‘JˆÚ‚·‚é‚©‚Ç‚¤‚©
 	std::string m_nextScenePass;

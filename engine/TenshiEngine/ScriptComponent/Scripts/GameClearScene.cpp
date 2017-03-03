@@ -55,7 +55,7 @@ namespace Mossan{
 
 	void GameClearTexObj::Small(){
 		//縮小する割合
-		const float subScaleRate = 4.0f;
+		const float subScaleRate = 2.0f;
 		//有効化
 		Enable();
 		//現在のスケール値
@@ -102,12 +102,18 @@ namespace Mossan{
 		m_number = 0;
 		m_pivotNum = 0;
 		m_isEnd = false;
+		m_isSE = false;
 		ChangeText("");
 	}
 
 	GameClearTextObj::GameClearTextObj(){}
 
 	void GameClearTextObj::UpdateScore(){
+		if (!m_isSE) {
+			m_isSE = true;
+			SoundManager::PlaySE_2D(SoundManager::SoundSE_ID::Enum::DrumRoll);
+		}
+
 		//スコアを加算
 		m_numberf += m_pivotNum * Hx::DeltaTime()->GetDeltaTime();
 		m_number = (int)m_numberf;
@@ -124,6 +130,11 @@ namespace Mossan{
 	}
 
 	void GameClearTextObj::UpdateTime() {
+		if (!m_isSE) {
+			m_isSE = true;
+			SoundManager::PlaySE_2D(SoundManager::SoundSE_ID::Enum::DrumRoll);
+		}
+
 		//スコアを加算
 		m_numberf += m_pivotNum * Hx::DeltaTime()->GetDeltaTime();
 		m_number = (int)m_numberf;
@@ -248,6 +259,7 @@ void GameClearScene::DoPhase2(){
 		m_textKillObj.UpdateScore();
 		//終わったならphase3へ
 		if (m_textKillObj.IsEnd()) {
+			SoundManager::PlaySE_2D(SoundManager::SoundSE_ID::Enum::Simbal);
 			m_phase = phase3;
 		}
 	}
@@ -261,17 +273,21 @@ void GameClearScene::DoPhase3(){
 		m_textTimeObj.UpdateTime();
 
 		if (m_textTimeObj.IsEnd()) {
+			SoundManager::PlaySE_2D(SoundManager::SoundSE_ID::Enum::Simbal);
 			m_phase = phase4;
 		}
 	}
 }
 
 void GameClearScene::DoPhase4(){
-	const float intervalTime = 8.0f;
+
+	bool isEnter = Input::Trigger(KeyCode::Key_SPACE) || Input::Trigger(PAD_X_KeyCode::Button_B);
+
+	const float intervalTime = 2.1f;
 	m_timer += 1.0f * Hx::DeltaTime()->GetDeltaTime();
 	m_timer = min(m_timer, intervalTime);
 
-	if (m_timer >= intervalTime) {
+	if (m_timer >= intervalTime || isEnter) {
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
 		fader->OnSceneChnage("Assets/Mossan/Credit.scene");

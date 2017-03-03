@@ -21,15 +21,19 @@ namespace funifuni {
 		GameObject GetObject();
 		void Move(bool arrow);
 		void SetArrowPos(bool arrow);
-	private:
+	public:
 		GameObject obj;
-
 	};
 
 };
 
 class TitleManager :public IDllScriptComponent {
 public:
+	enum State {
+		state1 = 0,
+		state2
+	};
+
 	void Initialize()override;
 	void Start()override;
 	void Update()override;
@@ -55,6 +59,9 @@ private:
 		GameObject m_ConfigButton;
 	SERIALIZE
 		GameObject m_GameEndButton;
+	SERIALIZE
+		GameObject m_TitleRogo;
+	XMVECTOR m_titleRogoInitPos;
 	
 	//移動中のオブジェクト
 	funifuni::TitleMoveButton m_MoveObject;
@@ -67,6 +74,8 @@ private:
 
 	//状態遷移変数
 	TitleButtonRoll m_button_state;
+
+	State m_state;
 
 	//false equal left,true equal right
 	bool is_arrow;
@@ -83,8 +92,6 @@ private:
 		std::string gameStartScenePass;
 	SERIALIZE
 		std::string configScenePass;
-	SERIALIZE
-		GameObject m_soundManager;
 	SERIALIZE
 		GameObject m_fader;
 };

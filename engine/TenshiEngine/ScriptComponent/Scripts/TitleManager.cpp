@@ -54,56 +54,103 @@ namespace funifuni {
 		m_MoveObject = m_GameStartButton;
 		is_next = false;
 		is_bgm = false;
+
+		m_titleRogoInitPos = m_TitleRogo->mTransform->Position();
 	}
 
 	//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 	void TitleManager::Start() {
 		iup_flag = true;
+		m_state = State::state1;
 		OnBGM();
 	}
 
 	//毎フレーム呼ばれます
 	void TitleManager::Update() {
 		
-		if (Input::Trigger(KeyCode::Key_C)) {
-			SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Enum::Title);
-		}
-		if (Input::Trigger(KeyCode::Key_V)) {
-			SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Enum::Credit);
-		}
-
-		//左スティックの入力を取得
+		//入力関連を取得
 		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
 		bool isRightLS = ls.x > 0.5f;	//右に倒したか？
 		bool isLeftLS = ls.x < -0.5f;	//左に倒したか？
-		if ((Input::Trigger(KeyCode::Key_A) || isLeftLS) && !is_next) {
-			is_next = true;
-			is_arrow = false;
-			InitPosition(is_arrow);
-			Back();
-			SetArrowPosition();
-			OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
-		}
-		if ((Input::Trigger(KeyCode::Key_D) || isRightLS) && !is_next) {
-			is_next = true;
-			is_arrow = true;
-			InitPosition(is_arrow);
-			Next();
-			SetArrowPosition();
-			OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
-		}
+		bool isEnter = Input::Trigger(KeyCode::Key_SPACE) || Input::Trigger(PAD_X_KeyCode::Button_B);	//決定
+		bool isCansel = Input::Trigger(KeyCode::Key_B) || Input::Trigger(PAD_X_KeyCode::Button_A);		//キャンセル
 
-		//決定キーを押されたか
-		bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
-		if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
-			Select();
-		}
-		if (is_next) {
+		if (m_state == State::state1) {
 
-			m_MoveObject.Move(is_arrow);
-			m_NowObject.Move(is_arrow);
-			if (ArrowOver()) {
-				is_next = false;
+			for (auto i : m_Buttons) {
+				XMVECTOR tempPos = i.obj->mTransform->Position();
+				tempPos.y += 50.0f * Hx::DeltaTime()->GetDeltaTime();
+				if (tempPos.y > m_button_y) tempPos.y = m_button_y;
+
+				auto buttonMat = i.obj->GetComponent<MaterialComponent>();
+				XMFLOAT4 buttonColor = buttonMat->GetMaterialPtr(0)->GetAlbedo();
+				buttonColor.w += 50.0f * Hx::DeltaTime()->GetDeltaTime();
+				buttonColor.w = max(min(buttonColor.w, 1.0f), 0.0f);
+				buttonMat->GetMaterialPtr(0)->SetAlbedo(buttonColor);
+			}
+			XMVECTOR titleRogoPos = m_TitleRogo->mTransform->Position();
+			titleRogoPos.y -= 1.0f * Hx::DeltaTime()->GetDeltaTime();
+			if (titleRogoPos.y < m_titleRogoInitPos.y) titleRogoPos.y = m_titleRogoInitPos.y;
+
+			auto titleRogoMat = m_TitleRogo->GetComponent<MaterialComponent>();
+			XMFLOAT4 titleRogoColor = titleRogoMat->GetMaterialPtr(0)->GetAlbedo();
+			titleRogoColor.w += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+			titleRogoColor.w = max(min(titleRogoColor.w, 1.0f), 0.0f);
+			titleRogoMat->GetMaterialPtr(0)->SetAlbedo(titleRogoColor);
+
+
+
+			if ((Input::Trigger(KeyCode::Key_LEFT) || isLeftLS) && !is_next) {
+				is_next = true;
+				is_arrow = false;
+				InitPosition(is_arrow);
+				Back();
+				SetArrowPosition();
+				OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
+			}
+			if ((Input::Trigger(KeyCode::Key_RIGHT) || isRightLS) && !is_next) {
+				is_next = true;
+				is_arrow = true;
+				InitPosition(is_arrow);
+				Next();
+				SetArrowPosition();
+				OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
+			}
+
+			if (isEnter) Select();
+
+			if (is_next) {
+				m_MoveObject.Move(is_arrow);
+				m_NowObject.Move(is_arrow);
+				if (ArrowOver()) {
+					is_next = false;
+				}
+			}
+		}
+		else if (m_state == State::state2) {
+			for (auto i : m_Buttons) {
+				XMVECTOR tempPos = i.obj->mTransform->Position();
+				tempPos.y -= 50.0f * Hx::DeltaTime()->GetDeltaTime();
+				if (tempPos.y < m_button_y - 500.0f) tempPos.y = m_button_y;
+
+				auto buttonMat = i.obj->GetComponent<MaterialComponent>();
+				XMFLOAT4 buttonColor = buttonMat->GetMaterialPtr(0)->GetAlbedo();
+				buttonColor.w -= 1.0f * Hx::DeltaTime()->GetDeltaTime();
+				buttonColor.w = max(min(buttonColor.w, 1.0f), 0.0f);
+				buttonMat->GetMaterialPtr(0)->SetAlbedo(buttonColor);
+			}
+			XMVECTOR titleRogoPos = m_TitleRogo->mTransform->Position();
+			titleRogoPos.y += 50.0f * Hx::DeltaTime()->GetDeltaTime();
+			if (titleRogoPos.y < m_titleRogoInitPos.y + 500.0f) titleRogoPos.y = m_titleRogoInitPos.y;
+
+			auto titleRogoMat = m_TitleRogo->GetComponent<MaterialComponent>();
+			XMFLOAT4 titleRogoColor = titleRogoMat->GetMaterialPtr(0)->GetAlbedo();
+			titleRogoColor.w -= 1.0f * Hx::DeltaTime()->GetDeltaTime();
+			titleRogoColor.w = max(min(titleRogoColor.w, 1.0f), 0.0f);
+			titleRogoMat->GetMaterialPtr(0)->SetAlbedo(titleRogoColor);
+
+			if (isCansel) {
+				m_state = State::state1;
 			}
 		}
 	}
@@ -231,7 +278,7 @@ namespace funifuni {
 
 		switch (m_button_state)
 		{
-		case TitleButtonRoll::GameStart: fader->OnSceneChnage(gameStartScenePass);
+		case TitleButtonRoll::GameStart: fader->OnSceneChnage(gameStartScenePass);//m_state = State::state2;
 			break;
 		case TitleButtonRoll::Config: fader->OnSceneChnage(configScenePass);
 			break;
