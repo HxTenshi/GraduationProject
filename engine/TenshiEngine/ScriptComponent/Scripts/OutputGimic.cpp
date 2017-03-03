@@ -25,6 +25,7 @@
 #include "OutpuChangeDeltaTimeGimick.h"
 #include "OutputShakeObjectGimick.h"
 #include "hintDraw.h"
+# include "EventSceneChange.h"
 
 OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 {
@@ -54,7 +55,7 @@ OutputGimic * OutputGimic::GetOutputGimic(GameObject target)
 	if (auto scr = target->GetScript<EventWave>())return scr;
 	if (auto scr = target->GetScript<OutputEventTimer>())return scr;
 	if (auto scr = target->GetScript<hintDraw>())return scr;
-	
+	if (auto scr = target->GetScript<EventSceneChange>())return scr;
 	
 
 	return NULL;
