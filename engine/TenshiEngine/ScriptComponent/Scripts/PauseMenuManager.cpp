@@ -21,12 +21,20 @@ void PauseMenuManager::Initialize(){
 	m_objMap[1].push_back(new Struct(m_texToTitle,XMVectorSet(960,340,10001,0)));
 	m_objMap[1].push_back(new Struct(m_texMigisita,XMVectorSet(1680,140,10001,0)));
 	m_objMap[2].push_back(new Struct(m_texItimie, XMVectorSet(1680,540,10001,0)));
-	this->gameObject->Enable();
+
+	//this->gameObject->Enable();
+
+	for (int i = 0; i < m_objMap.size(); i++) {
+		//左上のテクスチャのみ処理固定
+		for (int j = 0; j < m_objMap[i].size(); j++) {
+			auto material = m_objMap[i][j]->m_texObj->GetComponent<MaterialComponent>();
+			material->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1, 1, 1, 0));
+		}
+	}
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void PauseMenuManager::Start(){
-
 }
 
 //毎フレーム呼ばれます
@@ -191,6 +199,7 @@ void PauseMenuManager::UpdateClose(){
 			//マテリアルのカラー　アルファー値減算
 			auto mat = m_objMap[i][j]->m_texObj->GetComponent<MaterialComponent>();
 			XMFLOAT4 tempColor = mat->GetMaterialPtr(0)->GetAlbedo();
+
 			tempColor.w -= m_lerpSpeed * Hx::DeltaTime()->GetNoScaleDeltaTime();
 			if (tempColor.w <= 0.0f) tempColor.w = 0.0f;
 			mat->SetAlbedoColor(tempColor);
@@ -211,6 +220,7 @@ void PauseMenuManager::OpenPauseMenu(){
 	if (Matinee::GlobalNowPlaying()) {
 		return;
 	}
+	m_Camvas->Enable();
 	m_state = State::Open;
 	m_isItimie = false;
 	m_num = 0;

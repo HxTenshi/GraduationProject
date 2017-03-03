@@ -56,6 +56,8 @@ private:
 	bool m_isItimie;
 	float m_lerpTimers[3];
 	SERIALIZE
+	GameObject m_Camvas;
+	SERIALIZE
 	GameObject m_texPause;
 	SERIALIZE
 	GameObject m_texHowTo;
