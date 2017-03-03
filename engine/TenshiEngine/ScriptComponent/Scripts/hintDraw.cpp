@@ -1,6 +1,7 @@
 #include "hintDraw.h"
 # include "h_standard.h"
 # include "Game\Component\MaterialComponent.h"
+#include "Graphic\Material\Material.h"
 #define BIGSIZEX 1040
 #define BIGSIZEY 240
 #define BIGPOSX 440
@@ -26,7 +27,7 @@ void hintDraw::Update()
 		auto mc = gameObject->GetComponent<MaterialComponent>();
 		if (!mc)return;
 		if (m_FirstFrame) {
-			mc->mAlbedoTexture = m_NowTexture;
+			mc->GetMaterialPtr(0)->SetTexture(m_NowTexture);
 		}
 		m_FirstFrame = false;
 		gameObject->mTransform->WorldPosition(XMVectorSet(BIGPOSX, BIGPOSY, 0, 0));
