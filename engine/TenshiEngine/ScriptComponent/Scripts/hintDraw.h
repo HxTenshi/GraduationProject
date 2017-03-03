@@ -7,7 +7,10 @@ class hintDraw :public OutputGimic {
 public:
 	void Initialize()override;
 	void Update()override;
+	void Finish()override;
 	bool OnStart(GameObject Sender) override;
+	
+	static bool OnStart_(GameObject Sender);
 
 private:
 	SERIALIZE float m_WaitTime;
