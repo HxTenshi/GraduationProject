@@ -66,7 +66,7 @@ void hintDraw::Finish()
 bool hintDraw::OnStart(GameObject Sender)
 {
 	auto mc = gameObject->GetComponent<MaterialComponent>();
-	if (!mc)return;
+	if (!mc)return false;
 	auto color = mc->mAlbedo;
 	color.w  = 1.0f;
 	mc->SetAlbedoColor(color);
@@ -76,11 +76,12 @@ bool hintDraw::OnStart(GameObject Sender)
 	m_NowTexture = m_Textures[m_NowTextureNumber];
 	m_Timer = 0;
 	m_FirstFrame = true;
-	return false;
+	return true;
 }
 
 bool hintDraw::OnStart_(GameObject Sender)
 {
 	if (!hintDraw_)return false;
 	hintDraw_->GetScript<hintDraw>()->OnStart(Sender);
+	return true;
 }
