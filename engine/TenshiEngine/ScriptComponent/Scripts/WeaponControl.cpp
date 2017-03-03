@@ -54,6 +54,12 @@ void WeaponControl::HitActor(GameObject target,GameObject weapon)
 	Hx::Debug()->Log("“–‚½‚Á‚Ä‚¢‚é‚Í‚¸");
 	Hx::Debug()->Log(" : "+std::to_string(target->GetLayer()));
 	Hx::Debug()->Log(" : " + target->Name());
+	if (weapon) {
+		if (auto w = weapon->GetScript<Weapon>()) {
+			Hx::Debug()->Log("ƒfƒŠ[‚Æ");
+			w->DeleteEffect(0.9f);
+		}
+	}
 	if (target->GetLayer() == 3){
 		Hx::Debug()->Log("“ª‚É");
 		if (SearchEnemyBone(target, weapon, "Head"))return;
@@ -73,6 +79,7 @@ void WeaponControl::HitActor(GameObject target,GameObject weapon)
 		Hx::Debug()->Log("‘Ì‚É");
 		SearchEnemyBone(target, weapon, "Spine");
 	}
+
 
 }
 
