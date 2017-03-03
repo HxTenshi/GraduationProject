@@ -2,6 +2,7 @@
 #include "h_component.h"
 #include "h_standard.h"
 #include "UniqueObject.h"
+#include "EnemyManager.h"
 
 static MiniMap* g_Minimap = NULL;
 
@@ -57,6 +58,59 @@ void MiniMap::Update(){
 	//material->SetMaterial(0, *mate);
 	//material->SetAlbedoColor(XMFLOAT4(1,0,1,1));
 	//material->SetMaterial(0, mate);
+
+	for (auto ite = m_Icons.begin(); ite != m_Icons.end();) {
+		if (ite->second.first) {
+			++ite;
+		}
+		else {
+			Hx::DestroyObject((ite->second.second));
+			ite = m_Icons.erase(ite);
+		}
+	}
+
+	for (auto e : EnemyManager::GetEnemy()) {
+		auto epos = e->mTransform->WorldPosition();
+
+		XMVECTOR icopos;
+
+		auto mappos = gameObject->mTransform->Position();
+		auto maps = gameObject->mTransform->Scale();
+
+		epos = epos + XMVectorSet(10000.0f, 10000.0f, 10000.0f, 1.0f);
+		if ((v.x > 0 && v.z > 0) || (v.x < 0 && v.z < 0)) {
+			epos = XMVectorSet(epos.z, 0, epos.x, 0);
+			//Hx::Debug()->Log("a");
+		}
+
+		epos -= l;
+		icopos.z = 2;
+		icopos.w = 1;
+
+		icopos.x = epos.x / r.x - off.x;
+		icopos.y = epos.z / r.z - off.y;
+		icopos.x *= (1.0f/scale.x);
+		icopos.y *= (1.0f/scale.y);
+		icopos.x = min(max(icopos.x,0.0f),1.0f);
+		icopos.y = min(max(icopos.y,0.0f),1.0f);
+		icopos.x = (icopos.x);
+		icopos.y = (1 - icopos.y);
+		icopos.x *= maps.x;
+		icopos.y *= maps.y;
+
+		icopos.x += mappos.x - maps.x/2.0f;
+		icopos.y += mappos.y - maps.y/2.0f;
+
+		auto ico = m_Icons.find((int)e.Get());
+		if (ico != m_Icons.end()) {
+			ico->second.second->mTransform->Position(icopos);
+		}
+		else {
+			if (auto i = Hx::Instance(m_EnemyIco)) {
+				m_Icons.insert(std::make_pair((int)e.Get(), std::make_pair(e, i)));
+			}
+		}
+	}
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）

@@ -22,4 +22,6 @@ private:
 	//ƒƒ“ƒo•Ï”
 	GameObject m_LU_Point;
 	GameObject m_RD_Point;
+	SERIALIZE PrefabAsset m_EnemyIco;
+	std::map<int, std::pair<GameObject,GameObject>> m_Icons;
 };
