@@ -3,7 +3,7 @@
 #include "main.h"
 
 
-class MiniMap :public IDllScriptComponent{
+class PlayerSpecialDamageArea :public IDllScriptComponent{
 public:
 	void Initialize()override;
 	void Start()override;
@@ -13,15 +13,8 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
-	void Change(TextureAsset map, float scale, GameObject lu, GameObject rd);
-
-	static MiniMap* GetMiniMapUI();
-
-
 private:
 	//ƒƒ“ƒo•Ï”
-	GameObject m_LU_Point;
-	GameObject m_RD_Point;
-	SERIALIZE PrefabAsset m_EnemyIco;
-	std::map<int, std::pair<GameObject,GameObject>> m_Icons;
+	float m_Damage;
+	float m_Dead;
 };
