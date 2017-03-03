@@ -45,7 +45,7 @@ public:
 			VolumeUp,
 			Simbal,
 			DrumRoll,
-			____EmptySE3,//Žg‚Á‚Ä‚Ç‚¤‚¼
+			HintSound,
 			____EmptySE4,//Žg‚Á‚Ä‚Ç‚¤‚¼
 			Rezard_Attack_1,
 			Rezard_Attack_2,

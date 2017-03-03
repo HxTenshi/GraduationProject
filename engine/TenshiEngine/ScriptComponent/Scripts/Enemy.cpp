@@ -292,6 +292,7 @@ void Enemy::ChangeBattleAction(BATTLEACTION::Enum nextBattleAction) {
 class EmptyEnemy;
 class EnemyOrc;
 class EnemyGate;
+class EnemySandBag;
 Enemy * Enemy::GetEnemy(GameObject target)
 {
 	if (!target)return NULL;
@@ -304,6 +305,7 @@ if (auto scr = target->GetScript<EmptyEnemy>())return (Enemy*)scr;
 if (auto scr = target->GetScript<EnemyOrc>())return (Enemy*)scr;
 if (auto scr = target->GetScript<EnemyGate>())return (Enemy*)scr;
 if (auto scr = target->GetScript<EnemyMinotaur>())return (Enemy*)scr;
+if (auto scr = target->GetScript<EnemySandBag>())return (Enemy*)scr;
 
 	return NULL;
 }

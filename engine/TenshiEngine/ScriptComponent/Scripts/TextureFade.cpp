@@ -9,7 +9,9 @@ void TextureFade::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void TextureFade::Start(){
-	gameObject->GetComponent<MaterialComponent>()->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1,1,1, m_Fade));
+	auto color = gameObject->GetComponent<MaterialComponent>()->GetMaterialPtr(0)->GetAlbedo();
+	color.w = m_Fade;
+	gameObject->GetComponent<MaterialComponent>()->GetMaterialPtr(0)->SetAlbedo(color);
 }
 
 //毎フレーム呼ばれます
@@ -18,7 +20,9 @@ void TextureFade::Update(){
 	if(m_StartTime >= 2.0f)
 	m_Fade -= m_FadeSpeed * Hx::DeltaTime()->GetDeltaTime();
 	if (m_Fade <= 0.0f)Hx::DestroyObject(gameObject);
-	gameObject->GetComponent<MaterialComponent>()->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1, 1, 1, m_Fade));
+	auto color = gameObject->GetComponent<MaterialComponent>()->GetMaterialPtr(0)->GetAlbedo();
+	color.w = m_Fade;
+	gameObject->GetComponent<MaterialComponent>()->GetMaterialPtr(0)->SetAlbedo(color);
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
