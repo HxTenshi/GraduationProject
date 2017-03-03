@@ -511,7 +511,7 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageEnd = 9999.0f / 30.0f;
 
 
-		attack.UseGravity = false;
+		attack.UseGravity = true;
 
 
 		//attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
@@ -869,8 +869,7 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 9999.0f / 30.0f;
 
-
-		attack.UseGravity = false;
+		attack.UseGravity = true;
 
 
 		//attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
@@ -1836,6 +1835,7 @@ void PlayerController::AttackExcute()
 			m_NextAttack = AttackID::FloatHigh1End;
 		}
 		else {
+			mJump.y = 0.0f;
 			return;
 		}
 	}
@@ -2773,10 +2773,10 @@ void PlayerController::throwAway(GameObject target,bool isMove)
 		if (target) {
 
 			if (m_LockActions[LockAction::ThrowWeapon])return;
+			createWeaponEffect(100.0f, (int)WeaponEffectType::THROWEF);
 			weaponHand->ThrowAway(target, isMove);
 
 			SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Throw, gameObject->mTransform->WorldPosition());
-			createWeaponEffect(100.0f, (int)WeaponEffectType::THROWEF);
 			
 		}
 		else{
