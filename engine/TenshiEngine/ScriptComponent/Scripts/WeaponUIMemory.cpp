@@ -46,10 +46,10 @@ void WeaponUIMemory::OnCollideExit(GameObject target){
 
 XMFLOAT4 WeaponUIMemory::GetMemColor(int n)
 {
-	if (n > 10) {
+	if (n > 6) {
 		return XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 	}
-	else if (n > 5) {
+	else if (n > 3) {
 		return XMFLOAT4(1.0f, 0.6f, 0.0f, 1.0f);
 	}
 	else if (n >= 0) {

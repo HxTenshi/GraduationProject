@@ -4,30 +4,19 @@
 #include "EnemyTeam.h"
 #include "Enemy.h"
 
+std::vector<GameObject> EnemyManager::m_Enemys;
+
 //生成時に呼ばれます（エディター中も呼ばれます）
 void EnemyManager::Initialize(){
-
+	EnemyManager::m_Enemys.clear();
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void EnemyManager::Start(){
-	EnemysIntoEnemyContainer();
 }
 
 //毎フレーム呼ばれます
 void EnemyManager::Update(){
-	//敵の入れ物を全部回す
-	for (auto i = m_EnemyTeamVector.begin(); i != m_EnemyTeamVector.end();) {
-		auto jScript = EnemyTeam::GetEnemyTeam(*i);
-		if (!jScript->Alive()) {
-			Hx::DestroyObject((*i)->mTransform->gameObject);
-			i = m_EnemyTeamVector.erase(i);
-			continue;
-		}
-		jScript->DiscoveryOrLostPlayerSet();
-		jScript->TeamUpdate();
-		i++;
-	}
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -50,12 +39,22 @@ void EnemyManager::OnCollideExit(GameObject target){
 	(void)target;
 }
 
-void EnemyManager::EnemysIntoEnemyContainer(){
-	if (!m_Enemys)return;
-	auto enemyTeams = m_Enemys->mTransform->Children();
-	if (enemyTeams.size() == 0)return;
-	for (auto& newEnemyTeam : enemyTeams) {
-		m_EnemyTeamVector.push_back(newEnemyTeam);
-		EnemyTeam::GetEnemyTeam(newEnemyTeam)->TeamInitialize();
+void EnemyManager::EnemyPush(GameObject gameObject_)
+{
+	EnemyManager::m_Enemys.push_back(gameObject_);
+}
+
+void EnemyManager::EnemyErase(GameObject gameObject_)
+{
+	for (auto i = EnemyManager::m_Enemys.begin(); i != EnemyManager::m_Enemys.end(); i++) {
+		if (i->lock() == gameObject_) {
+			EnemyManager::m_Enemys.erase(i);
+			break;
+		}
 	}
+}
+
+std::vector<GameObject> EnemyManager::GetEnemy()
+{
+	return EnemyManager::m_Enemys;
 }

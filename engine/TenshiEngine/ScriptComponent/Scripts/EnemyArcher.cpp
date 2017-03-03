@@ -6,6 +6,7 @@
 #include "EnemyArrow.h"
 #include "Score.h"
 #include "UniqueObject.h"
+#include "EnemyManager.h"
 
 EnemyArcher::EnemyArcher()
 {
@@ -61,6 +62,7 @@ EnemyArcher::EnemyArcher()
 void EnemyArcher::ChildInitialize()
 {
 	Score::AddCountEnemy();
+	EnemyManager::EnemyPush(gameObject);
 	ModelObject = m_ModelObject;
 	m_MaxHp = hp;
 	m_Hp = hp;
@@ -77,6 +79,7 @@ void EnemyArcher::SoloAction()
 void EnemyArcher::ChildFinalize()
 {
 	Score::AddScore();
+	EnemyManager::EnemyErase(gameObject);
 	////gameObject->Disable();
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
