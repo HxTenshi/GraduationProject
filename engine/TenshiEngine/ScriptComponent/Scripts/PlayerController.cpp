@@ -45,6 +45,8 @@ struct AttackID {
 		FloatLow1FloatHigh,
 		FloatLow2FloatHigh,
 		FloatHigh1,
+		FloatHigh1Fall,
+		FloatHigh1End,
 		Special,
 		DogdeAttack,
 		SpeedJumpAttack,
@@ -64,7 +66,7 @@ struct AnimeID {
 		AttackLow1,
 		AttackLow2,
 		AttackLow3,
-		AttackHigh1___,//10î‘ÇÕégÇ¶Ç»Ç¢ÅH
+		AttackSpeedJumpEnd,
 		AttackHigh2,
 		AttackLow1End,
 		AttackLow2End,
@@ -99,6 +101,10 @@ struct AnimeID {
 		AttackSpeedJump,
 		AttackDodgeRoll,
 		WeaponDrop,
+
+		AttackFloatHighFall,
+		AttackFloatHighEnd,
+
 		Count,
 	};
 };
@@ -469,6 +475,7 @@ void PlayerController::AttackInitialize()
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
 		attack.MoutionID = AnimeID::AttackFloatHigh;
+		attack.EndID = AttackID::FloatHigh1Fall;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 
 
@@ -477,7 +484,7 @@ void PlayerController::AttackInitialize()
 		attack.Rotate = false;
 
 		attack.OnDamageStart = 0.0f / 30.0f;
-		attack.OnDamageEnd = 24.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
 
 
 		attack.UseGravity = false;
@@ -486,6 +493,54 @@ void PlayerController::AttackInitialize()
 		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
 
 		attack.DamageScale = 2.0f;
+		attack.AttackMove = 0.0f;
+		attack.DamageType = DamageType::HighDamage;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatHigh1Fall;
+		attack.NextLowID = -1;
+		attack.NextHighID = -1;
+		attack.MoutionID = AnimeID::AttackFloatHighFall;
+		attack.EndID = AttackID::FloatHigh1Fall;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.KnockbackEffectPower = 1.0f;
+		attack.Rotate = false;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+
+
+		attack.UseGravity = false;
+
+
+		//attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
+
+		attack.DamageScale = 2.0f;
+		attack.AttackMove = 0.0f;
+		attack.DamageType = DamageType::HighDamage;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatHigh1End;
+		attack.NextLowID = -1;
+		attack.NextHighID = -1;
+		attack.MoutionID = AnimeID::AttackFloatHighEnd;
+		attack.EndID = -1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.KnockbackEffectPower = 1.0f;
+		attack.Rotate = false;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 0.0f / 30.0f;
+
+
+		attack.UseGravity = true;
+
+
+		//attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
+
+		attack.DamageScale = 1.0f;
 		attack.AttackMove = 0.0f;
 		attack.DamageType = DamageType::HighDamage;
 		attacklist[attack.ID] = attack;
@@ -773,11 +828,13 @@ void PlayerController::AttackInitialize()
 
 		attacklist[attack.ID] = attack;
 
+	
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::FloatHigh1;
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
 		attack.MoutionID = AnimeID::AttackFloatHigh;
+		attack.EndID = AttackID::FloatHigh1Fall;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 
 
@@ -786,14 +843,65 @@ void PlayerController::AttackInitialize()
 		attack.Rotate = false;
 
 		attack.OnDamageStart = 0.0f / 30.0f;
-		attack.OnDamageEnd = 24.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+
+
+		attack.UseGravity = false;
+
+
+		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
 
 		attack.DamageScale = 2.0f;
 		attack.AttackMove = 0.0f;
 		attack.DamageType = DamageType::HighDamage;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatHigh1Fall;
+		attack.NextLowID = -1;
+		attack.NextHighID = -1;
+		attack.MoutionID = AnimeID::AttackFloatHighFall;
+		attack.EndID = AttackID::FloatHigh1Fall;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
 
-		attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
+		attack.KnockbackEffectPower = 1.0f;
+		attack.Rotate = false;
 
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 9999.0f / 30.0f;
+
+
+		attack.UseGravity = false;
+
+
+		//attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
+
+		attack.DamageScale = 2.0f;
+		attack.AttackMove = 0.0f;
+		attack.DamageType = DamageType::HighDamage;
+		attacklist[attack.ID] = attack;
+		//+++++++++++++++++++++++
+		attack.ID = AttackID::FloatHigh1End;
+		attack.NextLowID = -1;
+		attack.NextHighID = -1;
+		attack.MoutionID = AnimeID::AttackFloatHighEnd;
+		attack.EndID = -1;
+		attack.AttackTime = getMoutionTime(attack.MoutionID);
+
+		attack.KnockbackEffectPower = 1.0f;
+		attack.Rotate = false;
+
+		attack.OnDamageStart = 0.0f / 30.0f;
+		attack.OnDamageEnd = 0.0f / 30.0f;
+
+
+		attack.UseGravity = true;
+
+
+		//attack.SEID = (int)SoundManager::SoundSE_ID::Player_SW_FH1;
+
+		attack.DamageScale = 1.0f;
+		attack.AttackMove = 0.0f;
+		attack.DamageType = DamageType::HighDamage;
 		attacklist[attack.ID] = attack;
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::Special;
@@ -984,6 +1092,7 @@ void PlayerController::AttackInitialize()
 		attack.ID = AttackID::FloatHigh1;
 		attack.SEID = -1;
 		attacklist[attack.ID] = attack;
+
 		//+++++++++++++++++++++++
 		attack.ID = AttackID::Special;
 		attack.NextLowID = -1;
@@ -1683,11 +1792,7 @@ void PlayerController::AttackExcute()
 	m_CurrentAttack.OnDamageStart -= time;
 	m_CurrentAttack.OnDamageEnd -= time;
 
-	if (m_CurrentAttack.OnDamageStart <= 0.0f) {
-		if (auto w = GetWeapon()) {
-			w->SetAttackFlag(true);
-		}
-	}
+
 	if (m_CurrentAttack.OnDamageEnd <= 0.0f) {
 		if (auto w = GetWeapon()) {
 			w->SetAttackFlag(false);
@@ -1697,6 +1802,10 @@ void PlayerController::AttackExcute()
 
 			SetPlayerState(PlayerState::Dodge);
 			return;
+		}
+	}else if (m_CurrentAttack.OnDamageStart <= 0.0f) {
+		if (auto w = GetWeapon()) {
+			w->SetAttackFlag(true);
 		}
 	}
 
@@ -1721,6 +1830,16 @@ void PlayerController::AttackExcute()
 
 		return;
 	}
+
+	if (m_CurrentAttack.ID == AttackID::FloatHigh1Fall) {
+		if (m_IsGround) {
+			m_NextAttack = AttackID::FloatHigh1End;
+		}
+		else {
+			return;
+		}
+	}
+
 	m_MoveVelo = XMVectorZero();
 
 	if (m_NextAttack == 9999) {
