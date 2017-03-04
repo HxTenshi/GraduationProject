@@ -78,7 +78,6 @@ private:
 	SERIALIZE float hp;
 	SERIALIZE float m_AttackDamage;
 	SERIALIZE bool m_NotHeal;
-
 	float m_RotateAngle;
 	float m_Count;
 	bool m_RotateStart;

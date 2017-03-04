@@ -6,6 +6,8 @@
 #include "Score.h"
 #include "SoundManager.h"
 #include "EnemyManager.h"
+#include "OutputGimic.h"
+#include "hintDraw.h"
 EnemySandBag::EnemySandBag()
 {
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemySandBag::TrackingModeInitilize, this/*,std::placeholders::_1*/);
@@ -105,6 +107,7 @@ void EnemySandBag::Attack(GameObject player, COL_TYPE colType)
 bool EnemySandBag::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
 	m_Damage = damage_;
+	if (m_Damage > 80)m_Damage = 10000;
 	m_Accel = accelPower_;
 	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
 		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
@@ -327,7 +330,10 @@ void EnemySandBag::DeadUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
+		if(!m_Isend)
+		hintDraw::OnStart_(gameObject);
 		m_Isend = true;
+
 	}
 }
 

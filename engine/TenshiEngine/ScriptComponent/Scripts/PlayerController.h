@@ -121,6 +121,9 @@ public:
 	//特定のアクションを使用不可にする
 	void SetLockAction(LockAction::Enum action, bool lock);
 	bool GetLockAction(LockAction::Enum action);
+
+	void ClearCombo();
+
 private:
 	void AttackInitialize();
 
@@ -196,7 +199,6 @@ private:
 
 	void ComboAdvantage();
 	void AddCombo();
-	void ClearCombo();
 
 	void BoneMoveUpdate();
 

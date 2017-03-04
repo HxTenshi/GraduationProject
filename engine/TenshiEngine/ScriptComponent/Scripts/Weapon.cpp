@@ -251,7 +251,7 @@ void Weapon::ThrowAttack()
 	is_hand = false;
 	is_ground_hit = true;
 	ThrowAway();
-	
+
 }
 /// <summary>
 ///•Ší‚ðŽÌ‚Ä‚éˆ—
@@ -473,6 +473,14 @@ void Weapon::CreateEffect(WeaponEffectType type)
 	if (m_WeaponEffect) {
 		auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
 		scr->Action(type);
+	}
+}
+
+void Weapon::DeleteEffect(float time, float dtime)
+{
+	if (m_WeaponEffect) {
+		auto scr = m_WeaponEffect->GetScript<WeaponEffect>();
+		scr->DeleteParticle(time, dtime);
 	}
 }
 

@@ -128,6 +128,10 @@ public:
 	/// </summary>
 	void CreateEffect(WeaponEffectType type=WeaponEffectType::STRONGEF);
 	/// <summary>
+	///パーティクルが存在していた時にの強制削除
+	/// </summary>
+	void DeleteEffect(float time, float dtime=0.5f);
+	/// <summary>
 	///いじれるパラメータの取得
 	/// </summary>
 	funifuni::WeaponParametor GetWeaponParam();

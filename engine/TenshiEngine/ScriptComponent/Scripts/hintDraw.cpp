@@ -12,8 +12,15 @@
 #define MINIPOSX 1100
 #define MINIPOSY 1080
 
+GameObject hintDraw_ = NULL;
+
 void hintDraw::Initialize()
 {
+	if (!hintDraw_)hintDraw_ = this->gameObject;
+	else {
+		Hx::DestroyObject(this->gameObject);
+		return;
+	}
 	m_OnStart = true;
 	m_NowTextureNumber = 0;
 	m_NowTexture = m_Textures[m_NowTextureNumber];	
@@ -51,12 +58,30 @@ void hintDraw::Update()
 	}
 }
 
+void hintDraw::Finish()
+{
+	hintDraw_ = NULL;
+}
+
 bool hintDraw::OnStart(GameObject Sender)
 {
+	auto mc = gameObject->GetComponent<MaterialComponent>();
+	if (!mc)return false;
+	auto color = mc->mAlbedo;
+	color.w  = 1.0f;
+	mc->SetAlbedoColor(color);
+
 	m_OnStart = true;
 	m_NowTextureNumber++;
 	m_NowTexture = m_Textures[m_NowTextureNumber];
 	m_Timer = 0;
 	m_FirstFrame = true;
-	return false;
+	return true;
+}
+
+bool hintDraw::OnStart_(GameObject Sender)
+{
+	if (!hintDraw_)return false;
+	hintDraw_->GetScript<hintDraw>()->OnStart(Sender);
+	return true;
 }
