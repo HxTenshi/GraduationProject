@@ -58,3 +58,11 @@ std::vector<GameObject> EnemyManager::GetEnemy()
 {
 	return EnemyManager::m_Enemys;
 }
+
+void EnemyManager::EnemyAllDelete()
+{
+	for (auto i : EnemyManager::m_Enemys) {
+		Enemy::GetEnemy(i)->ChildNotCountFinalize();
+	}
+	EnemyManager::m_Enemys.clear();
+}

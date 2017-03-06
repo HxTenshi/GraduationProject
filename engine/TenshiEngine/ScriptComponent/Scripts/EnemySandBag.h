@@ -78,10 +78,12 @@ private:
 	SERIALIZE float hp;
 	SERIALIZE float m_AttackDamage;
 	SERIALIZE bool m_NotHeal;
+	SERIALIZE GameObject m_Mogitou;
 	float m_RotateAngle;
 	float m_Count;
 	bool m_RotateStart;
 	bool m_RotateEnd;
+	bool m_FirstFrame;
 	XMVECTOR m_TackleVec;
 	XMVECTOR m_TackleStartPos;
 	float m_WinceCount;

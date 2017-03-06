@@ -15,7 +15,9 @@ public:
 
 private:
 	//ƒƒ“ƒo•Ï”
-	SERIALIZE GameObject m_Mogitou;
-	SERIALIZE GameObject m_HintDraw;
 	bool m_ComboClear;
+	SERIALIZE PrefabAsset m_ComboTexture;
+	SERIALIZE float m_Time;
+	GameObject m_ComboTextureObject;
+	float m_Count;
 };

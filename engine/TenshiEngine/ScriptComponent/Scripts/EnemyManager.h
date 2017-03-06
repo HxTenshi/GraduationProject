@@ -17,5 +17,7 @@ public:
 	static void EnemyPush(GameObject gameObject_);
 	static void EnemyErase(GameObject gameObject_);
 	static std::vector<GameObject> GetEnemy();
+
+	static void EnemyAllDelete();
 private:
 };

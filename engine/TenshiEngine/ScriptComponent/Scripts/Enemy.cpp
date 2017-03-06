@@ -118,6 +118,13 @@ void Enemy::OnCollideExit(GameObject target) {
 	(void)target;
 }
 
+void Enemy::ChildNotCountFinalize()
+{
+	if(gameObject->GetComponent<CharacterControllerComponent>())
+		gameObject->RemoveComponent<CharacterControllerComponent>();
+	Hx::DestroyObject(this->gameObject);
+}
+
 /**************************************************アニメーションの処理****************************************************/
 void Enemy::AnimChange(int id, float speed, bool roop, bool forcingChange,bool sameChange)
 {
