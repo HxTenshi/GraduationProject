@@ -75,6 +75,7 @@ private:
 
 	State m_state;
 	int selectNum;
+	float m_intervalTime;
 
 	//false equal left,true equal right
 	bool is_arrow;
