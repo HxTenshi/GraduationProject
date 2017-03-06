@@ -54,14 +54,13 @@ namespace funifuni {
 		m_MoveObject = m_GameStartButton;
 		is_next = false;
 		is_bgm = false;
-
-		m_titleRogoInitPos = m_TitleRogo->mTransform->Position();
 	}
 
 	//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 	void TitleManager::Start() {
 		iup_flag = true;
 		m_state = State::state1;
+		selectNum = 0;
 		OnBGM();
 	}
 
@@ -77,28 +76,8 @@ namespace funifuni {
 
 		if (m_state == State::state1) {
 
-			for (auto i : m_Buttons) {
-				XMVECTOR tempPos = i.obj->mTransform->Position();
-				tempPos.y += 50.0f * Hx::DeltaTime()->GetDeltaTime();
-				if (tempPos.y > m_button_y) tempPos.y = m_button_y;
-
-				auto buttonMat = i.obj->GetComponent<MaterialComponent>();
-				XMFLOAT4 buttonColor = buttonMat->GetMaterialPtr(0)->GetAlbedo();
-				buttonColor.w += 50.0f * Hx::DeltaTime()->GetDeltaTime();
-				buttonColor.w = max(min(buttonColor.w, 1.0f), 0.0f);
-				buttonMat->GetMaterialPtr(0)->SetAlbedo(buttonColor);
-			}
-			XMVECTOR titleRogoPos = m_TitleRogo->mTransform->Position();
-			titleRogoPos.y -= 1.0f * Hx::DeltaTime()->GetDeltaTime();
-			if (titleRogoPos.y < m_titleRogoInitPos.y) titleRogoPos.y = m_titleRogoInitPos.y;
-
-			auto titleRogoMat = m_TitleRogo->GetComponent<MaterialComponent>();
-			XMFLOAT4 titleRogoColor = titleRogoMat->GetMaterialPtr(0)->GetAlbedo();
-			titleRogoColor.w += 1.0f * Hx::DeltaTime()->GetDeltaTime();
-			titleRogoColor.w = max(min(titleRogoColor.w, 1.0f), 0.0f);
-			titleRogoMat->GetMaterialPtr(0)->SetAlbedo(titleRogoColor);
-
-
+			m_canvas1->Enable();
+			m_canvas2->Disable();
 
 			if ((Input::Trigger(KeyCode::Key_LEFT) || isLeftLS) && !is_next) {
 				is_next = true;
@@ -128,30 +107,24 @@ namespace funifuni {
 			}
 		}
 		else if (m_state == State::state2) {
-			for (auto i : m_Buttons) {
-				XMVECTOR tempPos = i.obj->mTransform->Position();
-				tempPos.y -= 50.0f * Hx::DeltaTime()->GetDeltaTime();
-				if (tempPos.y < m_button_y - 500.0f) tempPos.y = m_button_y;
 
-				auto buttonMat = i.obj->GetComponent<MaterialComponent>();
-				XMFLOAT4 buttonColor = buttonMat->GetMaterialPtr(0)->GetAlbedo();
-				buttonColor.w -= 1.0f * Hx::DeltaTime()->GetDeltaTime();
-				buttonColor.w = max(min(buttonColor.w, 1.0f), 0.0f);
-				buttonMat->GetMaterialPtr(0)->SetAlbedo(buttonColor);
+			m_canvas1->Disable();
+			m_canvas2->Enable();
+
+			if ((Input::Trigger(KeyCode::Key_LEFT) || Input::Trigger(KeyCode::Key_RIGHT) || isLeftLS) && !is_next) {
+				selectNum++;
+				OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
 			}
-			XMVECTOR titleRogoPos = m_TitleRogo->mTransform->Position();
-			titleRogoPos.y += 50.0f * Hx::DeltaTime()->GetDeltaTime();
-			if (titleRogoPos.y < m_titleRogoInitPos.y + 500.0f) titleRogoPos.y = m_titleRogoInitPos.y;
 
-			auto titleRogoMat = m_TitleRogo->GetComponent<MaterialComponent>();
-			XMFLOAT4 titleRogoColor = titleRogoMat->GetMaterialPtr(0)->GetAlbedo();
-			titleRogoColor.w -= 1.0f * Hx::DeltaTime()->GetDeltaTime();
-			titleRogoColor.w = max(min(titleRogoColor.w, 1.0f), 0.0f);
-			titleRogoMat->GetMaterialPtr(0)->SetAlbedo(titleRogoColor);
+			int temp = selectNum % 2;
 
-			if (isCansel) {
-				m_state = State::state1;
-			}
+			XMVECTOR kakoiPos = XMVectorSet(500.0f + 100.0f * temp, 400.0f,0.0f,0.0f);
+			m_kakoi->mTransform->Position(kakoiPos);
+
+			//決定
+			if (isEnter) Select2(temp);
+			//キャンセル
+			if (isCansel) m_state = State::state1;
 		}
 	}
 
@@ -278,11 +251,26 @@ namespace funifuni {
 
 		switch (m_button_state)
 		{
-		case TitleButtonRoll::GameStart: fader->OnSceneChnage(gameStartScenePass);//m_state = State::state2;
+		case TitleButtonRoll::GameStart: m_state = State::state2;//fader->OnSceneChnage(gameStartScenePass);
 			break;
 		case TitleButtonRoll::Config: fader->OnSceneChnage(configScenePass);
 			break;
 		case TitleButtonRoll::GameEnd: Hx::Shutdown();
+			break;
+		default:
+			break;
+		}
+	}
+
+	void TitleManager::Select2(int num){
+		if (!m_fader) return;
+		auto fader = m_fader->GetScript<Fader>();
+
+		switch (num)
+		{
+		case 0:	fader->OnSceneChnage(turorialScenePass);
+			break;
+		case 1:	fader->OnSceneChnage(gameStartScenePass);
 			break;
 		default:
 			break;

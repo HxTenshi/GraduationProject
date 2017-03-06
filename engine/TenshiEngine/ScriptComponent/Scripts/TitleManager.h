@@ -49,6 +49,7 @@ public:
 	void SetMoveObject();
 	void SetArrowPosition();
 	void Select();
+	void Select2(int num);
 	void OnBGM();
 	void OnSE(SoundManager::SoundSE_ID::Enum seID);
 private:
@@ -59,9 +60,6 @@ private:
 		GameObject m_ConfigButton;
 	SERIALIZE
 		GameObject m_GameEndButton;
-	SERIALIZE
-		GameObject m_TitleRogo;
-	XMVECTOR m_titleRogoInitPos;
 	
 	//移動中のオブジェクト
 	funifuni::TitleMoveButton m_MoveObject;
@@ -76,6 +74,7 @@ private:
 	TitleButtonRoll m_button_state;
 
 	State m_state;
+	int selectNum;
 
 	//false equal left,true equal right
 	bool is_arrow;
@@ -87,9 +86,15 @@ private:
 	bool is_bgm;
 
 	SERIALIZE
-		GameObject m_Canvas;
+		GameObject m_canvas1;
+	SERIALIZE
+		GameObject m_canvas2;
+	SERIALIZE
+		GameObject m_kakoi;
 	SERIALIZE
 		std::string gameStartScenePass;
+	SERIALIZE
+		std::string turorialScenePass;
 	SERIALIZE
 		std::string configScenePass;
 	SERIALIZE
