@@ -57,7 +57,7 @@ void WeaponControl::HitActor(GameObject target,GameObject weapon)
 	if (weapon) {
 		if (auto w = weapon->GetScript<Weapon>()) {
 			Hx::Debug()->Log("ƒfƒŠ[‚Æ");
-			w->DeleteEffect(0.9f);
+			w->DeleteEffect(0.5f);
 		}
 	}
 	if (target->GetLayer() == 3){

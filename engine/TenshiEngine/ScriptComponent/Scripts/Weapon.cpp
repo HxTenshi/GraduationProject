@@ -117,6 +117,8 @@ void Weapon::OnCollideBegin(GameObject target){
 				//Hx::Debug()->Log("Stage‚É“–‚½‚Á‚½");
 				if (auto weapon = mWeaponControl->GetScript<WeaponControl>()) {
 					//Hx::Debug()->Log("ˆÚ“®‰Â”\");
+					Hx::Debug()->Log("DeleteEffect");
+					DeleteEffect(0.5f);
 					WeaponUsePhysX();
 					weapon->Hit();
 					//weapon->HitStage(target, gameObject, gameObject->GetComponent<PhysXComponent>());
