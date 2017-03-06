@@ -55,19 +55,25 @@ EnemySandBag::EnemySandBag()
 }
 void EnemySandBag::ChildInitialize()
 {
-	EnemyManager::EnemyPush(gameObject);
 	m_Hp = hp;
 	m_MaxHp = hp;
 	ModelObject = m_ModelObject;
 	m_StartForward = gameObject->mTransform->Forward();
 	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
 	m_StartPos = gameObject->mTransform->WorldPosition();
+	m_FirstFrame = true;
 }
 
 void EnemySandBag::SoloAction()
 {
 	if (m_BattleModeParam.id != BATTLEACTION::WINCEACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION && !m_NotHeal) {
 		m_Hp = hp;
+	}
+
+	if (m_FirstFrame) {
+		Score::AddCountEnemy();
+		EnemyManager::EnemyPush(gameObject);
+		m_FirstFrame = false;
 	}
 }
 
@@ -129,8 +135,9 @@ bool EnemySandBag::LostPlayer()
 
 void EnemySandBag::ChildFinalize()
 {
-	EnemyManager::EnemyErase(gameObject);
 	////gameObject->Disable();
+	Score::AddScore();
+	EnemyManager::EnemyErase(gameObject);
 	Hx::Debug()->Log(gameObject->Name());
 	Hx::DestroyObject(this->gameObject);
 }
@@ -330,8 +337,10 @@ void EnemySandBag::DeadUpdate()
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (!anim)return;
 	if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
-		if(!m_Isend)
-		hintDraw::OnStart_(gameObject);
+		if (!m_Isend) {
+			hintDraw::OnStart_(gameObject);
+			Hx::DestroyObject(m_Mogitou);
+		}
 		m_Isend = true;
 
 	}

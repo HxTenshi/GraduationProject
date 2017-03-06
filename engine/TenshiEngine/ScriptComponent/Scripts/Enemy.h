@@ -143,6 +143,7 @@ public:
 	virtual void Attack(GameObject player,COL_TYPE colType) {};
 	virtual bool Damage(float damage_, BATTLEACTION::Enum winceType_,XMVECTOR accelPower_) { return false; };
 	virtual void ChildFinalize() {}
+	virtual void ChildNotCountFinalize();
 	virtual bool DiscoveryPlayer() { return false; };
 	virtual bool LostPlayer() { return false;};
 
