@@ -16,7 +16,7 @@
 
 #include "Score.h"
 #include "SoundManager.h"
-
+#include "ScenarioManager.h"
 
 struct ReisMode {
 	enum Enum {
@@ -287,6 +287,7 @@ void reis::Start(){
 		if(m_CurrentAnimeID != AnimeID::Dead){
 			m_AttackStage = AttackStage();
 			SoundManager::PlaySE(SoundManager::SoundSE_ID::Reis_Dead, gameObject->mTransform->WorldPosition());
+			ScenarioManager::SetFlag(Scenario::S3_ButtleReis_End);
 		}
 		ChangeAnime(AnimeID::Dead);
 		if (m_AttackStage.stage == 0) {
@@ -656,6 +657,7 @@ void reis::BattleStart()
 				com->Enable();
 			}
 		}
+		ScenarioManager::SetFlag(Scenario::S3_ButtleReis);
 	}
 }
 

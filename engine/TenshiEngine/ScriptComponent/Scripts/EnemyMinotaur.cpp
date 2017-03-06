@@ -11,6 +11,7 @@
 #include "SoundManager.h"
 #include "Score.h"
 #include "EnemyManager.h"
+#include "ScenarioManager.h"
 //èdóÕÇ™íxÇ¢
 EnemyMinotaur::EnemyMinotaur()
 {
@@ -339,6 +340,7 @@ void EnemyMinotaur::DeadInitilize()
 	AnimChange(ANIM_DYING, 10.0f, false, true);
 	is_dead_anim_end = false;
 	//[SOUND]
+	ScenarioManager::SetFlag(Scenario::S2_ButtleMinotaur_End);
 }
 
 void EnemyMinotaur::DeadUpdate()
@@ -388,6 +390,7 @@ void EnemyMinotaur::EnemyEmergence(bool flag)
 	m_anim_state = ANIM_F_WALK;
 	m_roucine_module.SetAnimState(ANIM_F_WALK);
 	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+	ScenarioManager::SetFlag(Scenario::S2_ButtleMinotaur);
 }
 
 void EnemyMinotaur::HuntRoutine()

@@ -109,7 +109,10 @@ public:
 			GamePlay,
 			GameClear,
 			GameOver,
-			Credit
+			Credit,
+			None,
+			Minotaur,
+			Reis,
 		};
 	};
 

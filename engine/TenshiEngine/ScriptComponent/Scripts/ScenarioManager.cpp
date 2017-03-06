@@ -13,13 +13,13 @@ void ScenarioManager::Initialize(){
 		SoundManager::PlayBGM(SoundManager::SoundBGM_ID::GamePlay);
 	};
 	m_Scenario[Scenario::S2_ButtleMinotaur].Action = []() {
-		//SoundManager::PlayBGM(SoundManager::SoundBGM_ID::GamePlay);
+		SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Minotaur);
 	};
 	m_Scenario[Scenario::S2_ButtleMinotaur_End].Action = []() {
-		//SoundManager::PlayBGM(SoundManager::SoundBGM_ID::GamePlay);
+		SoundManager::PlayBGM(SoundManager::SoundBGM_ID::None);
 	};
 	m_Scenario[Scenario::S3_ButtleReis].Action = []() {
-		//SoundManager::PlayBGM(SoundManager::SoundBGM_ID::GamePlay);
+		SoundManager::PlayBGM(SoundManager::SoundBGM_ID::Reis);
 	};
 }
 

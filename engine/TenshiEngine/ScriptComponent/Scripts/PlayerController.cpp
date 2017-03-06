@@ -510,6 +510,7 @@ void PlayerController::AttackInitialize()
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 9999.0f / 30.0f;
 
+		attack.SEID = -1;
 
 		attack.UseGravity = true;
 
@@ -865,6 +866,8 @@ void PlayerController::AttackInitialize()
 
 		attack.KnockbackEffectPower = 1.0f;
 		attack.Rotate = false;
+
+		attack.SEID = -1;
 
 		attack.OnDamageStart = 0.0f / 30.0f;
 		attack.OnDamageEnd = 9999.0f / 30.0f;
@@ -1817,11 +1820,11 @@ void PlayerController::AttackExcute()
 
 	if (m_CurrentAttack.ID == AttackID::FloatHigh1Fall) {
 		if (m_IsGround) {
+			m_CurrentAttack.AttackTime = 0.0f;
 			m_NextAttack = AttackID::FloatHigh1End;
 		}
 		else {
 			mJump.y = 0.0f;
-			m_CurrentAttack.AttackTime = 0.0f;
 		}
 	}
 
@@ -3235,7 +3238,7 @@ void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 					if (t == Weapon::HitState::Damage) {
 						AddSpecial(m_CurrentAttack.AddSpecial);
 						AddCombo();
-						if (m_CurrentAttack.DamageType != DamageType::LowDamage) {
+						if (m_CurrentAttack.DamageType == DamageType::LowDamage) {
 							if (m_CurrentWeaponType == (int)WeaponType::Rance) {
 								SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_R_Low_Hit, gameObject->mTransform->WorldPosition());
 							}
@@ -3243,7 +3246,7 @@ void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 								SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_SW_Low_Hit, gameObject->mTransform->WorldPosition());
 							}
 						}
-						if (m_CurrentAttack.DamageType != DamageType::HighDamage) {
+						if (m_CurrentAttack.DamageType == DamageType::HighDamage) {
 							SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_SW_High_Hit, gameObject->mTransform->WorldPosition());
 						}
 
