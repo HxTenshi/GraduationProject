@@ -8,6 +8,7 @@
 #include "EnemyManager.h"
 #include "OutputGimic.h"
 #include "hintDraw.h"
+#include "ObjectGenerator.h"
 EnemySandBag::EnemySandBag()
 {
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemySandBag::TrackingModeInitilize, this/*,std::placeholders::_1*/);
@@ -339,7 +340,9 @@ void EnemySandBag::DeadUpdate()
 	if (anim->IsAnimationEnd(ANIM_ID::ANIM_DOWN)) {
 		if (!m_Isend) {
 			hintDraw::OnStart_(gameObject);
+			auto mogitou = m_Mogitou->GetScript<ObjectGenerator>()->GetGeneratorObject();
 			Hx::DestroyObject(m_Mogitou);
+			Hx::DestroyObject(mogitou);
 		}
 		m_Isend = true;
 
