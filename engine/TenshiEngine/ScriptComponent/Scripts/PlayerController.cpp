@@ -1860,12 +1860,12 @@ void PlayerController::AttackExcute()
 		if (m_IsGround) {
 			if (m_CurrentAttack.AttackTime > 0.5f) {
 				m_CurrentAttack.AttackTime = 0.5f;
-				m_NextAttack = AttackID::FloatHigh1End;
 
 				if (auto w = GetWeapon()) {
 					w->DeleteEffect(0.5f);
 				}
 			}
+			m_NextAttack = AttackID::FloatHigh1End;
 		}
 		else {
 			mJump.y = 0.0f;
