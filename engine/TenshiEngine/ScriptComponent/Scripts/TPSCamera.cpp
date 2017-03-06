@@ -2,6 +2,7 @@
 #include "h_standard.h"
 #include "h_component.h"
 #include "Game/Component/CharacterControllerComponent.h"
+#include "UniqueObject.h"
 
 TPSCamera::TPSCamera(){
 	mTarget = NULL;
@@ -40,6 +41,30 @@ void TPSCamera::Start(){
 	//
 	//	m_CharacterControllerComponent->Teleport(campos);
 	//}
+
+	if (auto player = UniqueObject::GetPlayer()) {
+
+		auto nf = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+		auto up = XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f);
+		auto nl = XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f);
+		auto f1 = player->mTransform->Forward();
+		f1.y = 0.0f;
+		f1 = XMVector3Normalize(f1);
+		float n = 1;
+		if (XMVector3Dot(nf, f1).x > 0.0f) {
+			n = -1;
+			if (XMVector3Dot(nl, f1).x > 0.0f) {
+				n *= -1;
+			}
+		}
+		else {
+			if (XMVector3Dot(nl, f1).x < 0.0f) {
+				n *= -1;
+			}
+		}
+
+		mRotate.y = acos(max(min(XMVector3Dot(nf, f1).x, 1.0f), -1.0f)) * n;
+	}
 }
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·

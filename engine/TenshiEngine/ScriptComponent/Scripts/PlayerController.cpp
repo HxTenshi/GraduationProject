@@ -503,7 +503,7 @@ void PlayerController::AttackInitialize()
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
 		attack.MoutionID = AnimeID::AttackFloatHighFall;
-		attack.EndID = AttackID::FloatHigh1Fall;
+		attack.EndID = AttackID::FloatHigh1End;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 
 		attack.KnockbackEffectPower = 1.0f;
@@ -863,7 +863,7 @@ void PlayerController::AttackInitialize()
 		attack.NextLowID = -1;
 		attack.NextHighID = -1;
 		attack.MoutionID = AnimeID::AttackFloatHighFall;
-		attack.EndID = AttackID::FloatHigh1Fall;
+		attack.EndID = AttackID::FloatHigh1End;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 
 		attack.KnockbackEffectPower = 1.0f;
@@ -1858,8 +1858,14 @@ void PlayerController::AttackExcute()
 
 	if (m_CurrentAttack.ID == AttackID::FloatHigh1Fall) {
 		if (m_IsGround) {
-			m_CurrentAttack.AttackTime = 0.0f;
-			m_NextAttack = AttackID::FloatHigh1End;
+			if (m_CurrentAttack.AttackTime > 0.5f) {
+				m_CurrentAttack.AttackTime = 0.5f;
+				m_NextAttack = AttackID::FloatHigh1End;
+
+				if (auto w = GetWeapon()) {
+					w->DeleteEffect(0.5f);
+				}
+			}
 		}
 		else {
 			mJump.y = 0.0f;
@@ -3302,6 +3308,12 @@ void PlayerController::setWeapon(GameObject weapon,bool FastCatch)
 						}
 						if (m_CurrentAttack.DamageType == DamageType::HighDamage) {
 							SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_SE_SW_High_Hit, gameObject->mTransform->WorldPosition());
+						}
+
+						if (w->isBreak()) {
+							if (m_NoDamageUI.IsLoad()) {
+								Hx::Instance(m_NoDamageUI);
+							}
 						}
 
 					}

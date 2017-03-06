@@ -283,6 +283,9 @@ private:
 	SERIALIZE
 	GameObject m_BoneHips;
 
+	SERIALIZE
+		PrefabAsset m_NoDamageUI;
+
 	//ゲームオーバー
 	SERIALIZE
 	GameObject m_ChangeSceneGameOver;

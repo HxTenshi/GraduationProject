@@ -13,8 +13,8 @@ void PlayerUI::Initialize(){
 	m_SP_Timer = 0.0f;
 	m_HP_Timer = 0.0f;
 
-	m_HP_Color = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-	m_HP_Color_Red = XMFLOAT4(1.0f, 4.0f, 2.0f, 1.0f);
+	m_HP_Color = XMFLOAT4(0.2f, 0.2f, 0.8f, 1.0f);
+	m_HP_Color_Red = XMFLOAT4(0.8f, 0.4f, 0.2f, 1.0f);
 	m_SP_Color = XMFLOAT4(0.5f, 0.5f, 0.0f, 1.0f);
 	m_HP_XOffset = 0.0f;
 	m_SP_XOffset = 0.0f;
