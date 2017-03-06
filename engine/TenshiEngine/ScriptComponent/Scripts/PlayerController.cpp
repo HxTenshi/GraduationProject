@@ -104,6 +104,7 @@ struct AnimeID {
 
 		AttackFloatHighFall,
 		AttackFloatHighEnd,
+		SpeedJump_GetJump,
 
 		Count,
 	};
@@ -209,6 +210,7 @@ void PlayerController::Initialize(){
 	m_JumpLowAttack = false;
 	m_JumpHighAttack = false;
 
+	m_ChangeWeapon = false;
 	m_PlayerStateLock = false;
 
 	m_HitCount = 0;
@@ -1285,6 +1287,9 @@ void PlayerController::PlayKnockBack(const XMVECTOR& attackVect, KnockBack::Enum
 
 void PlayerController::Damage(float damage, const XMVECTOR& attackVect, KnockBack::Enum knockBackLevel,bool DodgeInevitable, bool GuardInevitable)
 {
+	if (m_PlayerState == PlayerState::Movie) {
+		return;
+	}
 	if (m_CurrentAttack.ID == AttackID::Special) {
 		return;
 	}
@@ -1447,6 +1452,7 @@ void PlayerController::SpeedJumpWeaponCatch(GameObject weapon,bool attack)
 	else {
 		mJump.y += m_JumpPower * 2;
 		mode = PlayerState::Free;
+		changeAnime(AnimeID::SpeedJump_GetJump);
 	}
 	if (weapon) {
 		//if (XMVector3Length(m_MoveVelo).x != 0.0f) {
@@ -1542,6 +1548,14 @@ void PlayerController::FreeEnter()
 void PlayerController::FreeExcute()
 {
 
+	if (m_ChangeWeapon && m_CurrentAnimeID != AnimeID::WeaponDrop) {
+		throwAway();
+		if (m_tempWeapon) {
+			//選択した武器をセット
+			setWeapon(m_tempWeapon);
+		}
+		m_ChangeWeapon = false;
+	}
 
 	if (m_CurrentAnimeID == AnimeID::Throw) {
 		if (m_Camera) {
@@ -1550,6 +1564,21 @@ void PlayerController::FreeExcute()
 		if (auto anime = m_AnimeModel->GetComponent<AnimationComponent>()) {
 			if (anime->IsAnimationEnd(AnimeID::Throw)) {
 				changeAnime(AnimeID::Idle);
+			}
+		}
+	}
+	else if (m_CurrentAnimeID == AnimeID::WeaponDrop) {
+		if (auto anime = m_AnimeModel->GetComponent<AnimationComponent>()) {
+			if (anime->IsAnimationEnd(AnimeID::WeaponDrop)) {
+				changeAnime(AnimeID::Idle);
+				if (m_ChangeWeapon) {
+					throwAway();
+					if (m_tempWeapon) {
+						//選択した武器をセット
+						setWeapon(m_tempWeapon);
+					}
+				}
+				m_ChangeWeapon = false;
 			}
 		}
 	}
@@ -1586,7 +1615,7 @@ void PlayerController::FreeExcute()
 	//	throwAway();
 	//}
 
-	if (BindInput(PlayerInput::Guard)) {
+	if (BindInput(PlayerInput::Guard) && !m_ChangeWeapon) {
 		guard();
 	}
 	if (IsGuard()) {
@@ -1596,13 +1625,22 @@ void PlayerController::FreeExcute()
 	//{
 	//	freeAnimeUpdate();
 	//}
-	if (attack()) {
+	if (attack() && !m_ChangeWeapon) {
 		SetPlayerState(PlayerState::Attack);
 	}
 }
 
 void PlayerController::FreeExit()
 {
+	if (m_ChangeWeapon) {
+		throwAway();
+		if (m_tempWeapon) {
+			//選択した武器をセット
+			setWeapon(m_tempWeapon);
+		}
+		m_ChangeWeapon = false;
+	}
+
 	if (mAimController && m_Camera) {
 
 		if (auto camera = m_Camera->GetScript<TPSCamera>()) {
@@ -2786,11 +2824,11 @@ void PlayerController::throwAway(GameObject target,bool isMove)
 		else{
 			if (m_LockActions[LockAction::DropWeapon])return;
 			if (auto weapon = weaponHand->GetHandWeapon()) {
-				if (auto w = weapon->GetScript<Weapon>()) {
-					if (!w->isBreak()) {
-						changeAnime(AnimeID::WeaponDrop);
-					}
-				}
+				//if (auto w = weapon->GetScript<Weapon>()) {
+				//	if (!w->isBreak()) {
+				//		changeAnime(AnimeID::WeaponDrop);
+				//	}
+				//}
 				weaponHand->ThrowAway();
 
 				SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Drop, gameObject->mTransform->WorldPosition());
@@ -2921,6 +2959,7 @@ void PlayerController::lockOn()
 #include "Enemy.h"
 void PlayerController::GettingWeapon(){
 
+	if (m_ChangeWeapon)return;
 	//早期リターン
 	if (!m_WeaponHand) return;
 	if (!m_GetWeapon) return;
@@ -3018,11 +3057,25 @@ camera->SetLookTarget(NULL);
 		//		return;
 		//	};
 		//}
-		throwAway();
-		if (m_tempWeapon) {
-			//選択した武器をセット
-			setWeapon(m_tempWeapon);
+		//throwAway();
+		//if (m_tempWeapon) {
+		//	//選択した武器をセット
+		//	setWeapon(m_tempWeapon);
+		//}
+		if (GetWeapon() && m_IsGround) {
+			changeAnime(AnimeID::WeaponDrop);
+			m_ChangeWeapon = true;
+			mJump.x = 0.0f;
+			mJump.z = 0.0f;
 		}
+		else {
+			throwAway();
+			if (m_tempWeapon) {
+				//選択した武器をセット
+				setWeapon(m_tempWeapon);
+			}
+		}
+
 		//カウントをリセット
 		m_InputF_Time = 0.0f;
 		//スローモード解除
@@ -3043,6 +3096,7 @@ camera->SetLookTarget(NULL);
 void PlayerController::throwWeapon()
 {
 	if (m_LockActions[LockAction::ThrowWeapon])return;
+	if (m_ChangeWeapon)return;
 
 	//10 / 29 更新
 	if (mMoveAvility) {
@@ -3341,7 +3395,9 @@ void PlayerController::freeAnimeUpdate()
 
 	if (!m_IsGround) {
 		if (mJump.y > 0.0f) {
-			changeAnime(AnimeID::Jump);
+			if (m_CurrentAnimeID != AnimeID::SpeedJump_GetJump) {
+				changeAnime(AnimeID::Jump);
+			}
 		}
 		else {
 			changeAnime(AnimeID::Fall);

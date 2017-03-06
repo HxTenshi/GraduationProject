@@ -327,6 +327,7 @@ private:
 	bool m_ChangeAnime;
 	float m_CurrentAnime_Weight;
 
+	bool m_ChangeWeapon;
 	bool m_FreeAIMMode;
 	bool m_MapShiftFlag;
 	bool m_GoingWeapon;
