@@ -61,6 +61,7 @@ namespace funifuni {
 		iup_flag = true;
 		m_state = State::state1;
 		selectNum = 0;
+		m_intervalTime = 0.0f;
 		OnBGM();
 	}
 
@@ -111,14 +112,21 @@ namespace funifuni {
 			m_canvas1->Disable();
 			m_canvas2->Enable();
 
-			if ((Input::Trigger(KeyCode::Key_LEFT) || Input::Trigger(KeyCode::Key_RIGHT) || isLeftLS) && !is_next) {
+			const float IntervalTime = 0.3f;
+			m_intervalTime += 1.0f * Hx::DeltaTime()->GetDeltaTime();
+			m_intervalTime = min(m_intervalTime, IntervalTime);
+			bool isInterval = m_intervalTime >= IntervalTime;
+			bool isBool = (isLeftLS || isRightLS) && isInterval;
+
+			if (Input::Trigger(KeyCode::Key_LEFT) || Input::Trigger(KeyCode::Key_RIGHT) || isBool) {
+				m_intervalTime = 0.0f;
 				selectNum++;
 				OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
 			}
 
 			int temp = selectNum % 2;
 
-			XMVECTOR kakoiPos = XMVectorSet(500.0f + 100.0f * temp, 400.0f,0.0f,0.0f);
+			XMVECTOR kakoiPos = XMVectorSet(660.0f + 500.0f * temp, 440.0f,0.0f,0.0f);
 			m_kakoi->mTransform->Position(kakoiPos);
 
 			//Œˆ’è
