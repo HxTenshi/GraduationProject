@@ -31,6 +31,8 @@ private:
 
 	bool mBreak;
 
+	SERIALIZE bool mIsBossAction;
+
 	SERIALIZE float m_WalkTime;
 
 	SERIALIZE bool m_UseGenConb;

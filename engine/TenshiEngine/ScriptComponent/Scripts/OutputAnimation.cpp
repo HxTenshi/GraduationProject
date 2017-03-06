@@ -20,7 +20,11 @@ void OutputAnimation::Update()
 	{
 		mIsEnd = true;
 
-		if (mTargetBossGen) {
+		if (mTargetBossGen && mIsBossAction) {
+			auto idle = m_Target->GetComponent<AnimationComponent>()->GetAnimetionParam(18);
+			idle.mWeight = 0;
+			mPlayAnimation->SetAnimetionParam(18, idle);
+
 			auto mino = m_Target->mTransform->GetParent();
 			Hx::Debug()->Log("Call : ミノタウロスの初期化");
 			AnimeParam ap;
@@ -29,6 +33,7 @@ void OutputAnimation::Update()
 			ap.mLoop = false;
 			mPlayAnimation->SetAnimetionParam(17, ap);
 			mino->GetScript<EnemyMinotaur>()->EnemyEmergence(false);
+			return;
 		}
 
 		if (m_UseEndAction) {
@@ -68,9 +73,42 @@ bool OutputAnimation::OnStart(GameObject Sender)
 		Hx::Debug()->Log("1");
 		if (mTargetBossGen->GetScript<ObjectGenerator>()->GetGeneratorObject())
 		{
-			m_Target = mTargetBossGen->GetScript<ObjectGenerator>()->GetGeneratorObject();
-			m_Target = m_Target->mTransform->Children().front()->mTransform->Children().front();
+			auto target = mTargetBossGen->GetScript<ObjectGenerator>()->GetGeneratorObject();
+			m_Target = target->mTransform->Children().front()->mTransform->Children().front();
 			Hx::Debug()->Log("Call Mino");
+
+			if (mIsBossAction) {
+				auto anime = m_Target->GetComponent<AnimationComponent>();
+				auto idle = anime->GetAnimetionParam(18);
+				idle.mWeight = 0;
+				anime->SetAnimetionParam(18, idle);
+				Hx::Debug()->Log("ここで確認"+std::to_string(anime->GetAnimetionParam(18).mWeight));
+
+				//Hx::Debug()->Log("ここでスタンプ");
+				//auto stamp = anime->GetAnimetionParam(17);
+				//stamp.mWeight = 1;
+				//anime->SetAnimetionParam(17, stamp);
+				//Hx::Debug()->Log("ここで確認" + std::to_string(anime->GetAnimetionParam(17).mWeight));
+				//mIsEnd = false;
+
+				auto mPlayAnimation = m_Target->GetComponent<AnimationComponent>();
+				if (!mPlayAnimation)return false;
+				auto p = mPlayAnimation->GetAnimetionParam(mPlayAnimationID);
+				p.mTime = mTime;
+				p.mWeight = mWeight;
+				p.mTimeScale = mTimeScale;
+				p.mLoop = false;
+				mPlayAnimation->SetAnimetionParam(mPlayAnimationID, p);
+
+				Hx::Debug()->Log("Play ID : " + std::to_string(mPlayAnimationID));
+				Hx::Debug()->Log("ここで確認" + std::to_string(mPlayAnimation->GetAnimetionParam(mPlayAnimationID).mWeight));
+
+				return false;
+			}
+
+		}
+		else {
+			Hx::Debug()->Log("まだボスがいない　");
 		}
 	}
 
@@ -79,6 +117,7 @@ bool OutputAnimation::OnStart(GameObject Sender)
 	
 	
 	mIsEnd = false;
+
 	Hx::Debug()->Log(m_Target->Name());
 	auto mPlayAnimation = m_Target->GetComponent<AnimationComponent>();
 	if (!mPlayAnimation)return false;
