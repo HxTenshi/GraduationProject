@@ -2776,6 +2776,9 @@ bool PlayerController::attack()
 	if (!weaponHand || !weaponHand->ActionFree()) {
 		return false;
 	}
+	if (!GetWeapon()) {
+		return false;
+	}
 	if (m_IsGround) {
 		if (BindInput(PlayerInput::ATK_S)) {
 			if (GetSpecial() >= m_SpecialPowerMax) {
@@ -3447,8 +3450,11 @@ void PlayerController::freeAnimeUpdate()
 				}
 			}
 			else {
+				if (m_CurrentAnimeID != AnimeID::Move && m_CurrentAnimeID != AnimeID::RMove) {
+					m_MoveSETimer = 5.0f/30.0f;
+				}
 				m_MoveSETimer += Hx::DeltaTime()->GetDeltaTime();
-				if (m_MoveSETimer >= 0.5f) {
+				if (m_MoveSETimer > (8.5f / 30.0f)) {
 					m_MoveSETimer = 0.0f;
 					SoundManager::PlaySE(SoundManager::SoundSE_ID::Player_Run2, gameObject->mTransform->WorldPosition());
 				}

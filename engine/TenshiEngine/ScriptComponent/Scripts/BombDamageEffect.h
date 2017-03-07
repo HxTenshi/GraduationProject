@@ -22,7 +22,6 @@ private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE float m_Damage;
 	SERIALIZE float m_KnockBackPower;
-	SERIALIZE bool m_DontPlaySE;
 	bool m_PlaySE;
 	bool m_dead;
 };

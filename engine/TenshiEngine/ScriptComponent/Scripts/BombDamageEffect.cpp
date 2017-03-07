@@ -7,6 +7,7 @@
 //生成時に呼ばれます（エディター中も呼ばれます）
 void BombDamageEffect::Initialize(){
 	m_dead = false;
+	m_PlaySE = true;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -16,9 +17,8 @@ void BombDamageEffect::Start(){
 
 //毎フレーム呼ばれます
 void BombDamageEffect::Update(){
-	if (m_PlaySE && !m_DontPlaySE) {
+	if (m_PlaySE) {
 		m_PlaySE = false;
-
 		SoundManager::PlaySE(SoundManager::SoundSE_ID::Bomb2, gameObject->mTransform->WorldPosition());
 	}
 	if (m_dead) {
