@@ -52,6 +52,8 @@ public:
 	void Select2(int num);
 	void OnBGM();
 	void OnSE(SoundManager::SoundSE_ID::Enum seID);
+
+	void ArrowFlash();
 private:
 	//ÉÅÉìÉoïœêî
 	SERIALIZE
@@ -100,5 +102,13 @@ private:
 		std::string configScenePass;
 	SERIALIZE
 		GameObject m_fader;
+
+	SERIALIZE GameObject m_RightArrow;
+	SERIALIZE GameObject m_LeftArrow;
+	SERIALIZE float m_arrow_flash_speed;
+
+	bool flash_swich;
+
+	SERIALIZE GameObject m_overray_exit_option;
 };
 
