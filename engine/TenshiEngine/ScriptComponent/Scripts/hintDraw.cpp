@@ -12,7 +12,12 @@
 #define MINIPOSX 1100
 #define MINIPOSY 1080
 
-GameObject hintDraw_ = NULL;
+static GameObject hintDraw_ = NULL;
+
+float lerp(float x, float y, float s) {
+	auto s_ = min(1.0f, max(0.0f, s));
+	return x * (1.0f - s_) + y * s_;
+}
 
 void hintDraw::Initialize()
 {
@@ -25,6 +30,7 @@ void hintDraw::Initialize()
 	m_NowTextureNumber = 0;
 	m_NowTexture = m_Textures[m_NowTextureNumber];	
 	m_Timer = 0;
+	m_Lerp = 0;
 	m_FirstFrame = true;
 }
 
@@ -37,23 +43,19 @@ void hintDraw::Update()
 			mc->GetMaterialPtr(0)->SetTexture(m_NowTexture);
 		}
 		m_FirstFrame = false;
-		gameObject->mTransform->WorldPosition(XMVectorSet(BIGPOSX, BIGPOSY, 0, 0));
-		gameObject->mTransform->WorldScale(XMVectorSet(BIGSIZEX, BIGSIZEY, 0, 0));
 		m_Timer += Hx::DeltaTime()->GetDeltaTime();
+		gameObject->mTransform->WorldPosition(XMVectorSet(lerp(BIGPOSX,MINIPOSX, m_Lerp), lerp(BIGPOSY, MINIPOSY, m_Lerp), 9999, 0));
+		gameObject->mTransform->WorldScale(XMVectorSet(lerp(BIGSIZEX, MINISIZEX, m_Lerp), lerp(BIGSIZEY, MINISIZEY, m_Lerp), 0, 0));
 		if (m_Timer >= m_WaitTime) {
-			auto color = mc->mAlbedo;
-			color.w -= m_TimeScale * Hx::DeltaTime()->GetDeltaTime();
-			if (color.w <= 0.0f) {
-				color.w = 1.0f;
-				gameObject->mTransform->WorldPosition(XMVectorSet(MINIPOSX, MINIPOSY, 0, 0));
-				gameObject->mTransform->WorldScale(XMVectorSet(MINISIZEX, MINISIZEY, 0, 0));
+			m_Lerp += m_TimeScale * Hx::DeltaTime()->GetDeltaTime();
+			if (m_Lerp >= 1.0f) {
 				m_OnStart = false;
 			}
-			mc->SetAlbedoColor(color);
 		}
 	}
 	else {
 		m_Timer = 0;
+		m_Lerp = 0;
 		m_FirstFrame = true;
 	}
 }
@@ -67,14 +69,12 @@ bool hintDraw::OnStart(GameObject Sender)
 {
 	auto mc = gameObject->GetComponent<MaterialComponent>();
 	if (!mc)return false;
-	auto color = mc->mAlbedo;
-	color.w  = 1.0f;
-	mc->SetAlbedoColor(color);
 
 	m_OnStart = true;
 	m_NowTextureNumber++;
 	m_NowTexture = m_Textures[m_NowTextureNumber];
 	m_Timer = 0;
+	m_Lerp = 0;
 	m_FirstFrame = true;
 	return true;
 }

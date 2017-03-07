@@ -79,6 +79,7 @@ private:
 	SERIALIZE float m_AttackDamage;
 	SERIALIZE bool m_NotHeal;
 	SERIALIZE GameObject m_Mogitou;
+	SERIALIZE GameObject m_Tutrial_1_5_;
 	float m_RotateAngle;
 	float m_Count;
 	bool m_RotateStart;

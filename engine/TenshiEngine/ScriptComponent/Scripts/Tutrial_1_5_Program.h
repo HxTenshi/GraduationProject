@@ -13,6 +13,8 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 
+	void DestroySpecialBotton();
+
 private:
 	//ÉÅÉìÉoïœêî
 	bool m_ComboClear;
@@ -20,4 +22,12 @@ private:
 	SERIALIZE float m_Time;
 	GameObject m_ComboTextureObject;
 	float m_Count;
+	bool m_GageMax;
+	SERIALIZE std::vector<PrefabAsset> m_ComboBottonPref;
+	SERIALIZE PrefabAsset m_SpercialBottonPref;
+	std::vector<GameObject> m_ComboBotton;
+	GameObject m_SpercialBotton;
+
+	bool m_ComboBottonFlag;
+	bool m_SpecialBottonFlag;
 };

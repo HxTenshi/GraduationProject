@@ -9,6 +9,9 @@
 #include "OutputGimic.h"
 #include "hintDraw.h"
 #include "ObjectGenerator.h"
+#include "UniqueObject.h"
+#include "Tutrial_1_5_Program.h"
+
 EnemySandBag::EnemySandBag()
 {
 	actionModeInitilize[ACTIONMODE::TRACKINGMODE] = std::bind(&EnemySandBag::TrackingModeInitilize, this/*,std::placeholders::_1*/);
@@ -341,11 +344,12 @@ void EnemySandBag::DeadUpdate()
 		if (!m_Isend) {
 			hintDraw::OnStart_(gameObject);
 			auto mogitou = m_Mogitou->GetScript<ObjectGenerator>()->GetGeneratorObject();
+			UniqueObject::GetPlayer()->GetScript<PlayerController>()->SetSpecial(100);
 			Hx::DestroyObject(m_Mogitou);
 			Hx::DestroyObject(mogitou);
+			m_Tutrial_1_5_->GetScript<Tutrial_1_5_Program>()->DestroySpecialBotton();
 		}
 		m_Isend = true;
-
 	}
 }
 
