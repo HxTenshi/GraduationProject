@@ -112,9 +112,9 @@ void EnemyEbilEye::Attack(GameObject player, COL_TYPE colType)
 bool EnemyEbilEye::Damage(float damage_, BATTLEACTION::Enum winceType_, XMVECTOR accelPower_)
 {
 	m_Damage = damage_;
-	m_Accel = accelPower_;
+	//m_Accel = accelPower_;
 	if (m_BattleModeParam.id != BATTLEACTION::DOWNACTION && m_BattleModeParam.id != BATTLEACTION::DEADACTION) {
-		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, winceType_);
+		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::WINCEACTION);
 		return true;
 	}
 	return false;

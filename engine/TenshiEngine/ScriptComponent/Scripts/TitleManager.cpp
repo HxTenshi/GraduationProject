@@ -1,6 +1,6 @@
 #include "TitleManager.h"
 #include "Fader.h"
-
+#include "OverRayExitOption.h"
 namespace funifuni {
 
 
@@ -54,10 +54,15 @@ namespace funifuni {
 		m_MoveObject = m_GameStartButton;
 		is_next = false;
 		is_bgm = false;
+		flash_swich = true;
 	}
 
 	//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 	void TitleManager::Start() {
+			if (auto src = m_overray_exit_option->GetScript<OverRayExitOption>()) {
+				src->InitCall();
+			}
+			m_overray_exit_option->Disable();
 		iup_flag = true;
 		m_state = State::state1;
 		selectNum = 0;
@@ -68,6 +73,8 @@ namespace funifuni {
 	//毎フレーム呼ばれます
 	void TitleManager::Update() {
 		
+
+		if (m_overray_exit_option->IsEnabled())return;
 		//入力関連を取得
 		auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
 		bool isRightLS = ls.x > 0.5f;	//右に倒したか？
@@ -79,7 +86,7 @@ namespace funifuni {
 
 			m_canvas1->Enable();
 			m_canvas2->Disable();
-
+			ArrowFlash();
 			if ((Input::Trigger(KeyCode::Key_LEFT) || isLeftLS) && !is_next) {
 				is_next = true;
 				is_arrow = false;
@@ -263,7 +270,13 @@ namespace funifuni {
 			break;
 		case TitleButtonRoll::Config: fader->OnSceneChnage(configScenePass);
 			break;
-		case TitleButtonRoll::GameEnd: Hx::Shutdown();
+		case TitleButtonRoll::GameEnd: //Hx::Shutdown();
+			if (!m_overray_exit_option->IsEnabled()) {
+				m_overray_exit_option->Enable();
+				m_overray_exit_option->GetScript<OverRayExitOption>()->SetOverrayFlag(true);
+
+			}
+
 			break;
 		default:
 			break;
@@ -291,5 +304,32 @@ namespace funifuni {
 
 	void TitleManager::OnSE(SoundManager::SoundSE_ID::Enum seID)
 	{
-		SoundManager::PlaySE(seID, XMVectorSet(-4.0f,17.0f,-3.0f,0.0f));
+		SoundManager::PlaySE(seID, XMVectorSet(-4.6f,17.0f,-3.3f,0.0f));
+	}
+
+	void TitleManager::ArrowFlash()
+	{
+		if (m_RightArrow&m_LeftArrow) {
+			auto r_c = m_RightArrow->GetComponent<MaterialComponent>()->mAlbedo;
+			auto l_c = m_LeftArrow->GetComponent<MaterialComponent>()->mAlbedo;
+
+			float a = r_c.w;
+
+			a += Hx::DeltaTime()->GetDeltaTime()*m_arrow_flash_speed;
+
+			if (a < 0.0f&flash_swich) {
+				m_arrow_flash_speed = (-m_arrow_flash_speed);
+				flash_swich = !flash_swich;
+			}
+			if (a > 0.999f&!flash_swich) {
+				m_arrow_flash_speed = (-m_arrow_flash_speed);
+				flash_swich = !flash_swich;
+			}
+
+			r_c.w = a;
+			l_c.w = a;
+
+			m_RightArrow->GetComponent<MaterialComponent>()->SetAlbedoColor(r_c);
+			m_LeftArrow->GetComponent<MaterialComponent>()->SetAlbedoColor(l_c);
+		}
 	}
