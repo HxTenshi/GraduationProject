@@ -9,7 +9,7 @@ void UniqueObject::Initialize()
 
 void UniqueObject::Finish()
 {
-	g_UniqueObject = NULL;
+	//g_UniqueObject = NULL;
 }
 
 bool UniqueObject::IsPlayer(GameObject target)

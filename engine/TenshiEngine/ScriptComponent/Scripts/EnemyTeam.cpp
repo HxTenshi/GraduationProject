@@ -41,6 +41,8 @@ void EnemyTeam::Update(){
 		Hx::DestroyObject(gameObject);
 	}
 	DiscoveryOrLostPlayerSet();
+	if (!m_Player)return;
+	if (!m_Player->GetScript<PlayerController>())return;
 	if (m_Player->GetScript<PlayerController>()->GetPlayerState() == PlayerController::PlayerState::Movie) {
 		return;
 	}
