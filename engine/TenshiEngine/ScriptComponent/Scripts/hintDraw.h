@@ -15,7 +15,7 @@ public:
 private:
 	SERIALIZE float m_WaitTime;
 	SERIALIZE float m_TimeScale;
-	float m_Timer;
+	float m_Timer,m_Lerp;
 	bool m_FirstFrame;
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE std::vector<TextureAsset> m_Textures;
