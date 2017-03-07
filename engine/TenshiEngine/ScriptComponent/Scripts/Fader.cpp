@@ -1,6 +1,6 @@
 #include "Fader.h"
-
-
+# include "UniqueObject.h"
+# include "hintDraw.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Fader::Initialize(){
 	if (!m_faderTexObj) return;
@@ -42,7 +42,10 @@ void Fader::Update(){
 	if (m_isSceneChange && color.w >= 1.0f) {
 		//遷移前にテクスチャを変更
 		material->GetMaterialPtr(0)->SetTexture(loadingTex);
-		
+		//Hx::DestroyObject(UniqueObject::GetPlayer()->mTransform->GetParent());
+
+		if (m_Destoroy)Hx::FindActor("EventHitDraw")->GetScript<hintDraw>()->OnFinish();
+
 		Hx::Debug()->Log(m_nextScenePass + "に遷移しました");
 		Hx::LoadScene(m_nextScenePass);
 	}
@@ -68,9 +71,10 @@ void Fader::OnCollideExit(GameObject target){
 	(void)target;
 }
 
-void Fader::OnSceneChnage(std::string nextScenePass){
+void Fader::OnSceneChnage(std::string nextScenePass, bool isDestroy){
 	if (m_isSceneChange) return;
 
+	m_Destoroy = isDestroy;
 	m_nextScenePass = nextScenePass;
 	m_isFadeIn = true;
 	m_isSceneChange = true;

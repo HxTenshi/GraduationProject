@@ -348,6 +348,7 @@ void EnemySandBag::DeadUpdate()
 			Hx::DestroyObject(m_Mogitou);
 			Hx::DestroyObject(mogitou);
 			m_Tutrial_1_5_->GetScript<Tutrial_1_5_Program>()->DestroySpecialBotton();
+			Hx::DestroyObject(m_Tutrial_1_5_);
 		}
 		m_Isend = true;
 	}

@@ -23,12 +23,13 @@ void hintDraw::Initialize()
 {
 	if (!hintDraw_)hintDraw_ = this->gameObject;
 	else {
+		Hx::Debug()->Log("hintDraw : Delete");
 		Hx::DestroyObject(this->gameObject);
 		return;
 	}
 	m_OnStart = true;
 	m_NowTextureNumber = 0;
-	m_NowTexture = m_Textures[m_NowTextureNumber];	
+	m_NowTexture = m_Textures[m_NowTextureNumber];
 	m_Timer = 0;
 	m_Lerp = 0;
 	m_FirstFrame = true;
@@ -84,4 +85,9 @@ bool hintDraw::OnStart_(GameObject Sender)
 	if (!hintDraw_)return false;
 	hintDraw_->GetScript<hintDraw>()->OnStart(Sender);
 	return true;
+}
+
+void hintDraw::OnFinish()
+{
+	Finish();
 }

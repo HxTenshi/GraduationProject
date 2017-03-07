@@ -12,6 +12,8 @@ public:
 	
 	static bool OnStart_(GameObject Sender);
 
+	void OnFinish();
+
 private:
 	SERIALIZE float m_WaitTime;
 	SERIALIZE float m_TimeScale;
