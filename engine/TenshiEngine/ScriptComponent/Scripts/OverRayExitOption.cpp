@@ -78,7 +78,7 @@ void OverRayExitOption::Select(int type)
 		bool isEnter = Input::Trigger(KeyCode::Key_SPACE) || Input::Up(PAD_X_KeyCode::Button_B);	//Œˆ’è
 		bool isCansel = Input::Trigger(KeyCode::Key_B) || Input::Up(PAD_X_KeyCode::Button_A);		//ƒLƒƒƒ“ƒZƒ‹
 
-		if ((isLeftLS || isRightLS|| isEnter)&!is_use_pad) {
+		if ((isEnter)&!is_use_pad) {
 			is_use_pad = true;
 			return;
 		}
