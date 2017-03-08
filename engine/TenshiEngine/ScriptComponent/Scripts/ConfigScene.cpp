@@ -66,11 +66,13 @@ void ConfigScene::CursourMove() {
 	bool isUpLS = ls.y > 0.5f;
 	bool isDownLS = ls.y < -0.5f;
 	if ((Input::Trigger(KeyCode::Key_UP) || isUpLS) && isStickInterval) {
+		if (num == 0) return;
 		num--;
 		m_stickInterval = 0.0f;
 		SE(SoundManager::SoundSE_ID::Enum::Cursour);
 	}
 	if (Input::Trigger(KeyCode::Key_DOWN) || isDownLS && isStickInterval) {
+		if (num == m_texObjs.size() - 1) return;
 		num++;
 		m_stickInterval = 0.0f;
 		SE(SoundManager::SoundSE_ID::Enum::Cursour);

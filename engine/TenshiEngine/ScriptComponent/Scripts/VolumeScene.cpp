@@ -104,13 +104,13 @@ void VolumeScene::Update(){
 	
 
 	if ((Input::Trigger(KeyCode::Key_UP) || isUp) && interval) {
-		//if (num <= 0) return;
+		if (num <= 0) return;
 		num--;
 		m_stickIntervalTime = 0.0f;
 		OnSE(SoundManager::SoundSE_ID::Enum::Cursour);
 	}
 	if ((Input::Trigger(KeyCode::Key_DOWN) || isDown) && interval) {
-		//if (num <= m_objList.size() -1) return;
+		if (num >= m_objList.size() -1) return;
 		num++;
 		m_stickIntervalTime = 0.0f;
 		OnSE(SoundManager::SoundSE_ID::Enum::Cursour);

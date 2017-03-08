@@ -116,22 +116,26 @@ void PauseMenuManager::UpdateOpne() {
 		
 		
 		if (isUpLS && isStickInterval) { 
+			if (m_num <= 0) return;
 			m_num--;
 			m_stickInterval = 0.0f;
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
 		if (isDownLS && isStickInterval) { 
+			if (m_num >= 3) return;
 			m_num++; 
 			m_stickInterval = 0.0f;
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
 
 		if (isUpKey) {
+			if (m_num <= 0) return;
 			m_num--;
 			m_stickInterval = 0.0f;
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);
 		}
 		if (isDownKey) {
+			if (m_num >= 3) return;
 			m_num++;
 			m_stickInterval = 0.0f;
 			SE(SoundManager::SoundSE_ID::Enum::Cursour);

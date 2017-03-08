@@ -1,6 +1,8 @@
 #include "Fader.h"
+#include "h_standard.h"
 # include "UniqueObject.h"
 # include "hintDraw.h"
+#include <istream>
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Fader::Initialize(){
 	if (!m_faderTexObj) return;
@@ -18,7 +20,7 @@ void Fader::Initialize(){
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void Fader::Start(){
-
+	
 }
 
 //毎フレーム呼ばれます
@@ -46,8 +48,10 @@ void Fader::Update(){
 
 		if (m_Destoroy)Hx::FindActor("EventHitDraw")->GetScript<hintDraw>()->OnFinish();
 
-		Hx::Debug()->Log(m_nextScenePass + "に遷移しました");
-		Hx::LoadScene(m_nextScenePass);
+		//Hx::Debug()->Log(m_nextScenePass + "に遷移しました");
+		//Hx::LoadScene(m_nextScenePass);
+		Hx::Debug()->Log("LoadingSceneに遷移します");
+		Hx::LoadScene("Assets/Mossan/Loading.scene");
 	}
 }
 
@@ -78,4 +82,7 @@ void Fader::OnSceneChnage(std::string nextScenePass, bool isDestroy){
 	m_nextScenePass = nextScenePass;
 	m_isFadeIn = true;
 	m_isSceneChange = true;
+	
+	std::ofstream ofs("Assets/data/NextScenePass.csv");
+	ofs << nextScenePass << std::endl;
 }
