@@ -103,7 +103,10 @@ void OverRayExitOption::Select(int type)
 		}
 
 		m_select_object->mTransform->Position(selectpos[selector]);
-
+		if (isCansel) {
+			is_overray = false;
+			gameObject->Disable();
+		}
 		if (isEnter) {
 			if (selector == OR_YES) {
 				if(type==0)Hx::Shutdown();
