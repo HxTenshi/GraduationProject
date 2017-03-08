@@ -5,6 +5,7 @@
 //生成時に呼ばれます（エディター中も呼ばれます）
 void OverRayExitOption::Initialize(){
 	selector = OR_NO;
+	m_func_type = 0;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -23,10 +24,12 @@ void OverRayExitOption::Start(){
 //毎フレーム呼ばれます
 void OverRayExitOption::Update(){
 	if (!is_overray)return;
-	if(!is_select)m_select_timer += Hx::DeltaTime()->GetDeltaTime();
+	if (!is_select) {
+		m_select_timer += Hx::DeltaTime()->GetNoScaleDeltaTime();
+	}
 	if (m_select_timer > 0.3f)is_select = true;
 	is_arrow = false;
-	Select();
+	Select(m_func_type);
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
@@ -65,7 +68,7 @@ void OverRayExitOption::InitCall()
 	}
 }
 
-void OverRayExitOption::Select()
+void OverRayExitOption::Select(int type)
 {
 	if (m_select_object) {
 
@@ -100,9 +103,18 @@ void OverRayExitOption::Select()
 		}
 
 		m_select_object->mTransform->Position(selectpos[selector]);
-
+		if (isCansel) {
+			is_overray = false;
+			gameObject->Disable();
+		}
 		if (isEnter) {
-			if(selector==OR_YES)Hx::Shutdown();
+			if (selector == OR_YES) {
+				if(type==0)Hx::Shutdown();
+				if (type == 1) {
+					Hx::DeltaTime()->SetTimeScale(1.0f);
+					Hx::LoadScene("Assets/Title.scene");
+				}
+			}
 			if (selector == OR_NO) {
 				is_overray = false;
 				gameObject->Disable();
@@ -131,10 +143,17 @@ void OverRayExitOption::Back()
 	selector = (OverRaySelector)s;
 }
 
+
+
 void OverRayExitOption::SetOverrayFlag(bool f)
 {
 	is_overray = true;
 	is_use_pad = false;
-	m_select_timer = 0.5f;
-	is_select = true;
+	is_select = false;
+	m_select_timer = 0.0f;
+}
+
+void OverRayExitOption::SetFuncType(int num)
+{
+	m_func_type = num;
 }

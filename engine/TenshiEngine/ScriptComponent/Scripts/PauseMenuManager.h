@@ -84,6 +84,9 @@ private:
 	SERIALIZE
 	float m_lerpSpeed;
 
+
+	SERIALIZE GameObject m_overray_exit_option;
+
 	int m_num;
 	float m_stickInterval;
 

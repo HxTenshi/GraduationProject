@@ -19,10 +19,12 @@ public:
 	void SetAlpha(GameObject g,float a);
 	void InitCall();
 
-	void Select();
+	//shutdown=0 pause ando =1
+	void Select(int type = 0);
 	void Next();
 	void Back();
 	void SetOverrayFlag(bool f);
+	void SetFuncType(int num);
 private:
 	//ÉÅÉìÉoïœêî
 
@@ -34,9 +36,11 @@ private:
 	OverRaySelector selector;
 
 	XMVECTOR selectpos[OR_END];
+
 	bool is_arrow;
 	float m_select_timer;
 	bool is_select;
 	bool is_use_pad;
+	int m_func_type;
 
 };

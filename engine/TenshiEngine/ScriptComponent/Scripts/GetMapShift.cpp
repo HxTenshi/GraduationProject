@@ -3,6 +3,7 @@
 #include "h_component.h"
 #include "UniqueObject.h"
 #include "MapShift.h"
+#include "PlayerController.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void GetMapShift::Initialize(){
@@ -43,7 +44,14 @@ void GetMapShift::Update(){
 			m_MapShiftUI->Disable();
 		}
 	}
-	
+	auto player = UniqueObject::GetPlayer();
+	if (auto scr = player->GetScript<PlayerController>()) {
+		if (scr->GetPlayerState() == PlayerController::PlayerState::Movie) {
+			if (m_MapShiftUI) {
+				m_MapShiftUI->Disable();
+			}
+		}
+	}
 }
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）

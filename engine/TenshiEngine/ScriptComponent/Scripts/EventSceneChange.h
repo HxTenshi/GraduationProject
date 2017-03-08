@@ -12,4 +12,5 @@ private:
 	//Assets/Scene/kiminonawa.scene
 	SERIALIZE std::string mPath;
 	SERIALIZE GameObject mFade;
+	SERIALIZE bool mFadeFlag;
 };

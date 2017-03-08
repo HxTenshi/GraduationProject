@@ -15,7 +15,7 @@ public:
 	void OnCollideBegin(GameObject target)override;
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
-	void OnSceneChnage(std::string nextScenePass);
+	void OnSceneChnage(std::string nextScenePass, bool isDestroy = false);
 
 private:
 	//ƒƒ“ƒo•Ï”
@@ -27,5 +27,6 @@ private:
 		TextureAsset loadingTex;
 	bool m_isFadeIn;	//ˆÃ‚­‚È‚Á‚Ä‚¢‚­‚©
 	bool m_isSceneChange;	//ƒV[ƒ“‚ğ‘JˆÚ‚·‚é‚©‚Ç‚¤‚©
+	bool m_Destoroy;
 	std::string m_nextScenePass;
 };

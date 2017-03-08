@@ -5,6 +5,7 @@
 #include "UniqueObject.h"
 #include "PlayerController.h"
 #include "Matinee.h"
+#include "OverRayExitOption.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void PauseMenuManager::Initialize(){
@@ -31,14 +32,23 @@ void PauseMenuManager::Initialize(){
 			material->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1, 1, 1, 0));
 		}
 	}
+	Hx::Debug()->Log("init");
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void PauseMenuManager::Start(){
+	if (m_overray_exit_option) {
+		if (auto src = m_overray_exit_option->GetScript<OverRayExitOption>()) {
+			src->InitCall();
+			src->SetFuncType(1);
+		}
+		m_overray_exit_option->Disable();
+	}
 }
 
 //毎フレーム呼ばれます
 void PauseMenuManager::Update() {
+	if (m_overray_exit_option->IsEnabled())return;
 	bool isStartKey = Input::Trigger(PAD_X_KeyCode::Button_START);
 	if (Input::Trigger(KeyCode::Key_M) || isStartKey) {
 		if(m_state == State::Close) OpenPauseMenu();
@@ -316,8 +326,13 @@ void PauseMenuManager::BackMenu(){
 
 //タイトルに飛ぶ
 void PauseMenuManager::BackToTitle(){
-	Hx::DeltaTime()->SetTimeScale(1.0f);
-	Hx::LoadScene("Assets/Title.scene");
+	if (!m_overray_exit_option->IsEnabled()) {
+		m_overray_exit_option->Enable();
+		m_overray_exit_option->GetScript<OverRayExitOption>()->SetOverrayFlag(true);
+
+	}
+	//Hx::DeltaTime()->SetTimeScale(1.0f);
+	//Hx::LoadScene("Assets/Title.scene");
 }
 
 //Lerpを用いた処理
