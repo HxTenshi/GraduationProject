@@ -3,6 +3,11 @@
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void Fader::Initialize(){
+	
+}
+
+//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
+void Fader::Start(){
 	if (!m_faderTexObj) return;
 	m_isFadeIn = false;
 	m_isSceneChange = false;
@@ -13,12 +18,7 @@ void Fader::Initialize(){
 	if (!material) return;
 
 	material->GetMaterialPtr(0)->SetTexture(blackTex);
-	material->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1,1,1,1));
-}
-
-//initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
-void Fader::Start(){
-
+	material->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1, 1, 1, 1));
 }
 
 //毎フレーム呼ばれます
@@ -37,11 +37,9 @@ void Fader::Update(){
 	color.w = max(min(color.w, 1.0f), 0.0f);
 	material->GetMaterialPtr(0)->SetAlbedo(color);
 
-	
-
 	if (m_isSceneChange && color.w >= 1.0f) {
 		//遷移前にテクスチャを変更
-		material->GetMaterialPtr(0)->SetTexture(loadingTex);
+		//material->GetMaterialPtr(0)->SetTexture(loadingTex);
 		
 		Hx::Debug()->Log(m_nextScenePass + "に遷移しました");
 		Hx::LoadScene(m_nextScenePass);
@@ -50,7 +48,6 @@ void Fader::Update(){
 
 //開放時に呼ばれます（Initialize１回に対してFinish１回呼ばれます）（エディター中も呼ばれます）
 void Fader::Finish(){
-
 }
 
 //コライダーとのヒット時に呼ばれます

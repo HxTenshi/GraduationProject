@@ -121,7 +121,7 @@ public:
 
 	
 	static void PlaySE(SoundSE_ID::Enum key,XMVECTOR pos);
-	static void PlaySE(SoundSE_ID::Enum key, XMVECTOR pos, float volume);
+	static void PlaySE(SoundSE_ID::Enum key, float volume);
 	static void PlaySE_2D(SoundSE_ID::Enum key);
 	static void PlayBGM(SoundBGM_ID::Enum key);
 	static void SetBGMVolume(float volume);

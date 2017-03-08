@@ -50,7 +50,7 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos){
 	s->Play();
 }
 
-void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos, float volume){
+void SoundManager::PlaySE(SoundSE_ID::Enum key, float volume){
 	if (g_soundManager == NULL) {
 		Hx::Debug()->Log("SoundManager Null");
 		return;
@@ -60,7 +60,7 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos, float volume){
 		return;
 	}
 	GameObject g = Hx::Instance(g_soundManager->soundBox);
-	g->mTransform->WorldPosition(pos);
+	g->mTransform->WorldPosition(XMVectorZero());
 	auto s = g->GetComponent<SoundComponent>();
 	if (!s) {
 		Hx::Debug()->Log("SoundManageruSoundCommponent‚È‚¢‚æv");
@@ -73,7 +73,7 @@ void SoundManager::PlaySE(SoundSE_ID::Enum key, XMVECTOR pos, float volume){
 	if (volume == 0.0f) volume = 0.0f;
 	s->LoadFile(g_soundManager->m_soundSEs[(int)key]);
 	s->SetVolume(temp);
-	s->Set3DSound(true);
+	s->Set3DSound(false);
 	s->SetLoop(false);
 	s->Play();
 	float volumea = s->GetVolume();
