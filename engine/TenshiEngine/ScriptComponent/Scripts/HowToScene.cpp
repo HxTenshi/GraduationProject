@@ -18,7 +18,7 @@ void HowToScene::Update(){
 	bool isSpaceKey = Input::Trigger(KeyCode::Key_SPACE);
 	bool isPad_B_Button = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (isSpaceKey || isPad_B_Button) {
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Decision, XMVectorZero());
+		SoundManager::PlaySE_2D(SoundManager::SoundSE_ID::Enum::Decision);
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
 		fader->OnSceneChnage(configPass);

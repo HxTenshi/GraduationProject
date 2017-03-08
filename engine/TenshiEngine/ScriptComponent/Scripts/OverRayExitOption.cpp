@@ -149,7 +149,8 @@ void OverRayExitOption::SetOverrayFlag(bool f)
 {
 	is_overray = true;
 	is_use_pad = false;
-	is_select = true;
+	is_select = false;
+	m_select_timer = 0.0f;
 }
 
 void OverRayExitOption::SetFuncType(int num)

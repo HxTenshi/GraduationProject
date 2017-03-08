@@ -349,6 +349,5 @@ void PauseMenuManager::LerpFunc(Struct* structObj, float lerpTime){
 }
 
 void PauseMenuManager::SE(SoundManager::SoundSE_ID::Enum key){
-	XMVECTOR cameraPos = UniqueObject::GetCamera()->mTransform->Position();
-	SoundManager::PlaySE(key, cameraPos);
+	SoundManager::PlaySE_2D(key);
 }

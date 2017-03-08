@@ -261,6 +261,8 @@ namespace funifuni {
 
 	void TitleManager::Select()
 	{
+		OnSE(SoundManager::SoundSE_ID::Decision);
+
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
 
@@ -284,6 +286,9 @@ namespace funifuni {
 	}
 
 	void TitleManager::Select2(int num){
+
+		OnSE(SoundManager::SoundSE_ID::Decision);
+
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
 
@@ -304,7 +309,7 @@ namespace funifuni {
 
 	void TitleManager::OnSE(SoundManager::SoundSE_ID::Enum seID)
 	{
-		SoundManager::PlaySE(seID, XMVectorSet(-4.6f,17.0f,-3.3f,0.0f));
+		SoundManager::PlaySE_2D(seID);
 	}
 
 	void TitleManager::ArrowFlash()

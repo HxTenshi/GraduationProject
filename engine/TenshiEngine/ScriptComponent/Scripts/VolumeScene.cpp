@@ -208,5 +208,5 @@ std::vector<std::vector<std::string>> VolumeScene::readCSV(std::string fileName)
 
 void VolumeScene::OnSE(SoundManager::SoundSE_ID::Enum key){
 	float seVolume = m_objList[Enum::SE]->GetScript<VolumeBarCtrl>()->GetVolume();
-	SoundManager::PlaySE(key, XMVectorZero(), seVolume);
+	SoundManager::PlaySE(key, seVolume);
 }

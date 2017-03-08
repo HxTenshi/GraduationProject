@@ -112,5 +112,5 @@ std::string ConfigScene::GetScenePass(int num){
 }
 
 void ConfigScene::SE(SoundManager::SoundSE_ID::Enum seID){
-	SoundManager::PlaySE(seID, XMVectorZero());
+	SoundManager::PlaySE_2D(seID);
 }

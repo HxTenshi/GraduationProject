@@ -84,7 +84,7 @@ void CreditScene::Update(){
 	
 	bool isEnter = Input::Trigger(PAD_X_KeyCode::Button_B);
 	if (Input::Trigger(KeyCode::Key_SPACE) || isEnter) {
-		SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Decision, XMVectorZero());
+		SoundManager::PlaySE_2D(SoundManager::SoundSE_ID::Enum::Decision);
 		if (!m_fader) return;
 		auto fader = m_fader->GetScript<Fader>();
 		fader->OnSceneChnage("Assets/Title.scene");
@@ -146,7 +146,7 @@ void CreditScene::ChangeTexture(){
 void CreditScene::CursorFunc(int num){
 	//音声再生
 	XMVECTOR cameraPos = m_CameraObj->mTransform->Position();
-	SoundManager::PlaySE(SoundManager::SoundSE_ID::Enum::Cursour,cameraPos);
+	SoundManager::PlaySE_2D(SoundManager::SoundSE_ID::Enum::Cursour);
 	//lerpの初期化
 	m_lerpTime = 0.0f;
 	//前回の選択を更新
