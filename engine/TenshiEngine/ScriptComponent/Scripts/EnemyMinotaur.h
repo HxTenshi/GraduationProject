@@ -75,6 +75,7 @@ public:
 	void ChildFinalize() override;
 	//èoåªéûÇÃê›íËä÷êî
 	void EnemyEmergence(bool flag);
+	void IdleStartAnim();
 private:
 	enum StateType {
 		STATE_NO_SEARCH,
@@ -107,7 +108,7 @@ private:
 		ANIM_ATTACK1,ANIM_ATTACK3,ANIM_ATTACK2,ANIM_BLOCK,
 		ANIM_ATTACK4,ANIM_ATTACK5,ANIM_ATTACK6,ANIM_DYING,
 		ANIM_REACT_LARGE_BUT,ANIM_F_RUN,ANIM_ATTACK7,ANIM_STUNNED,
-		ANIM_TAUNT,ANIM_CHEST_THUMP,
+		ANIM_TAUNT,ANIM_CHEST_THUMP,ANIM_IDLE
 	};
 
 private:
@@ -145,6 +146,11 @@ private:
 	//ë™ÇÈãóó£Çèâä˙âª
 	void InitThoughRoutineParam();
 
+
+	void IdleUpdateAnim();
+	
+
+	
 	
 	//TODO:Ç†ÇΩÇËîªíËÇÕÇ‹ÇæÇ»Ç¢
 	void Attack1();

@@ -31,6 +31,14 @@ public:
 		Combo
 	};
 
+	enum Hint{
+		one = 0,
+		two,
+		three,
+		four,
+		five
+	};
+
 public:
 	void Initialize()override;
 	void Start()override;
@@ -47,16 +55,24 @@ public:
 	void ChangeItimaie(Itimie type);
 	void BackMenu();
 	void BackToTitle();
+	void OnHint();
 	void LerpFunc(Struct* structObj,float lerpTime);
 	void SE(SoundManager::SoundSE_ID::Enum key);
 
 private:
 	//ÉÅÉìÉoïœêî
 	State m_state;
+	Hint m_hint;
 	bool m_isItimie;
+	bool m_isHint;
+	bool m_isHintLeftMove;
+	bool m_isHintMoved;
+
 	float m_lerpTimers[3];
 	SERIALIZE
 	GameObject m_Camvas;
+	SERIALIZE
+	GameObject m_texTips;
 	SERIALIZE
 	GameObject m_texPause;
 	SERIALIZE
@@ -84,6 +100,26 @@ private:
 	SERIALIZE
 	float m_lerpSpeed;
 
+	GameObject m_curHintTexObj;
+	GameObject m_preHintTexObj;
+	SERIALIZE
+		GameObject texHintOne;
+	SERIALIZE
+		GameObject texHintTwo;
+	SERIALIZE
+		GameObject texHintThree;
+	SERIALIZE
+		GameObject texHintFour;
+	SERIALIZE
+		GameObject texHintFive;
+	SERIALIZE
+		GameObject rightArrow;
+	SERIALIZE
+		GameObject leftArrow;
+	XMVECTOR rightArrowInitPos;
+	XMVECTOR leftArrowInitPos;
+	float  m_arrowTimer;
+	std::vector<GameObject> m_texHintList;
 
 	SERIALIZE GameObject m_overray_exit_option;
 
