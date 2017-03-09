@@ -9,7 +9,7 @@
 
 #define MINISIZEX 520
 #define MINISIZEY 120
-#define MINIPOSX 1100
+#define MINIPOSX 1034
 #define MINIPOSY 1080
 
 static GameObject hintDraw_ = NULL;
