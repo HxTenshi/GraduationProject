@@ -18,4 +18,5 @@ public:
 private:
 	//ƒƒ“ƒo•Ï”
 	SERIALIZE std::string m_SceneName;
+	SERIALIZE GameObject m_Fade;
 };

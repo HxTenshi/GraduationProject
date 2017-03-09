@@ -1,5 +1,6 @@
 #include "ChangeScene.h"
 #include "h_standard.h"
+#include "Fader.h"
 
 //生成時に呼ばれます（エディター中も呼ばれます）
 void ChangeScene::Initialize(){
@@ -39,5 +40,10 @@ void ChangeScene::OnCollideExit(GameObject target){
 void ChangeScene::Next()
 {
 	Hx::System()->LockCursorPositionToWindowCenter(false);
-	Hx::LoadScene(m_SceneName);
+	if (!m_Fade)return;
+	auto fade = m_Fade->GetScript<Fader>();
+	if (!fade)return;
+
+	fade->OnSceneChnage(m_SceneName);
+	//Hx::LoadScene(m_SceneName);
 }

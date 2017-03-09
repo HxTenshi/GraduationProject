@@ -889,6 +889,7 @@ void PlayerController::AttackInitialize()
 		attack.NextHighID = -1;
 		attack.MoutionID = AnimeID::AttackFloatHighEnd;
 		attack.EndID = -1;
+		attack.SEID = -1;
 		attack.AttackTime = getMoutionTime(attack.MoutionID);
 
 		attack.KnockbackEffectPower = 1.0f;
