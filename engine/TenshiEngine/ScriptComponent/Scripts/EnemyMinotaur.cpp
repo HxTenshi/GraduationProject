@@ -651,6 +651,24 @@ void EnemyMinotaur::InitThoughRoutineParam()
 	}
 }
 
+void EnemyMinotaur::IdleStartAnim(){
+	m_MovieAction = std::bind(&EnemyMinotaur::IdleUpdateAnim, this);
+	m_MovieActionFlag = true;
+	AnimChange(ANIM_IDLE, 5.0f, false, false, false);
+
+}
+
+void EnemyMinotaur::IdleUpdateAnim()
+{
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	if (anim->IsAnimationEnd(ANIM_IDLE)) {
+		AnimChange(ANIM_CHEST_THUMP, 5.0f, false, false, false);
+	}
+	if (anim->IsAnimationEnd(ANIM_CHEST_THUMP)){
+		m_MovieActionFlag = false;
+	}
+}
+
 void EnemyMinotaur::Attack1()
 {
 	auto obj = Hx::Instance(m_Attack1Effect);
