@@ -24,6 +24,7 @@ void ConfigScene::Start(){
 
 //毎フレーム呼ばれます
 void ConfigScene::Update(){
+	if (m_fader->GetScript<Fader>()->IsFader())return;
 	//カーソルの移動
 	CursourMove();
 	//シーンの決定

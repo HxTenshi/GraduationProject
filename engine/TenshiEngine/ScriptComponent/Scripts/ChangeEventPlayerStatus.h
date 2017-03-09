@@ -18,4 +18,6 @@ private:
 	SERIALIZE bool mSPUpdate;
 	SERIALIZE bool mLock;
 	SERIALIZE bool mThrow;
+
+	SERIALIZE bool mDebug;
 };

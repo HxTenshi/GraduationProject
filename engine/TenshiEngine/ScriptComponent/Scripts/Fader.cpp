@@ -14,13 +14,14 @@ void Fader::Initialize(){
 	auto material = m_faderTexObj->GetComponent<MaterialComponent>();
 	if (!material) return;
 
-	material->GetMaterialPtr(0)->SetTexture(blackTex);
+	//material->GetMaterialPtr(0)->SetTexture(blackTex);
 	material->GetMaterialPtr(0)->SetAlbedo(XMFLOAT4(1,1,1,1));
+	m_SceneChange = 0;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
 void Fader::Start(){
-	
+
 }
 
 //毎フレーム呼ばれます
@@ -39,18 +40,18 @@ void Fader::Update(){
 	color.w = max(min(color.w, 1.0f), 0.0f);
 	material->GetMaterialPtr(0)->SetAlbedo(color);
 
-	
-
 	if (m_isSceneChange && color.w >= 1.0f) {
 		//遷移前にテクスチャを変更
-		material->GetMaterialPtr(0)->SetTexture(loadingTex);
+		//material->GetMaterialPtr(0)->SetTexture(loadingTex);
 		//Hx::DestroyObject(UniqueObject::GetPlayer()->mTransform->GetParent());
 
 		if (m_Destoroy)Hx::FindActor("EventHitDraw")->GetScript<hintDraw>()->OnFinish();
-
 		//Hx::Debug()->Log(m_nextScenePass + "に遷移しました");
 		//Hx::LoadScene(m_nextScenePass);
 		Hx::Debug()->Log("LoadingSceneに遷移します");
+		if (m_SceneChange == 0)Hx::Instance(m_BlackTex);
+		m_SceneChange++;
+		if(m_SceneChange == 2)
 		Hx::LoadScene("Assets/Mossan/Loading.scene");
 	}
 }

@@ -42,5 +42,6 @@ private:
 	bool is_select;
 	bool is_use_pad;
 	int m_func_type;
-
+	SERIALIZE GameObject fade;
+	bool is_press;
 };

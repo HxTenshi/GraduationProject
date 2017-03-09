@@ -34,6 +34,7 @@ void CreditScene::Start(){
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void CreditScene::Update(){
+	if (m_fader->GetScript<Fader>()->IsFader())return;
 	auto ls = Input::Analog(PAD_X_Velo2Code::Velo2_LStick);
 	bool isRight = ls.x > 0.5f;
 	bool isLeft = ls.x< -0.5f;
