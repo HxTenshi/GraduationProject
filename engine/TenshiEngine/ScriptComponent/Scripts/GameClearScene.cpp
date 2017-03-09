@@ -206,6 +206,7 @@ void GameClearScene::Start(){
 
 //–ˆƒtƒŒ[ƒ€ŒÄ‚Î‚ê‚Ü‚·
 void GameClearScene::Update(){
+	if (m_fader->GetScript<Fader>()->IsFader())return;
 	if (m_texClear == NULL) return;
 	if (m_texKill == NULL) return;
 	if (m_texTime == NULL) return;
