@@ -242,4 +242,6 @@ private:
 	//UŒ‚‚ğ‚à‚ç‚Á‚½‚Æ‚«‚ÌƒJƒEƒ“ƒ^
 	int m_damage_counter;
 
+	bool idleowatta;
+
 };

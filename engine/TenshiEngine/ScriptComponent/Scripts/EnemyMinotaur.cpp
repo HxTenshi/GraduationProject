@@ -139,7 +139,7 @@ void EnemyMinotaur::ChildFinalize()
 }
 void EnemyMinotaur::BattleModeInitilize()
 {
-
+	
 	if (is_dead)return;
 	if (!m_Player)return;
 	if (!is_damage)m_damage_counter = 0;
@@ -654,18 +654,23 @@ void EnemyMinotaur::InitThoughRoutineParam()
 void EnemyMinotaur::IdleStartAnim(){
 	m_MovieAction = std::bind(&EnemyMinotaur::IdleUpdateAnim, this);
 	m_MovieActionFlag = true;
-	AnimChange(ANIM_IDLE, 5.0f, false, false, false);
-
+	AnimChange(ANIM_IDLE, 300.0f, false, false, false);
+	idleowatta = false;
 }
-
 void EnemyMinotaur::IdleUpdateAnim()
 {
 	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
 	if (anim->IsAnimationEnd(ANIM_IDLE)) {
 		AnimChange(ANIM_CHEST_THUMP, 5.0f, false, false, false);
+		idleowatta = true;
 	}
-	if (anim->IsAnimationEnd(ANIM_CHEST_THUMP)){
+	if (anim->IsAnimationEnd(ANIM_CHEST_THUMP)&idleowatta){
 		m_MovieActionFlag = false;
+		m_anim_state = ANIM_F_WALK;
+		m_roucine_module.SetAnimState(ANIM_F_WALK);
+		ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
+		ScenarioManager::SetFlag(Scenario::S2_ButtleMinotaur);
+
 	}
 }
 
