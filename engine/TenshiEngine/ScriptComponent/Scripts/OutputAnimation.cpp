@@ -83,7 +83,7 @@ bool OutputAnimation::OnStart(GameObject Sender)
 				Hx::Debug()->Log("Name : "+mino->Name());
 				auto minotaur = static_cast<EnemyMinotaur*>(Enemy::GetEnemy(m_Target->mTransform->Children().front()));
 				if (!minotaur) {
-					return;
+					return false;
 				}
 				minotaur->IdleStartAnim();
 
