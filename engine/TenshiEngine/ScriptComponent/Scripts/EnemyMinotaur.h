@@ -124,6 +124,8 @@ private:
 	void DeadFinalize();
 	//強制殺害関数
 	void DebugDead();
+	//すべてのアニメーションを強制終了
+	void NoWeightAnimation();
 
 
 

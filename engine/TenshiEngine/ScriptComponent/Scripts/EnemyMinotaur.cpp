@@ -385,8 +385,18 @@ void EnemyMinotaur::DebugDead()
 	}
 
 }
+void EnemyMinotaur::NoWeightAnimation()
+{
+	auto anim = m_ModelObject->GetComponent<AnimationComponent>();
+	for (int i = 0; i < 18; ++i) {
+		auto p = anim->GetAnimetionParam(i);
+		p.mWeight = 0;
+		anim->SetAnimetionParam(i, p);
+	}
+}
 void EnemyMinotaur::EnemyEmergence(bool flag)
 {
+	NoWeightAnimation();
 	m_anim_state = ANIM_F_WALK;
 	m_roucine_module.SetAnimState(ANIM_F_WALK);
 	ChangeActionAndBattleAction(ACTIONMODE::BATTLEMODE, BATTLEACTION::CONFRONTACTION);
