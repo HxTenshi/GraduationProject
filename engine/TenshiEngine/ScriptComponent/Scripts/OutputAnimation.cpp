@@ -20,21 +20,21 @@ void OutputAnimation::Update()
 	{
 		mIsEnd = true;
 
-		if (mTargetBossGen && mIsBossAction) {
-			auto idle = m_Target->GetComponent<AnimationComponent>()->GetAnimetionParam(18);
-			idle.mWeight = 0;
-			mPlayAnimation->SetAnimetionParam(18, idle);
+		//if (mTargetBossGen && mIsBossAction) {
+		//	auto idle = m_Target->GetComponent<AnimationComponent>()->GetAnimetionParam(18);
+		//	idle.mWeight = 0;
+		//	mPlayAnimation->SetAnimetionParam(18, idle);
 
-			auto mino = m_Target->mTransform->GetParent();
-			Hx::Debug()->Log("Call : ミノタウロスの初期化");
-			AnimeParam ap;
-			ap = mPlayAnimation->GetAnimetionParam(17);
-			ap.mWeight = 0;
-			ap.mLoop = false;
-			mPlayAnimation->SetAnimetionParam(17, ap);
-			mino->GetScript<EnemyMinotaur>()->EnemyEmergence(false);
-			return;
-		}
+		//	auto mino = m_Target->mTransform->GetParent();
+		//	Hx::Debug()->Log("Call : ミノタウロスの初期化");
+		//	AnimeParam ap;
+		//	ap = mPlayAnimation->GetAnimetionParam(17);
+		//	ap.mWeight = 0;
+		//	ap.mLoop = false;
+		//	mPlayAnimation->SetAnimetionParam(17, ap);
+		//	mino->GetScript<EnemyMinotaur>()->EnemyEmergence(false);
+		//	return;
+		//}
 
 		if (m_UseEndAction) {
 			
@@ -78,30 +78,14 @@ bool OutputAnimation::OnStart(GameObject Sender)
 			Hx::Debug()->Log("Call Mino");
 
 			if (mIsBossAction) {
-				auto anime = m_Target->GetComponent<AnimationComponent>();
-				auto idle = anime->GetAnimetionParam(18);
-				idle.mWeight = 0;
-				anime->SetAnimetionParam(18, idle);
-				Hx::Debug()->Log("ここで確認"+std::to_string(anime->GetAnimetionParam(18).mWeight));
-
-				//Hx::Debug()->Log("ここでスタンプ");
-				//auto stamp = anime->GetAnimetionParam(17);
-				//stamp.mWeight = 1;
-				//anime->SetAnimetionParam(17, stamp);
-				//Hx::Debug()->Log("ここで確認" + std::to_string(anime->GetAnimetionParam(17).mWeight));
-				//mIsEnd = false;
-
-				auto mPlayAnimation = m_Target->GetComponent<AnimationComponent>();
-				if (!mPlayAnimation)return false;
-				auto p = mPlayAnimation->GetAnimetionParam(mPlayAnimationID);
-				p.mTime = mTime;
-				p.mWeight = mWeight;
-				p.mTimeScale = mTimeScale;
-				p.mLoop = false;
-				mPlayAnimation->SetAnimetionParam(mPlayAnimationID, p);
-
-				Hx::Debug()->Log("Play ID : " + std::to_string(mPlayAnimationID));
-				Hx::Debug()->Log("ここで確認" + std::to_string(mPlayAnimation->GetAnimetionParam(mPlayAnimationID).mWeight));
+				auto mino = m_Target->mTransform->Children().front();
+				if (!mino)return false;
+				Hx::Debug()->Log("Name : "+mino->Name());
+				auto minotaur = static_cast<EnemyMinotaur*>(Enemy::GetEnemy(m_Target->mTransform->Children().front()));
+				if (!minotaur) {
+					return;
+				}
+				minotaur->IdleStartAnim();
 
 				return false;
 			}

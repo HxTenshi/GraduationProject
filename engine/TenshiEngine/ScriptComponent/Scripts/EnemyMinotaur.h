@@ -75,6 +75,7 @@ public:
 	void ChildFinalize() override;
 	//oŒ»‚Ìİ’èŠÖ”
 	void EnemyEmergence(bool flag);
+	void IdleStartAnim();
 private:
 	enum StateType {
 		STATE_NO_SEARCH,
@@ -145,7 +146,7 @@ private:
 	//‘ª‚é‹——£‚ğ‰Šú‰»
 	void InitThoughRoutineParam();
 
-	void IdleStartAnim();
+
 	void IdleUpdateAnim();
 	
 
