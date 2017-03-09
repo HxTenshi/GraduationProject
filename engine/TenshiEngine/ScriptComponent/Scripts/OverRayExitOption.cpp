@@ -2,6 +2,7 @@
 #include "h_standard.h"
 #include "h_component.h"
 #include "SoundManager.h"
+#include "Fader.h"
 //生成時に呼ばれます（エディター中も呼ばれます）
 void OverRayExitOption::Initialize(){
 	selector = OR_NO;
@@ -104,6 +105,7 @@ void OverRayExitOption::Select(int type)
 
 		m_select_object->mTransform->Position(selectpos[selector]);
 		if (isCansel) {
+
 			is_overray = false;
 			gameObject->Disable();
 		}
@@ -112,7 +114,7 @@ void OverRayExitOption::Select(int type)
 				if(type==0)Hx::Shutdown();
 				if (type == 1) {
 					Hx::DeltaTime()->SetTimeScale(1.0f);
-					Hx::LoadScene("Assets/Title.scene");
+					fade->GetScript<Fader>()->OnSceneChnage("Assets/Title.scene");
 				}
 			}
 			if (selector == OR_NO) {
