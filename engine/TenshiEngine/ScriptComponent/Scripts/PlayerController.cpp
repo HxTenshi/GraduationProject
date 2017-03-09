@@ -1244,6 +1244,9 @@ void PlayerController::OnCollideExit(GameObject target){
 void PlayerController::SetPlayerState(PlayerState::Enum state)
 {
 	if (m_PlayerState_Stack == PlayerState::Movie) {
+		return;
+	}
+	if (m_PlayerState == PlayerState::Movie) {
 		if (state != PlayerState::Free) {
 			return;
 		}
@@ -3567,6 +3570,7 @@ void PlayerController::stateFlip()
 	}
 	m_PlayerState = m_PlayerState_Stack;
 	m_StateFunc[m_PlayerState].Enter();
+	m_PlayerState_Stack = PlayerState::Count;
 }
 
 void PlayerController::ComboAdvantage()
