@@ -78,9 +78,7 @@ bool OutputAnimation::OnStart(GameObject Sender)
 			Hx::Debug()->Log("Call Mino");
 
 			if (mIsBossAction) {
-				auto mino = m_Target->mTransform->Children().front();
-				if (!mino)return false;
-				Hx::Debug()->Log("Name : "+mino->Name());
+				Hx::Debug()->Log("ミノタウロスのイベント用意");
 				auto minotaur = static_cast<EnemyMinotaur*>(Enemy::GetEnemy(target->mTransform->Children().front()));
 				if (!minotaur) {
 					Hx::Debug()->Log("あくせす");
