@@ -16,6 +16,9 @@ public:
 	void OnCollideEnter(GameObject target)override;
 	void OnCollideExit(GameObject target)override;
 	void OnSceneChnage(std::string nextScenePass, bool isDestroy = false);
+	bool IsFader() {
+		return m_isSceneChange;
+	}
 
 private:
 	//ƒƒ“ƒo•Ï”
