@@ -26,6 +26,7 @@ void GameOverScene::Start(){
 
 //–ˆƒtƒŒ[ƒ€
 void GameOverScene::Update(){
+	if (m_fader->GetScript<Fader>()->IsFader())return;
 	if (m_texRogo == NULL) return;
 	if (m_texMessage == NULL) return;
 	bool isRogo = false;

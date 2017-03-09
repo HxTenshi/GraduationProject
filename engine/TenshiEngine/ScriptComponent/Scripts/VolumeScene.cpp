@@ -46,6 +46,7 @@ void VolumeScene::Start(){
 
 //毎フレーム呼ばれます
 void VolumeScene::Update(){
+	if (m_fader->GetScript<Fader>()->IsFader())return;
 	//Nullチェック
 	if (m_objList[Enum::BGM] == NULL) return;
 	if (m_objList[Enum::SE] == NULL) return;

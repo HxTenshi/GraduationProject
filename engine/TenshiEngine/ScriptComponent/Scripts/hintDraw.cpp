@@ -45,14 +45,14 @@ void hintDraw::Update()
 		}
 		m_FirstFrame = false;
 		m_Timer += Hx::DeltaTime()->GetDeltaTime();
-		gameObject->mTransform->WorldPosition(XMVectorSet(lerp(BIGPOSX,MINIPOSX, m_Lerp), lerp(BIGPOSY, MINIPOSY, m_Lerp), 9999, 0));
-		gameObject->mTransform->WorldScale(XMVectorSet(lerp(BIGSIZEX, MINISIZEX, m_Lerp), lerp(BIGSIZEY, MINISIZEY, m_Lerp), 0, 0));
 		if (m_Timer >= m_WaitTime) {
 			m_Lerp += m_TimeScale * Hx::DeltaTime()->GetDeltaTime();
 			if (m_Lerp >= 1.0f) {
 				m_OnStart = false;
 			}
 		}
+		gameObject->mTransform->WorldPosition(XMVectorSet(lerp(BIGPOSX,MINIPOSX, m_Lerp), lerp(BIGPOSY, MINIPOSY, m_Lerp), 9999, 0));
+		gameObject->mTransform->WorldScale(XMVectorSet(lerp(BIGSIZEX, MINISIZEX, m_Lerp), lerp(BIGSIZEY, MINISIZEY, m_Lerp), 0, 0));
 	}
 	else {
 		m_Timer = 0;
