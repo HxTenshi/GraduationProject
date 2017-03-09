@@ -7,6 +7,7 @@
 void OverRayExitOption::Initialize(){
 	selector = OR_NO;
 	m_func_type = 0;
+	is_press = false;
 }
 
 //initializeとupdateの前に呼ばれます（エディター中も呼ばれます）
@@ -24,6 +25,7 @@ void OverRayExitOption::Start(){
 
 //毎フレーム呼ばれます
 void OverRayExitOption::Update(){
+	if (fade->GetScript<Fader>()->IsFader())return;
 	if (!is_overray)return;
 	if (!is_select) {
 		m_select_timer += Hx::DeltaTime()->GetNoScaleDeltaTime();
@@ -115,6 +117,7 @@ void OverRayExitOption::Select(int type)
 				if (type == 1) {
 					Hx::DeltaTime()->SetTimeScale(1.0f);
 					fade->GetScript<Fader>()->OnSceneChnage("Assets/Title.scene");
+					is_press = true;
 				}
 			}
 			if (selector == OR_NO) {
